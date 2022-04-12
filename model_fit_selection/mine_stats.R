@@ -19,6 +19,10 @@ theme_set(theme_bw())
 #Set file paths
 in_path = 'S:/main/data/qrf/gitrepo_data/input/'
 out_path = 'S:/main/data/qrf/gitrepo_data/output/'
+
+#Load necessary functions (for now)
+source("R/estimate_MIC.r")
+
 #-----------------------------------------------------------------
 # determine which set of fish/habitat data to use
 # summmer juveniles with CHaMP metrics
