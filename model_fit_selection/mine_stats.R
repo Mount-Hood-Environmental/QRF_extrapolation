@@ -439,7 +439,7 @@ for(i in 1:length(mine_p2)) {
 }
 dev.off()
 
-pdf(out_path, 'MINE_Chnk.pdf'),
+pdf(paste0(out_path, 'MINE_Chnk.pdf'),
     width = 8,
     height = 9)
 for(i in 1:length(mine_chnk_p)) {
