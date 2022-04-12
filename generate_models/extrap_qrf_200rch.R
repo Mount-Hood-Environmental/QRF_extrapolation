@@ -31,7 +31,7 @@ out_path = 'S:/main/data/qrf/gitrepo_data/output/'
 load(paste0(in_path,'qrf_', mod_choice, '.rda'))
 
 #load necessary functions
-source(paste0(in_path,"impute_missing_data.r"))
+source("R/impute_missing_data.r")
 
 #-----------------------------------------------------------------
 # predict capacity at all CHaMP sites

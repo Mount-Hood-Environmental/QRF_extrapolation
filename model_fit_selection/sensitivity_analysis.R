@@ -29,7 +29,7 @@ out_path = 'S:/main/data/qrf/extrapolation_process/output/'
 load(paste0(in_path,"qrf_", mod_choice, '.rda'))
 
 #load necessary functions
-source(paste0(in_path,"impute_missing_data.r"))
+source("R/impute_missing_data.r")
 
 #-----------------------------------------------------------------
 # relative importance of habtiat covariates

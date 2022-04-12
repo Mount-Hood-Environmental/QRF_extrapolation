@@ -6,7 +6,7 @@
 
 #-----------------------------------------------------------------
 # load needed libraries
-library(QRFcapacity)
+#library(QRFcapacity)
 library(tidyverse)
 library(janitor)
 library(magrittr)
@@ -15,6 +15,13 @@ library(quantregForest)
 
 # set default theme for ggplot
 theme_set(theme_bw())
+
+#Set file paths
+in_path = 'S:/main/data/qrf/gitrepo_data/input/'
+out_path = 'S:/main/data/qrf/gitrepo_data/output/'
+
+#load necessary functions (for now, will remove when package is available)
+source("R/impute_missing_data.r")
 
 #-----------------------------------------------------------------
 # which QRF model to fit? 
@@ -32,22 +39,22 @@ for(mod_choice in c('juv_summer',
   #-----------------------------------------------------------------
   # determine which set of fish/habitat data to use
   if(mod_choice == "juv_summer") {
-    data("fh_sum_champ_2017")
+    load(paste0(in_path, "fh_sum_champ_2017.rda"))
     fish_hab = fh_sum_champ_2017 %>%
       mutate_at(vars(Watershed, Year),
                 list(as.factor))
   } else if(mod_choice == "juv_summer_dash") {
-    data("fh_sum_dash_2014_17")
+    load(paste0(in_path, "fh_sum_dash_2014_17.rda"))
     fish_hab = fh_sum_dash_2014_17 %>%
       mutate_at(vars(Watershed, Year),
                 list(as.factor))
   } else if(mod_choice == "redds") {
-    data("fh_redds_champ_2017")
+    load(paste0(in_path, "fh_redds_champ_2017.rda"))
     fish_hab = fh_redds_champ_2017 %>%
       mutate_at(vars(Watershed),
                 list(as.factor))
   } else if(mod_choice == "juv_winter") {
-    data("fh_win_champ_2017")
+    load(paste0(in_path, "fh_win_champ_2017.rda"))
     fish_hab = fh_win_champ_2017 %>%
       filter(!is.na(fish_dens)) %>%
       mutate_at(vars(Watershed, Year, Tier1),
@@ -56,7 +63,7 @@ for(mod_choice in c('juv_summer',
   }
   
   # and the appropriate habitat dictionary to go with it
-  data("hab_dict_2017")
+  load(paste0(in_path, "hab_dict_2017.rda"))
   if(mod_choice == "juv_winter") {
     hab_dict = hab_dict_2017 %>%
       bind_rows(hab_dict_2017 %>%
@@ -109,14 +116,14 @@ for(mod_choice in c('juv_summer',
                        DescriptiveText = "Percent of wetted area with some form of fish cover"))
   
   # all the related habitat data
-  data("champ_site_2011_17")
+  load(paste0(in_path, "champ_site_2011_17.rda"))
   hab_data = champ_site_2011_17
   
-  data("champ_site_2011_17_avg")
+  load(paste0(in_path, "champ_site_2011_17_avg.rda"))
   hab_avg = champ_site_2011_17_avg
   
   if(mod_choice == "juv_winter") {
-    data("champ_cu")
+    load(paste0(in_path, "champ_cu.rda"))
     
     hab_data = champ_cu %>%
       mutate(Tier1 = recode(Tier1,
@@ -216,7 +223,7 @@ for(mod_choice in c('juv_summer',
   
   # add temperature metrics
   if(mod_choice != "juv_winter") {
-    data("champ_temps")
+    load(paste0(in_path, "champ_temps.rda"))
     hab_avg %<>%
       left_join(champ_temps %>%
                   as_tibble() %>%
@@ -252,8 +259,8 @@ for(mod_choice in c('juv_summer',
   # clip Chinook data to Chinook domain
   # all winter sites within Chinook domain by design
   if(mod_choice != "juv_winter") {
-    data("rch_200")
-    data("champ_site_rch")
+    load(paste0(in_path, "rch_200.rda"))
+    load(paste0(in_path, "champ_site_rch.rda"))
     
     chnk_sites = champ_site_rch %>%
       inner_join(rch_200 %>%
@@ -483,7 +490,7 @@ for(mod_choice in c('juv_summer',
        hab_dict,
        hab_data,
        hab_avg,
-       file = paste0('output/modelFits/qrf_', mod_choice, '.rda'))
+       file = paste0(out_path,'modelFit/qrf_', mod_choice, '.rda'))
   
 }
 
@@ -495,7 +502,7 @@ mod_choice = c('juv_summer',
                'redds',
                'juv_winter')[2]
 
-load(paste0('output/modelFits/qrf_', mod_choice, '.rda'))
+load(paste0(out_path,'modelFit/qrf_', mod_choice, '.rda'))
 
 # relative importance of habitat covariates
 rel_imp_p = tibble(Species = names(qrf_mods),
