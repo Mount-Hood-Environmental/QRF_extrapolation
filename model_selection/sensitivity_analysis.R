@@ -23,8 +23,8 @@ mod_choice = c('juv_summer',
                'redds')[2]
 
 #Set file paths
-in_path = 'S:/main/data/qrf/extrapolation_process/input/'
-out_path = 'S:/main/data/qrf/extrapolation_process/output/'
+in_path = 'S:/main/data/qrf/gitrepo_data/input/'
+out_path = 'S:/main/data/qrf/gitrepo_data/output/'
 
 load(paste0(in_path,"qrf_", mod_choice, '.rda'))
 

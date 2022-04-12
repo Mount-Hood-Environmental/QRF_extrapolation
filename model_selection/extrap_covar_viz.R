@@ -18,8 +18,8 @@ library(survey)
 theme_set(theme_bw())
 
 # set file paths
-in_path = 'S:/main/data/qrf/extrapolation_process/input/'
-out_path = 'S:/main/data/qrf/extrapolation_process/output/'
+in_path = 'S:/main/data/qrf/gitepo_data/input/'
+out_path = 'S:/main/data/qrf/gitrepo_data/output/'
 
 
 #-----------------------------------------------------------------
