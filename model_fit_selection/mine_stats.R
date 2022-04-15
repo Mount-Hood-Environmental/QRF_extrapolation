@@ -80,7 +80,7 @@ fish_hab_list %<>%
 
 
 #-----------------------------------------------------------------
-# and the appropriate habitat dictionrary to go with it
+# and the appropriate habitat dictionary to go with it
 load(paste0(in_path,"hab_dict_2017.rda"))
 hab_dict = hab_dict_2017
 
@@ -235,7 +235,8 @@ poss_hab_mets = fish_hab_list %>%
                              "FishCovAll",
                              "SubEstCandBldr",
                              "UcutLgth",
-                             "LWcnt_Wet"))) %>%
+                             "LWcnt_Wet")
+                              )) %>%
   mutate(Name = if_else(is.na(Name),
                         ShortName,
                         Name)) %>%
@@ -609,3 +610,10 @@ for(i in 1:nrow(hab_corr)) {
   dev.off()
 }
 
+
+
+
+#-----------------------------------------------------------------
+# Output .rda of potential covs with MINE statistics
+#-----------------------------------------------------------------
+save(mine_plot_list, file = "model_fit_selection/data/MINE_stats.rda")

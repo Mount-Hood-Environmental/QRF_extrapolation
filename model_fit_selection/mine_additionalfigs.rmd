@@ -1,0 +1,116 @@
+---
+title: "qrf_covariate_selection"
+author: "Mark Roes"
+date: "4/13/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(lemon)
+```
+
+```{r load data}
+data("MINE_stats")
+
+#mic_dat = rbind(mine_plot_list$Redds, mine_plot_list$Summer_CHaMP, mine_plot_list$Summer_DASH, mine_plot_list$Winter) %>%
+#select(species, MetricCategory, Metric, dataset, MIC, Name)
+  
+```
+
+```{r MIC chnkfig}
+mine_chnk_p = mine_plot_list %>%
+  map(.f = function(x) {
+    x %>%
+      filter(species == "Chinook") %>%
+      # filter(MetricCategory != 'Other') %>%
+      # put the metric names in descending order by MIC
+      mutate_at(vars(Metric, Name),
+                list(~ fct_reorder(., .x = MIC))) %>%
+      arrange(desc(Metric)) %>%
+      ggplot(aes(x = Name,
+                 y = MIC)) +
+      facet_wrap(~MetricCategory, scales = 'free_y') +
+      geom_col() +
+      coord_flip() +
+      # scale_fill_viridis_d() +
+      scale_fill_brewer(palette = 'Set3',
+                        guide = guide_legend(nrow = 2)) +
+      theme(legend.position = 'bottom',
+            axis.text = element_text(size = 6)) +
+      labs(title = unique(x$dataset),
+           fill = 'Category')
+  })
+
+
+pdf(paste0('MINE_Chnk2.pdf'),
+    width = 16,
+    height = 9)
+for(i in 1:length(mine_chnk_p)) {
+  print(mine_chnk_p[[i]])
+}
+dev.off()
+```
+```{r MIC stlhd fig}
+mine_stlhd_p = mine_plot_list %>%
+  map(.f = function(x) {
+    x %>%
+      filter(species == "Steelhead") %>%
+      # filter(MetricCategory != 'Other') %>%
+      # put the metric names in descending order by MIC
+      mutate_at(vars(Metric, Name),
+                list(~ fct_reorder(., .x = MIC))) %>%
+      arrange(desc(Metric)) %>%
+      ggplot(aes(x = Name,
+                 y = MIC)) +
+      facet_wrap(~MetricCategory, scales = 'free_y') +
+      geom_col() +
+      coord_flip() +
+      # scale_fill_viridis_d() +
+      scale_fill_brewer(palette = 'Set3',
+                        guide = guide_legend(nrow = 2)) +
+      theme(legend.position = 'bottom',
+            axis.text = element_text(size = 6)) +
+      labs(title = unique(x$dataset),
+           fill = 'Category')
+  })
+
+
+pdf(paste0('MINE_stlhd2.pdf'),
+    width = 16,
+    height = 9)
+for(i in 1:length(mine_stlhd_p)) {
+  print(mine_stlhd_p[[i]])
+}
+dev.off()
+
+```
+
+
+```{r MIC tables}
+datasets = names(mine_plot_list)
+
+mine_test = mine_plot_list %>%
+  map(.f = function(x) {
+    x %>%
+      filter(species == "Chinook") %>%
+    mutate_at(vars(Metric, Name),
+                list(~ fct_reorder(., .x = MIC))) %>%
+      arrange(desc(Metric))
+  })
+  
+  
+}
+
+chnk_w
+chnk_sc
+chnk_sd
+chnk_r
+
+stl_w
+stl_sc
+stl_sd
+stl_r
+
+```
