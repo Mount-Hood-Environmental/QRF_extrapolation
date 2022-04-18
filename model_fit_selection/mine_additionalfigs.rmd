@@ -9,11 +9,12 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(lemon)
+library(tidyverse)
 ```
 
 ```{r load data}
 data("MINE_stats")
-
+load("data/MINE_stats.rda")
 #mic_dat = rbind(mine_plot_list$Redds, mine_plot_list$Summer_CHaMP, mine_plot_list$Summer_DASH, mine_plot_list$Winter) %>%
 #select(species, MetricCategory, Metric, dataset, MIC, Name)
   
@@ -52,6 +53,8 @@ for(i in 1:length(mine_chnk_p)) {
 }
 dev.off()
 ```
+
+
 ```{r MIC stlhd fig}
 mine_stlhd_p = mine_plot_list %>%
   map(.f = function(x) {
@@ -88,29 +91,65 @@ dev.off()
 ```
 
 
-```{r MIC tables}
-datasets = names(mine_plot_list)
+Test MIC difference 
 
-mine_test = mine_plot_list %>%
+```{r MIC SpeciesDiff}
+stlhd = mine_plot_list %>%
   map(.f = function(x) {
     x %>%
-      filter(species == "Chinook") %>%
-    mutate_at(vars(Metric, Name),
-                list(~ fct_reorder(., .x = MIC))) %>%
-      arrange(desc(Metric))
+      filter(species == "Steelhead")
+    }) %>%
+  bind_rows()
+  
+
+chnk = mine_plot_list %>%
+  map(.f = function(x) {
+    x %>%
+      filter(species == "Chinook") 
+    }) %>%
+  bind_rows()
+  
+
+
+mic_diff = left_join(stlhd,chnk[,c(1:4,12)], by = c("MetricCategory","Metric","dataset")) %>%
+  mutate(MIC_diff = abs(MIC.x - MIC.y)) %>%
+  mutate(MIC_rel_diff = MIC.y/MIC.x) %>%
+  split(.$dataset)
+
+
+mic_diff_p = mic_diff %>%
+  map(.f = function(x) {
+    x %>%
+      mutate_at(vars(Metric, Name),
+                list(~ fct_reorder(., .x = MIC.x))) %>%
+      arrange(desc(Metric)) %>%
+      ggplot() +
+      geom_col(aes(x = Name,
+                 y = MIC_diff)) +
+      geom_col(aes(x= Name,
+                 y = MIC.x), alpha = 0.5)+
+      facet_wrap(~MetricCategory, scales = 'free_y') +
+      coord_flip() +
+      # scale_fill_viridis_d() +
+      scale_fill_brewer(palette = 'Set3',
+                        guide = guide_legend(nrow = 2)) +
+      theme(legend.position = 'bottom',
+            axis.text = element_text(size = 6)) +
+      labs(title = unique(x$dataset),
+           fill = 'Category',
+           x = element_blank(),
+           y = "Steelhead MIC and |MIC Difference with Chinook|)")
   })
-  
-  
+
+
+pdf(paste0('MIC_diff.pdf'),
+    width = 16,
+    height = 9)
+
+for(i in 1:length(mic_diff_p)) {
+  print(mic_diff_p[[i]])
 }
 
-chnk_w
-chnk_sc
-chnk_sd
-chnk_r
-
-stl_w
-stl_sc
-stl_sd
-stl_r
+dev.off()
 
 ```
