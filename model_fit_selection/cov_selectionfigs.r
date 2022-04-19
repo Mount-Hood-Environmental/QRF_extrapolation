@@ -104,12 +104,13 @@ chnk = mine_plot_list %>%
   bind_rows()
   
 mic_diff = left_join(stlhd,chnk[,c(1:4,12)], by = c("MetricCategory","Metric","dataset")) %>%
-  mutate(MIC_diff = abs(MIC.x - MIC.y)) %>%
+  mutate(MIC_diff = MIC.x - MIC.y) %>%
+  mutate(MIC_diff_direction = ifelse(MIC_diff >= 0, 1, -1)) %>%
   mutate(MIC_rel_diff = MIC.y/MIC.x) %>%
   split(.$dataset)
 
 
-#Generate figures
+#Generate figures - DEPRECATED
 mic_diff_s = mic_diff %>%
   map(.f = function(x) {
     x %>%
@@ -173,6 +174,49 @@ dev.off()
 #Read in restoration info and bind to MIC data
 resto = read_csv("data/Resto_inform_cov.csv")[,-c(1)] ; names(resto)[names(resto)=="ShortName"] = "Metric"
 
-mic_dat = mic_diff %>%
+mic_dat_resto = mic_diff %>%
   bind_rows() %>%
-  left_join(select(resto, Metric, RestoInform) , by = c("Metric"))
+  left_join(select(resto, Metric, RestoInform) , by = c("Metric")) %>%
+  split(.$dataset)
+
+#Output .rda
+save(mic_dat, file = "data/mic_dat_resto.rda")
+
+#Add this info into a figure
+
+mic_resto_s = mic_dat_resto %>%
+  map(.f = function(x) {
+    x %>%
+      mutate_at(vars(Metric, Name),
+                list(~ fct_reorder(., .x = MIC.x))) %>%
+      arrange(desc(Metric)) %>%
+      ggplot() +
+      theme_bw()+
+      geom_col(aes(x= Name,
+                   y = MIC.x, fill = as.factor(RestoInform)))+
+      scale_fill_manual(labels = c("|MIC difference|","Not informative", "Informative for restoration"),
+                        values = c("black", "grey60","firebrick3"))+
+      geom_col(aes(x = Name,
+                   y = MIC_diff, fill = "|MIC difference|")) +
+      facet_wrap(~MetricCategory, scales = 'free_y') +
+      coord_flip() +
+      #scale_fill_brewer(palette = 'Set3',
+      #                  guide = guide_legend(nrow = 2)) +
+      theme(legend.position = 'bottom',
+            legend.title = element_blank(),
+            axis.text = element_text(size = 6)) +
+      labs(title = unique(x$dataset),
+           fill = 'Category',
+           x = element_blank(),
+           y = "Steelhead MIC")
+  })
+
+pdf(paste0('output/figures/MIC_resto.pdf'),
+    width = 16,
+    height = 9)
+
+for(i in 1:length(mic_resto_s)) {
+  print(mic_resto_s[[i]])
+}
+
+dev.off()
