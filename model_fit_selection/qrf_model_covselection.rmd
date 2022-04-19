@@ -22,32 +22,35 @@ load(here("output/figures/MIC_resto.rda"))
 
 ## Winter model
 
-The winter model has the fewest potential covariates and the least variation in maximal information coefficients across species, so it should have the most straightforward selection process.  
+The winter model has the fewest potential covariates and the least variation in maximal information coefficients (MIC) across species, so it should have the most straightforward selection process. Any selection of covariates should be able to be applied for both species.  
 
 ```{r winterplot, echo=FALSE, fig.height= 8}
 mic_resto_p$Winter
 ```
 
-Figure 1: MIC values for covariates to predict juvenile steelhead winter densities. The grey and blue bars represent estimated MIC for steelhead with an associated red or green bar that depicts the positive or negative magnitude of difference for predicting Chinook salmon densities, respectively.
+Figure 1: MIC values for covariates to predict juvenile steelhead winter densities. The grey and blue bars are estimated MIC values. The red or green bars associated with each possible covariate illustrate whether the MIC for Chinook salmon is less (red) or greater (green), along with the magnitude of difference.
 
 
 
 ## Summer model
 
-
+The summer model has many potential covariates and a vast majority are informative for restoration. When comparing MIC by species, most covariates have a higher MIC for Chinook. What we need to watch out for here is situations where a covariate with strong predictive capability for steelhead is surpassed by a different covariate when examining Chinook. For example, "wetted width to depth ratio avg" has the highest MIC for steelhead in the *complexity* category but "bankfull width cv" has the highest MIC for Chinook. Here, the difference is relatively small, however we will need to watch out for this in the *size* category. Additionally, if MICs for steelhead are relatively stable across covariates, such as in the *wood* category, we may want to select the covariates with the best MIC for Chinook. 
 
 ```{r summerplot, echo=FALSE, fig.height= 12, warning=FALSE}
 mic_resto_p$Summer_CHaMP
 ```
 
-Figure 2: MIC values for covariates to predict juvenile steelhead summer densities. The grey and blue bars represent estimated MIC for steelhead with an associated red or green bar that depicts the positive or negative magnitude of difference for predicting Chinook salmon densities, respectively.
+Figure 2: MIC values for covariates to predict juvenile steelhead summer densities. The grey and blue bars are estimated MIC values. The red or green bars associated with each possible covariate illustrate whether the MIC for Chinook salmon is less (red) or greater (green), along with the magnitude of difference.
 
 
 
 ## Redds model
 
+Covariate selection for the redds model appears to be relatiely straightword, except for the *size* category where the difference in MIC between species is greatest. I think we can handle this through careful selection of covariates so that two models are not required.
+
+
 ```{r reddsplot, echo=FALSE, fig.height = 12, warning=FALSE}
 mic_resto_p$Redds
 ```
 
-Figure 3: MIC values for covariates to predict steelhead redd densities. The grey and blue bars represent estimated MIC for steelhead with an associated red or green bar that depicts the positive or negative magnitude of difference for predicting Chinook salmon redd densities, respectively.
+Figure 3: MIC values for covariates to predict steelhead redd densities. The grey and blue bars are estimated MIC values. The red or green bars associated with each possible covariate illustrate whether the MIC for Chinook salmon is less (red) or greater (green), along with the magnitude of difference.
