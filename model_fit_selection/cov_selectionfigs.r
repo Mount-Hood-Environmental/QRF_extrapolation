@@ -5,15 +5,11 @@
 # load/install libraries
 
 options(repos=structure(c(cran="https://ftp.osuosl.org/pub/cran/")))  
-packages <- c("tidyverse", "ggplot2", "lemon") 
+packages <- c("tidyverse","purrr", "ggplot2", "lemon") 
 if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
   install.packages(setdiff(packages, rownames(installed.packages())))  
 }  
 lapply(packages, require, character.only=TRUE)
-library(ggplot2)
-library(lemon)
-library(tidyverse)
-
 
 #Load data------------------------------------------------------------
 data("MINE_stats")
@@ -104,8 +100,8 @@ chnk = mine_plot_list %>%
   bind_rows()
   
 mic_diff = left_join(stlhd,chnk[,c(1:4,12)], by = c("MetricCategory","Metric","dataset")) %>%
-  mutate(MIC_diff = MIC.x - MIC.y) %>%
-  mutate(MIC_diff_direction = ifelse(MIC_diff >= 0, 1, -1)) %>%
+  mutate(MIC_diff = abs(MIC.x - MIC.y)) %>%
+  mutate(MIC_diff_direction = ifelse(MIC.x > MIC.y, "+","-" )) %>%
   mutate(MIC_rel_diff = MIC.y/MIC.x) %>%
   split(.$dataset)
 
@@ -180,7 +176,7 @@ mic_dat_resto = mic_diff %>%
   split(.$dataset)
 
 #Output .rda
-save(mic_dat, file = "data/mic_dat_resto.rda")
+save(mic_dat_resto, file = "data/mic_dat_resto.rda")
 
 #Add this info into a figure
 
@@ -193,11 +189,13 @@ mic_resto_s = mic_dat_resto %>%
       ggplot() +
       theme_bw()+
       geom_col(aes(x= Name,
-                   y = MIC.x, fill = as.factor(RestoInform)))+
-      scale_fill_manual(labels = c("|MIC difference|","Not informative", "Informative for restoration"),
-                        values = c("black", "grey60","firebrick3"))+
+                   y = MIC.x,
+                   fill = as.factor(RestoInform)))+
       geom_col(aes(x = Name,
-                   y = MIC_diff, fill = "|MIC difference|")) +
+                   y = MIC_diff,
+                   fill = MIC_diff_direction), color = "gray15") +
+      scale_fill_manual(labels = c("Chinook MIC higher", "Chinook MIC lower", "Not informative", "Informative for restoration"),
+                        values = c("chartreuse3", "firebrick3", "gray50","cornflowerblue"))+
       facet_wrap(~MetricCategory, scales = 'free_y') +
       coord_flip() +
       #scale_fill_brewer(palette = 'Set3',
