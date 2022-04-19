@@ -1,0 +1,53 @@
+---
+title: "QRF model covariate selection"
+author: "Mark Roes"
+date: "4/19/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos=structure(c(cran="https://ftp.osuosl.org/pub/cran/")))  
+packages <- c("here") 
+if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
+  install.packages(setdiff(packages, rownames(installed.packages())))  
+}  
+lapply(packages, require, character.only=TRUE)
+
+```
+
+```{r load figure data, echo=FALSE}
+load(here("output/figures/MIC_resto.rda"))
+```
+
+## Winter model
+
+The winter model has the fewest potential covariates and the least variation in maximal information coefficients across species, so it should have the most straightforward selection process.  
+
+```{r winterplot, echo=FALSE, fig.height= 8}
+mic_resto_p$Winter
+```
+
+Figure 1: MIC values for covariates to predict juvenile steelhead winter densities. The grey and blue bars represent estimated MIC for steelhead with an associated red or green bar that depicts the positive or negative magnitude of difference for predicting Chinook salmon densities, respectively.
+
+
+
+## Summer model
+
+
+
+```{r summerplot, echo=FALSE, fig.height= 12, warning=FALSE}
+mic_resto_p$Summer_CHaMP
+```
+
+Figure 2: MIC values for covariates to predict juvenile steelhead summer densities. The grey and blue bars represent estimated MIC for steelhead with an associated red or green bar that depicts the positive or negative magnitude of difference for predicting Chinook salmon densities, respectively.
+
+
+
+## Redds model
+
+```{r reddsplot, echo=FALSE, fig.height = 12, warning=FALSE}
+mic_resto_p$Redds
+```
+
+Figure 3: MIC values for covariates to predict steelhead redd densities. The grey and blue bars represent estimated MIC for steelhead with an associated red or green bar that depicts the positive or negative magnitude of difference for predicting Chinook salmon redd densities, respectively.
