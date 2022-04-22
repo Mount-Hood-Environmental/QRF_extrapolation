@@ -1,0 +1,268 @@
+---
+title: "Covariate tables for QRF model modification"
+author: "Bryce Oldemeyer"
+date: '2022-04-21'
+output: html_document
+---
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  echo = FALSE,
+  comment = "#>",
+  #fig.path = "../../figures/appendix/",
+  dpi = 400,
+  appendix = TRUE
+)
+```
+
+```{r packages}
+library(tidyverse)
+library(minerva)
+library(kableExtra)
+library(pander)
+
+# options for table formating with "kable()"
+options(knitr.kable.NA = '-')
+
+```
+
+```{r load figure data, echo=FALSE}
+
+load("C:/Users/bolde/Documents/Git/QRF_extrapolation/data/mic_dat_resto.rda")
+selected<-readRDS("C:/Users/bolde/Documents/Git/QRF_extrapolation/data/sel_hab_mets.rds") 
+
+```
+
+This script is to be added to Mark's .rmd to help with QRF covariate selection
+
+#
+### Steelhead - Summer CHaMP Covariate Table 
+
+```{r mic-tab-steelhead-summer-champ}
+mine_tab_df = mic_dat_resto$Summer_CHaMP %>%
+  mutate(`Percent 0-value` = 1 - perc_non0) %>%
+  group_by(MetricCategory) %>%
+  slice(1:10) %>%
+  select(Category = MetricCategory,
+         Name,
+         Abbrv = Metric,
+         MIC = MIC.x,
+         `Percent missing` = perc_NA,
+         `Percent 0-value`,
+         `Resto inform` = RestoInform)
+
+panderOptions("graph.fontsize", 10)
+mine_tab_df %>%
+#    select(-selected) %>%
+  pander(digits = 3,
+         caption = 'MIC statistic for top metrics within each habitat category, sorted by category and MIC value. The percent of records that were missing or zero is shown for each habitat metric. Additionally, each covariate is designated as informative (1) or not informative (0) for restoration design.',
+#           emphasize.strong.rows = which(mine_tab_df$selected),
+split.tables = Inf)
+
+```
+
+#
+#
+### Chinook - Summer CHaMP Covariate Table 
+
+```{r mic-tab-chinook-summer-champ}
+mine_tab_df = mic_dat_resto$Summer_CHaMP %>%
+  mutate(`Percent 0-value` = 1 - perc_non0) %>%
+  group_by(MetricCategory) %>%
+  slice(1:10) %>%
+  select(Category = MetricCategory,
+         Name,
+         Abbrv = Metric,
+         MIC = MIC.y,
+         `Percent missing` = perc_NA,
+         `Percent 0-value`,
+         `Resto inform` = RestoInform)
+
+panderOptions("graph.fontsize", 10)
+mine_tab_df %>%
+#    select(-selected) %>%
+  pander(digits = 3,
+         caption = 'MIC statistic for top metrics within each habitat category, sorted by category and MIC value. The percent of records that were missing or zero is shown for each habitat metric. Additionally, each covariate is designated as informative (1) or not informative (0) for restoration design.',
+#           emphasize.strong.rows = which(mine_tab_df$selected),
+split.tables = Inf)
+
+
+
+```
+
+#
+#
+### Steelhead - Summer DASH Covariate Table 
+
+```{r mic-tab-steelhead-summer-dash}
+mine_tab_df = mic_dat_resto$Summer_DASH %>%
+  mutate(`Percent 0-value` = 1 - perc_non0) %>%
+  group_by(MetricCategory) %>%
+  slice(1:10) %>%
+  select(Category = MetricCategory,
+         Name,
+         Abbrv = Metric,
+         MIC = MIC.x,
+         `Percent missing` = perc_NA,
+         `Percent 0-value`,
+         `Resto inform` = RestoInform)
+
+panderOptions("graph.fontsize", 10)
+mine_tab_df %>%
+#    select(-selected) %>%
+  pander(digits = 3,
+         caption = 'MIC statistic for top metrics within each habitat category, sorted by category and MIC value. The percent of records that were missing or zero is shown for each habitat metric. Additionally, each covariate is designated as informative (1) or not informative (0) for restoration design.',
+#           emphasize.strong.rows = which(mine_tab_df$selected),
+split.tables = Inf)
+
+
+
+```
+
+#
+#
+### Chinook - Summer DASH Covariate Table 
+
+```{r mic-tab-chinook-summer-dash}
+mine_tab_df = mic_dat_resto$Summer_DASH %>%
+  mutate(`Percent 0-value` = 1 - perc_non0) %>%
+  group_by(MetricCategory) %>%
+  slice(1:10) %>%
+  select(Category = MetricCategory,
+         Name,
+         Abbrv = Metric,
+         MIC = MIC.y,
+         `Percent missing` = perc_NA,
+         `Percent 0-value`,
+         `Resto inform` = RestoInform)
+
+panderOptions("graph.fontsize", 10)
+mine_tab_df %>%
+#    select(-selected) %>%
+  pander(digits = 3,
+         caption = 'MIC statistic for top metrics within each habitat category, sorted by category and MIC value. The percent of records that were missing or zero is shown for each habitat metric. Additionally, each covariate is designated as informative (1) or not informative (0) for restoration design.',
+#           emphasize.strong.rows = which(mine_tab_df$selected),
+split.tables = Inf)
+
+
+
+```
+
+#
+#
+### Steelhead - Redds Covariate Table 
+
+```{r mic-tab-steelhead-redds}
+mine_tab_df = mic_dat_resto$Redds %>%
+  mutate(`Percent 0-value` = 1 - perc_non0) %>%
+  group_by(MetricCategory) %>%
+  slice(1:10) %>%
+  select(Category = MetricCategory,
+         Name,
+         Abbrv = Metric,
+         MIC = MIC.x,
+         `Percent missing` = perc_NA,
+         `Percent 0-value`,
+         `Resto inform` = RestoInform)
+
+panderOptions("graph.fontsize", 10)
+mine_tab_df %>%
+#    select(-selected) %>%
+  pander(digits = 3,
+         caption = 'MIC statistic for top metrics within each habitat category, sorted by category and MIC value. The percent of records that were missing or zero is shown for each habitat metric. Additionally, each covariate is designated as informative (1) or not informative (0) for restoration design.',
+#           emphasize.strong.rows = which(mine_tab_df$selected),
+split.tables = Inf)
+
+
+
+```
+
+#
+#
+### Chinook - Redds Covariate Table 
+
+```{r mic-tab-chinook-redds}
+mine_tab_df = mic_dat_resto$Redds %>%
+  mutate(`Percent 0-value` = 1 - perc_non0) %>%
+  group_by(MetricCategory) %>%
+  slice(1:10) %>%
+  select(Category = MetricCategory,
+         Name,
+         Abbrv = Metric,
+         MIC = MIC.y,
+         `Percent missing` = perc_NA,
+         `Percent 0-value`,
+         `Resto inform` = RestoInform)
+
+panderOptions("graph.fontsize", 10)
+mine_tab_df %>%
+#    select(-selected) %>%
+  pander(digits = 3,
+         caption = 'MIC statistic for top metrics within each habitat category, sorted by category and MIC value. The percent of records that were missing or zero is shown for each habitat metric. Additionally, each covariate is designated as informative (1) or not informative (0) for restoration design.',
+#           emphasize.strong.rows = which(mine_tab_df$selected),
+split.tables = Inf)
+
+
+
+```
+
+#
+#
+### Steelhead - Winter Covariate Table 
+
+```{r mic-tab-steelhead-winter}
+mine_tab_df = mic_dat_resto$Winter %>%
+  mutate(`Percent 0-value` = 1 - perc_non0) %>%
+  group_by(MetricCategory) %>%
+  slice(1:10) %>%
+  select(Category = MetricCategory,
+         Name,
+         Abbrv = Metric,
+         MIC = MIC.x,
+         `Percent missing` = perc_NA,
+         `Percent 0-value`,
+         `Resto inform` = RestoInform)
+
+panderOptions("graph.fontsize", 10)
+mine_tab_df %>%
+#    select(-selected) %>%
+  pander(digits = 3,
+         caption = 'MIC statistic for top metrics within each habitat category, sorted by category and MIC value. The percent of records that were missing or zero is shown for each habitat metric. Additionally, each covariate is designated as informative (1) or not informative (0) for restoration design.',
+#           emphasize.strong.rows = which(mine_tab_df$selected),
+split.tables = Inf)
+
+
+
+```
+
+#
+#
+### Chinook - Winter Covariate Table 
+
+```{r mic-tab-chinook-winter}
+mine_tab_df = mic_dat_resto$Winter %>%
+  mutate(`Percent 0-value` = 1 - perc_non0) %>%
+  group_by(MetricCategory) %>%
+  slice(1:10) %>%
+  select(Category = MetricCategory,
+         Name,
+         Abbrv = Metric,
+         MIC = MIC.y,
+         `Percent missing` = perc_NA,
+         `Percent 0-value`,
+         `Resto inform` = RestoInform)
+
+panderOptions("graph.fontsize", 10)
+mine_tab_df %>%
+#    select(-selected) %>%
+  pander(digits = 3,
+         caption = 'MIC statistic for top metrics within each habitat category, sorted by category and MIC value. The percent of records that were missing or zero is shown for each habitat metric. Additionally, each covariate is designated as informative (1) or not informative (0) for restoration design.',
+#           emphasize.strong.rows = which(mine_tab_df$selected),
+split.tables = Inf)
+
+
+
+```
