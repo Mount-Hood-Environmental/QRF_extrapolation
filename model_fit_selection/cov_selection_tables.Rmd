@@ -27,6 +27,7 @@ library(minerva)
 library(kableExtra)
 library(pander)
 
+
 # options for table formating with "kable()"
 options(knitr.kable.NA = '-')
 
@@ -36,6 +37,13 @@ options(knitr.kable.NA = '-')
 
 load("C:/Users/bolde/Documents/Git/QRF_extrapolation/data/mic_dat_resto.rda")
 load("C:/Users/bolde/Documents/Git/QRF_extrapolation/data/hab_cov_tbl_og.rda") #taken from Mike's UWW assessment
+#load("C:/Users/bolde/Documents/Git/QRF_extrapolation/data/corr_df.rda") #produced by export corr_df in mine_stats.R
+Dash_comp<-read.csv("C:/Users/bolde/Documents/Git/QRF_extrapolation/data/DASH_compat_cov.csv") # discussed and identified with MA,MR,BO
+
+mic_dat_resto = mic_dat_resto %>%
+  bind_rows() %>%
+  left_join(select(Dash_comp, Metric, DASH_comp), by = c("Metric")) %>%
+  split(.$dataset)
 
 ```
 
@@ -48,8 +56,6 @@ Starting with the current covariates included in each model.
 ### Original QRF Covariates
 
 ```{r cov-table}
-
-load("C:/Users/bolde/Documents/Git/QRF_extrapolation/data/hab_cov_tbl_og.rda") #taken from Mike's UWW assessment
 
 hab_cov_tbl %>%
   select(-Covariate) %>%
@@ -67,6 +73,7 @@ hab_cov_tbl %>%
 
 
 ```{r mic-tab-steelhead-summer-champ}
+
 load("C:/Users/bolde/Documents/Git/QRF_extrapolation/data/hab_cov_tbl_og.rda") #taken from Mike's UWW assessment
 
 hab_cov_tbl = hab_cov_tbl %>%
@@ -89,6 +96,7 @@ mine_tab_df = mic_dat_resto$Summer_CHaMP %>%
          `Percent missing` = perc_NA,
          `Percent 0-value`,
          `Resto inform` = RestoInform,
+         `DASH comp` = DASH_comp,
          `QRF_select` = Summer)
 
 panderOptions("graph.fontsize", 10)
@@ -119,6 +127,7 @@ mine_tab_df = mic_dat_resto$Summer_CHaMP %>%
          `Percent missing` = perc_NA,
          `Percent 0-value`,
          `Resto inform` = RestoInform,
+         `DASH comp` = DASH_comp,
          `QRF_select` = Summer)
 
 panderOptions("graph.fontsize", 10)
@@ -148,7 +157,8 @@ mine_tab_df = mic_dat_resto$Summer_DASH %>%
          MIC = MIC.x,
          `Percent missing` = perc_NA,
          `Percent 0-value`,
-         `Resto inform` = RestoInform,
+         `Resto inform` = RestoInform,  
+         `DASH comp` = DASH_comp,
          `QRF_select` = Summer)
 
 panderOptions("graph.fontsize", 10)
@@ -179,6 +189,7 @@ mine_tab_df = mic_dat_resto$Summer_DASH %>%
          `Percent missing` = perc_NA,
          `Percent 0-value`,
          `Resto inform` = RestoInform,
+         `DASH comp` = DASH_comp,
          `QRF_select` = Summer)
 
 panderOptions("graph.fontsize", 10)
@@ -209,6 +220,7 @@ mine_tab_df = mic_dat_resto$Redds %>%
          `Percent missing` = perc_NA,
          `Percent 0-value`,
          `Resto inform` = RestoInform,
+         `DASH comp` = DASH_comp,
          `QRF_select` = Redds)
 
 panderOptions("graph.fontsize", 10)
@@ -239,6 +251,7 @@ mine_tab_df = mic_dat_resto$Redds %>%
          `Percent missing` = perc_NA,
          `Percent 0-value`,
          `Resto inform` = RestoInform,
+         `DASH comp` = DASH_comp,
          `QRF_select` = Redds)
 
 panderOptions("graph.fontsize", 10)
@@ -268,7 +281,8 @@ mine_tab_df = mic_dat_resto$Winter %>%
          MIC = MIC.x,
          `Percent missing` = perc_NA,
          `Percent 0-value`,
-         `Resto inform` = RestoInform,
+         `Resto inform` = RestoInform,    
+         `DASH comp` = DASH_comp,
          `QRF_select` = Winter)
 
 panderOptions("graph.fontsize", 10)
@@ -298,7 +312,8 @@ mine_tab_df = mic_dat_resto$Winter %>%
          MIC = MIC.y,
          `Percent missing` = perc_NA,
          `Percent 0-value`,
-         `Resto inform` = RestoInform,
+         `Resto inform` = RestoInform, 
+         `DASH comp` = DASH_comp,
          `QRF_select` = Winter)
 
 panderOptions("graph.fontsize", 10)
