@@ -106,7 +106,7 @@ mic_diff = left_join(stlhd,chnk[,c(1:4,12)], by = c("MetricCategory","Metric","d
   split(.$dataset)
 
 
-#Generate figures - DEPRECATED
+#Generate figures - DEPRECATED-------------
 mic_diff_s = mic_diff %>%
   map(.f = function(x) {
     x %>%
@@ -180,7 +180,7 @@ save(mic_dat_resto, file = "data/mic_dat_resto.rda")
 
 #Add this info into a figure
 
-mic_resto_s = mic_dat_resto %>%
+mic_resto_p = mic_dat_resto %>%
   map(.f = function(x) {
     x %>%
       mutate_at(vars(Metric, Name),
@@ -196,12 +196,13 @@ mic_resto_s = mic_dat_resto %>%
                    fill = MIC_diff_direction), color = "gray15") +
       scale_fill_manual(labels = c("Chinook MIC higher", "Chinook MIC lower", "Not informative", "Informative for restoration"),
                         values = c("chartreuse3", "firebrick3", "gray50","cornflowerblue"))+
-      facet_wrap(~MetricCategory, scales = 'free_y') +
+      facet_wrap(~MetricCategory, scales = 'free_y', ncol = 2) +
       coord_flip() +
       #scale_fill_brewer(palette = 'Set3',
       #                  guide = guide_legend(nrow = 2)) +
       theme(legend.position = 'bottom',
             legend.title = element_blank(),
+            legend.text = element_text(size = 8),
             axis.text = element_text(size = 6)) +
       labs(title = unique(x$dataset),
            fill = 'Category',
@@ -210,11 +211,13 @@ mic_resto_s = mic_dat_resto %>%
   })
 
 pdf(paste0('output/figures/MIC_resto.pdf'),
-    width = 16,
-    height = 9)
+    width = 7.5,
+    height = 15)
 
-for(i in 1:length(mic_resto_s)) {
-  print(mic_resto_s[[i]])
+for(i in 1:length(mic_resto_p)) {
+  print(mic_resto_p[[i]])
 }
 
 dev.off()
+
+save(mic_resto_p,file = "output/figures/MIC_resto.rda")

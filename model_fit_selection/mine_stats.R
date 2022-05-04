@@ -26,16 +26,19 @@ source("R/estimate_MIC.r")
 #-----------------------------------------------------------------
 # determine which set of fish/habitat data to use
 # summmer juveniles with CHaMP metrics
-load(paste0(in_path,"fh_sum_champ_2017.rda"))
+#load(paste0(in_path,"fh_sum_champ_2017.rda"))
+load(paste0(in_path,"fh_sum_champ_2017_0522.rda"))
 
 # summer juveniles with DASH metrics
 load(paste0(in_path,"fh_sum_dash_2014_17.rda"))
 
 # redds
-load(paste0(in_path,"fh_redds_champ_2017.rda"))
+#load(paste0(in_path,"fh_redds_champ_2017.rda"))
+load(paste0(in_path,"fh_redds_champ_2017_0522.rda"))
 
 # winter juveniles
-load(paste0(in_path,"fh_win_champ_2017.rda"))
+#load(paste0(in_path,"fh_win_champ_2017.rda"))
+load(paste0(in_path,"fh_win_champ_2017_0522.rda"))
 
 # combine all fish-habitat datasets into one list
 fish_hab_list = list('Redds' = fh_redds_champ_2017 %>%
@@ -115,7 +118,18 @@ hab_dict %<>%
               filter(ShortName == "FishCovNone") %>%
               mutate(ShortName = "FishCovSome",
                      Name = "Fish Cover: Some Cover",
-                     DescriptiveText = "Percent of wetted area with some form of fish cover"))
+                     DescriptiveText = "Percent of wetted area with some form of fish cover")) %>%
+  #Add LW density
+  rbind(c("LWdens",
+                     "Large Wood Density",
+                    NA,
+                     "Channel Unit",
+                     "Large Wood per sq meter",
+                     "square-meter",
+                     "m2",
+                     "Cover",
+                     NA)
+            )
 
 #-----------------------------------------------------------------
 # clip Chinook data to Chinook domain
@@ -616,4 +630,4 @@ for(i in 1:nrow(hab_corr)) {
 #-----------------------------------------------------------------
 # Output .rda of potential covs with MINE statistics
 #-----------------------------------------------------------------
-save(mine_plot_list, file = "model_fit_selection/data/MINE_stats.rda")
+save(mine_plot_list, file = "data/MINE_stats.rda")

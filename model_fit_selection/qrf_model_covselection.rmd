@@ -18,13 +18,29 @@ lapply(packages, require, character.only=TRUE)
 
 ```{r load figure data, echo=FALSE}
 load(here("output/figures/MIC_resto.rda"))
+load(here("data/mic_dat_resto.rda"))
 ```
 
 ## Winter model
 
 The winter model has the fewest potential covariates and the least variation in maximal information coefficients (MIC) across species, so it should have the most straightforward selection process. Any selection of covariates should be able to be applied for both species.  
 
+Covariates in the current QRF winter model are:
+
 ```{r winterplot, echo=FALSE, fig.height= 8}
+wintcov = c('Tier1',
+                                       'Discharge',
+                                       'CU_Freq',
+                                       'Sin',
+                                       'SubD50',
+                                       'DpthResid',
+                                       'FishCovSome',
+                                       'DistPrin1',
+                                       'LWCount',
+                                       'SubEstSandFines')
+
+wintcovs = 
+
 mic_resto_p$Winter
 ```
 
