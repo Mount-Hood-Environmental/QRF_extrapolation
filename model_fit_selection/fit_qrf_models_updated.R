@@ -12,6 +12,7 @@ library(janitor)
 library(magrittr)
 library(sf)
 library(quantregForest)
+library(readxl)
 
 # set default theme for ggplot
 theme_set(theme_bw())
@@ -291,150 +292,60 @@ for(mod_choice in c('juv_summer',
   #-----------------------------------------------------------------
   # select which habitat metrics to use in QRF model
   #-----------------------------------------------------------------
+
 if(mod_choice == "juv_summer" & species_choice == "Chinook") {
-  sel_hab_mets = crossing(Species = c('Chinook'),
-                          Metric = c('CU_Freq',
-                                     'SlowWater_Pct',
-                                     'BfWdth_CV',
-                                     'DpthWet_SD',
-                                     'WetWDRat_Avg',
-                                     'Sin',
-                                     'WetBraid',
-                                     'FishCovSome',
-                                     'UcutLgth_Pct',
-                                     'DistPrin1',
-                                     'RipCovBigTree',
-                                     'RipCovGrnd',
-                                     'WetSC_Pct',
-                                     'WetWdth_Avg',
-                                     'Grad',
-                                     'SubD50',
-                                     'SubLT6',
-                                     'SubEstCbl',
-                                     'avg_aug_temp',
-                                     'Cond',
-                                     # 'LWVol_Bf',
-                                     'LWVol_BfSlow'))
+  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+                             range = cell_cols("A:D"),
+                             sheet = c("CHaMP_Summer_Chinook"))
+  sel_hab_mets = crossing(Species = "Chinook",
+                          mod_cov_select %>%
+                            filter(QRF2_trimmed == 1) %>%
+                            select(Metric))
+  
 }else if(mod_choice == "juv_summer" & species_choice == "Steelhead") {
-  sel_hab_mets = crossing(Species = c('Steelhead'),
-                          Metric = c('CU_Freq',
-                                     'SlowWater_Pct',
-                                     'BfWdth_CV',
-                                     'DpthWet_SD',
-                                     'WetWDRat_Avg',
-                                     'Sin',
-                                     'WetBraid',
-                                     'FishCovSome',
-                                     'UcutLgth_Pct',
-                                     'DistPrin1',
-                                     'RipCovBigTree',
-                                     'RipCovGrnd',
-                                     'WetSC_Pct',
-                                     'WetWdth_Avg',
-                                     'Grad',
-                                     'SubD50',
-                                     'SubLT6',
-                                     'SubEstCbl',
-                                     'avg_aug_temp',
-                                     'Cond',
-                                     # 'LWVol_Bf',
-                                     'LWVol_BfSlow'))
-}else if(mod_choice == "juv_summer_dash" & species_choice == "Chinook") {
-  sel_hab_mets = crossing(Species = c('Chinook'),
-                          Metric = c('CU_Freq',
-                                     # 'FstTurb_Freq',
-                                     # 'FstNT_Freq',
-                                     # 'WetWdth_CV', # nope
-                                     'WetBraid',
-                                     'Sin_CL',
-                                     # 'Sin',
-                                     'UcutLgth_Pct',
-                                     'FishCovSome',
-                                     'WetSC_Pct',
-                                     'WetWdth_Int', #area of wetted polygon divided by centerline length, not available for >= 2019?
-                                     'Q', # try MeanU instead
-                                     'SubEstGrvl',
-                                     'avg_aug_temp',
-                                     # 'LWFreq_Wet',
-                                     # 'LWVol_WetFstTurb',
-                                     'LWVol_Wet',
-                                     'SlowWater_Pct')) #,
-  # 'NatPrin1',
-  # 'DistPrin1'))
-}else if(mod_choice == "juv_summer_dash" & species_choice == "Steelhead") {
-  sel_hab_mets = crossing(Species = c('Steelhead'),
-                          Metric = c('CU_Freq',
-                                     # 'FstTurb_Freq',
-                                     # 'FstNT_Freq',
-                                     # 'WetWdth_CV', # nope
-                                     'WetBraid',
-                                     'Sin_CL',
-                                     # 'Sin',
-                                     'UcutLgth_Pct',
-                                     'FishCovSome',
-                                     'WetSC_Pct',
-                                     'WetWdth_Int', #area of wetted polygon divided by centerline length, not available for >= 2019?
-                                     'Q', # try MeanU instead
-                                     'SubEstGrvl',
-                                     'avg_aug_temp',
-                                     # 'LWFreq_Wet',
-                                     # 'LWVol_WetFstTurb',
-                                     'LWVol_Wet',
-                                     'SlowWater_Pct')) #,
-  # 'NatPrin1',
-  # 'DistPrin1'))
+  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+                             range = cell_cols("A:D"),
+                             sheet = c("CHaMP_Summer_Steelhead"))
+  sel_hab_mets = crossing(Species = "Chinook",
+                          mod_cov_select %>%
+                            filter(QRF2_trimmed == 1) %>%
+                            select(Metric))
+ 
 }else if(mod_choice == "redds" & species_choice == "Chinook") {
-  sel_hab_mets = crossing(Species = c('Chinook'),
-                          Metric = c('SubEstGrvl',
-                                     'SubLT2',
-                                     'CU_Freq',
-                                     "DetrendElev_SD",
-                                     "FishCovSome",
-                                     "UcutLgth_Pct",
-                                     "RipCovCanSome",
-                                     "Q",
-                                     "DistPrin1",
-                                     "PoolResidDpth",
-                                     "avg_aug_temp",
-                                     "LWFreq_Wet"))
+  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+                             range = cell_cols("A:D"),
+                             sheet = c("CHaMP_Redds_Chinook"))
+  sel_hab_mets = crossing(Species = "Chinook",
+                          mod_cov_select %>%
+                            filter(QRF2_trimmed == 1) %>%
+                            select(Metric))
+  
 }else if(mod_choice == "redds" & species_choice == "Steelhead") {
-  sel_hab_mets = crossing(Species = c('Steelhead'),
-                          Metric = c('SubEstGrvl',
-                                     'SubLT2',
-                                     'CU_Freq',
-                                     "DetrendElev_SD",
-                                     "FishCovSome",
-                                     "UcutLgth_Pct",
-                                     "RipCovCanSome",
-                                     "Q",
-                                     "DistPrin1",
-                                     "PoolResidDpth",
-                                     "avg_aug_temp",
-                                     "LWFreq_Wet"))
+  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+                             range = cell_cols("A:D"),
+                             sheet = c("CHaMP_Redds_Steelhead"))
+  sel_hab_mets = crossing(Species = "Chinook",
+                          mod_cov_select %>%
+                            filter(QRF2_trimmed == 1) %>%
+                            select(Metric))
+  
 }else if(mod_choice == "juv_winter" & species_choice == "Chinook") {
-  sel_hab_mets = crossing(Species = c('Chinook'),
-                          Metric = c('Tier1',
-                                     'Discharge',
-                                     'CU_Freq',
-                                     'Sin',
-                                     'SubD50',
-                                     'DpthResid',
-                                     'FishCovSome',
-                                     'DistPrin1',
-                                     'LWCount',
-                                     'SubEstSandFines'))
+  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+                             range = cell_cols("A:D"),
+                             sheet = c("CHaMP_Winter_Chinook"))
+  sel_hab_mets = crossing(Species = "Chinook",
+                          mod_cov_select %>%
+                            filter(QRF2_trimmed == 1) %>%
+                            select(Metric))
+  
 }else if(mod_choice == "juv_winter" & species_choice == "Steelhead") {
-  sel_hab_mets = crossing(Species = c('Steelhead'),
-                          Metric = c('Tier1',
-                                     'Discharge',
-                                     'CU_Freq',
-                                     'Sin',
-                                     'SubD50',
-                                     'DpthResid',
-                                     'FishCovSome',
-                                     'DistPrin1',
-                                     'LWCount',
-                                     'SubEstSandFines'))
+  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+                             range = cell_cols("A:D"),
+                             sheet = c("CHaMP_Winter_Steelhead"))
+  sel_hab_mets = crossing(Species = "Chinook",
+                          mod_cov_select %>%
+                            filter(QRF2_trimmed == 1) %>%
+                            select(Metric))
 }  
   
   #-----------------------------------------------------------------
