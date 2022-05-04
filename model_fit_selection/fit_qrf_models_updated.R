@@ -33,7 +33,7 @@ mod_choice = c('juv_summer',
                'juv_winter')[1]
 
 species_choice = c('Chinook',
-               'Steelhead')[1]
+               'Steelhead')[2]
 
 for(mod_choice in c('juv_summer',
                     'juv_summer_dash',
@@ -292,57 +292,60 @@ for(mod_choice in c('juv_summer',
   #-----------------------------------------------------------------
   # select which habitat metrics to use in QRF model
   #-----------------------------------------------------------------
+read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
+          range = cell_cols("A:D"),
+          sheet = c("CHaMP_Summer_Chinook"))
 
 if(mod_choice == "juv_summer" & species_choice == "Chinook") {
-  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
                              range = cell_cols("A:D"),
                              sheet = c("CHaMP_Summer_Chinook"))
-  sel_hab_mets = crossing(Species = "Chinook",
+  sel_hab_mets = crossing(Species = species_choice,
                           mod_cov_select %>%
                             filter(QRF2_trimmed == 1) %>%
                             select(Metric))
   
 }else if(mod_choice == "juv_summer" & species_choice == "Steelhead") {
-  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
                              range = cell_cols("A:D"),
                              sheet = c("CHaMP_Summer_Steelhead"))
-  sel_hab_mets = crossing(Species = "Chinook",
+  sel_hab_mets = crossing(Species = species_choice,
                           mod_cov_select %>%
                             filter(QRF2_trimmed == 1) %>%
                             select(Metric))
  
 }else if(mod_choice == "redds" & species_choice == "Chinook") {
-  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
                              range = cell_cols("A:D"),
                              sheet = c("CHaMP_Redds_Chinook"))
-  sel_hab_mets = crossing(Species = "Chinook",
+  sel_hab_mets = crossing(Species = species_choice,
                           mod_cov_select %>%
                             filter(QRF2_trimmed == 1) %>%
                             select(Metric))
   
 }else if(mod_choice == "redds" & species_choice == "Steelhead") {
-  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
                              range = cell_cols("A:D"),
                              sheet = c("CHaMP_Redds_Steelhead"))
-  sel_hab_mets = crossing(Species = "Chinook",
+  sel_hab_mets = crossing(Species = species_choice,
                           mod_cov_select %>%
                             filter(QRF2_trimmed == 1) %>%
                             select(Metric))
   
 }else if(mod_choice == "juv_winter" & species_choice == "Chinook") {
-  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
                              range = cell_cols("A:D"),
                              sheet = c("CHaMP_Winter_Chinook"))
-  sel_hab_mets = crossing(Species = "Chinook",
+  sel_hab_mets = crossing(Species = species_choice,
                           mod_cov_select %>%
                             filter(QRF2_trimmed == 1) %>%
                             select(Metric))
   
 }else if(mod_choice == "juv_winter" & species_choice == "Steelhead") {
-  mod_cov_select<-read_excel(paste0(in_path, "ModelCovSelected.xlsx"),
+  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
                              range = cell_cols("A:D"),
                              sheet = c("CHaMP_Winter_Steelhead"))
-  sel_hab_mets = crossing(Species = "Chinook",
+  sel_hab_mets = crossing(Species = species_choice,
                           mod_cov_select %>%
                             filter(QRF2_trimmed == 1) %>%
                             select(Metric))
