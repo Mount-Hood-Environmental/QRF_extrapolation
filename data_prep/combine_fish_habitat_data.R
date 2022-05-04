@@ -251,7 +251,7 @@ save(fh_redds_champ_2017, file = "data/fh_redds_champ_2017_0522.rda")
 load(paste0(in_path,"fish_win_est.rda"))
 load(paste0(in_path,"champ_cu.rda"))
 load(paste0(in_path,"champ_site_2011_17.rda"))
-dash_covs = read_csv("data/DASH_compat_cov.csv")
+#dash_covs = read_csv("data/DASH_compat_cov.csv")
 
 
 # focus on latest channel unit data
@@ -302,7 +302,8 @@ cu_df = champ_cu %>%
   mutate(FishCovSome = 100 - FishCovNone,
          UcutArea_Pct = UcutArea_Pct * 100) %>%
   # add cobble and boulder substrate together
-  mutate(SubEstCandBldr = SubEstCbl + SubEstBldr)
+  mutate(SubEstCandBldr = SubEstCbl + SubEstBldr) %>%
+  mutate(LWDens = LWCount/AreaTotal)
 
 
 fh_win_champ_2017 = fish_win_est %>%
@@ -323,3 +324,11 @@ save(fh_win_champ_2017, file = "data/fh_win_champ_2017_0522.rda")
 #usethis::use_data(fh_win_champ_2017,
 #                  version = 2,
 #                  overwrite = T)
+
+
+
+cu_fish_summary = fish_win_est %>%
+  group_by(Site) %>%
+  summarise(cu_count = length(unique(ChUnitNumber))) %>%
+  left_join( dat <- champ_site_2011_17[,c(2,145)]) %>%
+  mutate(cu_diff = ChnlUnitTotal_Ct - cu_count)

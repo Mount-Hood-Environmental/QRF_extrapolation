@@ -28,19 +28,6 @@ The winter model has the fewest potential covariates and the least variation in 
 Covariates in the current QRF winter model are:
 
 ```{r winterplot, echo=FALSE, fig.height= 8}
-wintcov = c('Tier1',
-                                       'Discharge',
-                                       'CU_Freq',
-                                       'Sin',
-                                       'SubD50',
-                                       'DpthResid',
-                                       'FishCovSome',
-                                       'DistPrin1',
-                                       'LWCount',
-                                       'SubEstSandFines')
-
-wintcovs = 
-
 mic_resto_p$Winter
 ```
 
