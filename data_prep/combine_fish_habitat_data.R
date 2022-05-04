@@ -32,7 +32,9 @@ load(paste0(in_path,"champ_temps.rda"))
 champ_site_2011_17 <- champ_site_2011_17 %>%
   left_join( champ_cu <- champ_cu %>%
                group_by(Site, VisitID) %>%
-               summarise(Dpth_Max = max(Dpth_Max, na.rm =T)) %>%
+               mutate(Dpth_Max_Pool = ifelse(
+                 Tier2 %in% c("Scour Pool", "Plunge Pool", "Dam Pool", "Beaver Pool"), Dpth_Max, NA)) %>%
+               summarise(Dpth_Max_Avg = mean(Dpth_Max_Pool, na.rm =T)) %>%
                na_if(-Inf)
              )
   
@@ -216,11 +218,13 @@ fh_redds_champ_2017 = redds_site_max %>%
   mutate(fish_dens = maxReddsPerKm / 1000) %>%
   left_join( champ_cu <- champ_cu %>%
                group_by(Site, VisitID) %>%
-               summarise(Dpth_Max = max(Dpth_Max, na.rm=T)) %>%
+               mutate(Dpth_Max_Pool = ifelse(
+                 Tier2 %in% c("Scour Pool", "Plunge Pool", "Dam Pool", "Beaver Pool"), Dpth_Max, NA)) %>%
+               summarise(Dpth_Max_Avg = mean(Dpth_Max_Pool, na.rm=T)) %>%
                na_if(-Inf) %>%
                ungroup() %>%
                group_by(Site) %>%
-               summarise(Dpth_Max = mean(Dpth_Max, na.rm=T))
+               summarise(Dpth_Max_Avg = mean(Dpth_Max_Avg, na.rm=T))
   )
   
 

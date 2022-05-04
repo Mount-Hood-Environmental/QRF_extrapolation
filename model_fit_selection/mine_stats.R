@@ -129,7 +129,16 @@ hab_dict %<>%
                      "m2",
                      "Cover",
                      NA)
-            )
+            ) %>%
+  rbind(c("Dpth_Max_Avg",
+          "Avg max pool depth",
+          NA,
+          "Channel Unit",
+          "Mean of Max Pool Depths",
+          "Meter",
+          "m",
+          "Size",
+          NA))
 
 #-----------------------------------------------------------------
 # clip Chinook data to Chinook domain
@@ -250,7 +259,8 @@ poss_hab_mets = fish_hab_list %>%
                              "FishCovAll",
                              "SubEstCandBldr",
                              "UcutLgth",
-                             "LWcnt_Wet")
+                             "LWcnt_Wet",
+                             "Dpth_Max_Avg")
                               )) %>%
   mutate(Name = if_else(is.na(Name),
                         ShortName,
@@ -545,7 +555,7 @@ hab_corr = tibble(dataset = names(hab_data_list),
                                 method = 'spearman')
                         }),
          corr_mat = map(cor_mat,
-                        .f = as_cordf),
+                       .f = as_cordf),
          catg_cor = map2(hab_data,
                          metrics,
                          .f = function(x, y) {
@@ -598,7 +608,7 @@ corr_df %>%
 
 # print correlation plots for all metrics
 for(i in 1:nrow(hab_corr)) {
-  pdf(paste0(out_path,'corr_plot_all_', hab_corr$dataset[i], '.pdf'),
+  pdf(paste0('output/figures/corr_plot_all_', hab_corr$dataset[i], '.pdf'),
       width = 10,
       height = 10)
 
@@ -614,7 +624,7 @@ for(i in 1:nrow(hab_corr)) {
 
 # print correlation plots by metric category
 for(i in 1:nrow(hab_corr)) {
-  pdf(paste0(out_path,'corr_plot_catg_', hab_corr$dataset[i], '.pdf'),
+  pdf(paste0('output/figures/corr_plot_catg_', hab_corr$dataset[i], '.pdf'),
       width = 8,
       height = 8)
   hab_corr$catg_cor[[i]][!sapply(hab_corr$catg_cor[[i]], is.null)] %>%
@@ -626,8 +636,9 @@ for(i in 1:nrow(hab_corr)) {
 }
 
 
-
-
+#---------- Correlations by model covariates
+win_corr = correlate(fh_win_champ_2017[,c(30:50,54:55,61,64:72)])
+write_csv(win_corr, "output/correlations_winter.csv")
 #-----------------------------------------------------------------
 # Output .rda of potential covs with MINE statistics
 #-----------------------------------------------------------------
