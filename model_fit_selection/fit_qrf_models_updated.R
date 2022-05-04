@@ -66,58 +66,8 @@ for(mod_choice in c('juv_summer',
     
   }
   
-  # and the appropriate habitat dictionary to go with it
-  load(paste0(in_path, "hab_dict_2017.rda"))
-  if(mod_choice == "juv_winter") {
-    hab_dict = hab_dict_2017 %>%
-      bind_rows(hab_dict_2017 %>%
-                  filter(ShortName == 'Q') %>%
-                  mutate(ShortName = 'Discharge')) %>%
-      filter(ShortName != "DpthThlwgExit" |
-               (ShortName == "DpthThlwgExit" & MetricGroupName == 'Channel Unit')) %>%
-      bind_rows(tibble(ShortName = 'LWCount',
-                       Name = 'Large Wood Count',
-                       MetricGroupName = 'Channel Unit',
-                       DescriptiveText = 'Total number of qualifying pieces of large wood',
-                       UnitOfMeasure = 'count',
-                       MetricCategory = 'Wood'))
-  } else {
-    hab_dict = hab_dict_2017
-    # change some of the descriptions for large wood volume
-    hab_dict %<>%
-      mutate(DescriptiveText = if_else(grepl("^LWVol", ShortName),
-                                       paste0(str_remove(DescriptiveText, ".$"),
-                                              ", scaled by site length."),
-                                       DescriptiveText),
-             UnitOfMeasure = if_else(grepl("^LWVol", ShortName),
-                                     paste0(UnitOfMeasure,
-                                            " per 100 meters"),
-                                     UnitOfMeasure),
-             UnitOfMeasureAbbrv = if_else(grepl("^LWVol", ShortName),
-                                          paste0(UnitOfMeasureAbbrv,
-                                                 "/100m"),
-                                          UnitOfMeasureAbbrv)) %>%
-      # add description for some riparian canopy
-      bind_rows(hab_dict_2017 %>%
-                  filter(ShortName == "RipCovCanNone") %>%
-                  mutate(ShortName = "RipCovCanSome",
-                         Name = "Riparian Cover: Some Canopy",
-                         DescriptiveText = "Percent of riparian canopy with some vegetation.")) %>%
-      # add description for no riparian ground cover
-      bind_rows(hab_dict_2017 %>%
-                  filter(ShortName == "RipCovGrnd") %>%
-                  mutate(ShortName = "RipCovGrndNone",
-                         Name = "Riparian Cover: No Ground",
-                         DescriptiveText = "Percent of groundcover with no vegetation."))
-  }
-  
-  hab_dict %<>%
-    # add description for some fish cover
-    bind_rows(hab_dict_2017 %>%
-                filter(ShortName == "FishCovNone") %>%
-                mutate(ShortName = "FishCovSome",
-                       Name = "Fish Cover: Some Cover",
-                       DescriptiveText = "Percent of wetted area with some form of fish cover"))
+#load habitat dictionary
+data("hab_dict.rda")
   
   # all the related habitat data
   load(paste0(in_path, "champ_site_2011_17.rda"))
