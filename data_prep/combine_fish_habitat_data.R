@@ -266,15 +266,14 @@ cu_df = champ_cu %>%
                         'Fast-Turbulent' = 'Riffle',
                         'Slow/Pool' = 'Pool',
                         'Small Side Channel' = 'SSC')) %>%
+  #Tier1 = fct_explicit_na(Tier1) %>%
   left_join(champ_site_2011_17 %>%
               filter(VisitObjective == 'Primary Visit',
                      VisitStatus == 'Released to Public') %>%
-              #by = c("Site","VisitID")) %>%
-              #select(Watershed, VisitYear,
-              #       SampleDate,
-              #       Channel_Type, 
-              #       FishCovNone,
-              #       c(dash_covs[dash_covs$DASH_comp==1,]$Metric[-c(10,19,34,35)])) %>%
+              filter(!Watershed %in% c('Big-Navarro-Garcia (CA)',
+                                       'CHaMP Training',
+                                       'Region 17')) %>%
+
               select(Site, Watershed, VisitID, VisitYear,
                      SampleDate,
                      Channel_Type, Elev_M, CUMDRAINAG, 
@@ -282,7 +281,6 @@ cu_df = champ_cu %>%
                      DistPrin1,
                      NatPrin1,
                      NatPrin2,
-                     Discharge = Q,
                      Lgth_Wet,
                      Area_Wet,
                      CU_Freq,
@@ -314,7 +312,7 @@ fh_win_champ_2017 = fish_win_est %>%
   rename(fishSampDate = SampleDate,
          Tier1_fish = Tier1,
          Tier2_fish = Tier2,
-         Discharge_fish = Q) %>%
+         Q = Discharge) %>%
   select(-Stream) %>%
   inner_join(cu_df %>%
                rename(habSampDate = SampleDate) %>%
