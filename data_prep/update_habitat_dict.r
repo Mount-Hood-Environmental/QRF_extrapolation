@@ -53,6 +53,16 @@ hab_dict %<>%
           "square-meter",
           "m2",
           "Cover",
+          NA)) %>%
+  #Add Average thalweg depth
+  rbind(c("DpthThlwg_Avg",
+          "Average Thalweg Depth",
+          NA,
+          NA,
+          "Average Thalweg Depth, meters",
+          "Meter",
+          "m",
+          "Size",
           NA))
 
 

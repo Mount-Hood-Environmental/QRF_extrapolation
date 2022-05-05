@@ -229,9 +229,7 @@ cov_choice = c('QRF2',
 load(paste0(out_path,'modelFit/',cov_choice,'_', mod_choice,'_', species_choice,'.rda'))
 
 ###
-rel_imp_p = qrf_mod %>%
-  map(.f = function(x) {
-    as_tibble(x$importance,
+rel_imp_p = as_tibble(qrf_mod$importance,
               rownames = 'Metric') %>%
       mutate(relImp = IncNodePurity / max(IncNodePurity)) %>%
       left_join(hab_dict %>%
@@ -248,7 +246,6 @@ rel_imp_p = qrf_mod %>%
       labs(x = 'Metric',
            y = 'Relative Importance')
     
-  })
 # add species name to each plot
 for(i in 1:length(rel_imp_p)) {
   rel_imp_p[[i]] = rel_imp_p[[i]] +
