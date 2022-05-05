@@ -23,12 +23,13 @@ out_path = 'S:/main/data/qrf/gitrepo_data/output/'
 
 #load necessary functions (for now, will remove when package is available)
 source("R/impute_missing_data.r")
+source("R/plot_partial_dependence.r")
 
 #Load in fish-habitat data
 data("fish_hab_list")
 
 #-----------------------------------------------------------------
-# which QRF model to fit? 
+# which life stage, species, and covariates to fit? 
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'juv_summer_dash',
@@ -36,261 +37,183 @@ mod_choice = c('juv_summer',
                'juv_winter')[1]
 
 species_choice = c('Chinook',
-               'Steelhead')[2]
+               'Steelhead')[1]
 
-for(mod_choice in c('juv_summer',
-                    'juv_summer_dash',
-                    'redds',
-                    'juv_winter')) {
-  
-  #-----------------------------------------------------------------
-  # determine which set of fish/habitat data to use
-  if(mod_choice == "juv_summer") {
-    load(paste0(in_path, "fh_sum_champ_2017.rda"))
-    fish_hab = fh_sum_champ_2017 %>%
-      mutate_at(vars(Watershed, Year),
-                list(as.factor))
-  } else if(mod_choice == "juv_summer_dash") {
-    load(paste0(in_path, "fh_sum_dash_2014_17.rda"))
-    fish_hab = fh_sum_dash_2014_17 %>%
-      mutate_at(vars(Watershed, Year),
-                list(as.factor))
-  } else if(mod_choice == "redds") {
-    load(paste0(in_path, "fh_redds_champ_2017.rda"))
-    fish_hab = fh_redds_champ_2017 %>%
-      mutate_at(vars(Watershed),
-                list(as.factor))
-  } else if(mod_choice == "juv_winter") {
-    load(paste0(in_path, "fh_win_champ_2017.rda"))
-    fish_hab = fh_win_champ_2017 %>%
-      filter(!is.na(fish_dens)) %>%
-      mutate_at(vars(Watershed, Year, Tier1),
-                list(as.factor))
-    
-  }
-  
+cov_choice = c("QRF2",
+               "QRF2_trimmed")[2]
+
+#-----------------------------------------------------------------
+# determine which set of fish/habitat data to use
+if(mod_choice == "juv_summer") {
+    fish_hab = fish_hab_list$Summer_CHaMP %>%
+    filter(Species == species_choice)
+} else if(mod_choice == "juv_summer_dash") {
+  fish_hab = fish_hab_list$Summer_DASH %>%
+    filter(Species == species_choice)
+} else if(mod_choice == "redds") {
+  fish_hab = fish_hab_list$Redds %>%
+    filter(Species == species_choice)
+} else if(mod_choice == "juv_winter") {
+  fish_hab = fish_hab_list$Winter %>%
+    filter(Species == species_choice)
+}
+
 #load habitat dictionary
 data("hab_dict")
-  
-  #-----------------------------------------------------------------
-  # clip Chinook data to Chinook domain
-  # all winter sites within Chinook domain by design
-  if(mod_choice != "juv_winter") {
-    load(paste0(in_path, "rch_200.rda"))
-    load(paste0(in_path, "champ_site_rch.rda"))
-    
-    chnk_sites = champ_site_rch %>%
-      inner_join(rch_200 %>%
-                   select(UniqueID, chnk)) %>%
-      filter(chnk) %>%
-      pull(Site) %>%
-      as.character()
-    
-    # add Big Springs and Little Springs sites in the Lemhi
-    chnk_sites = c(chnk_sites,
-                   hab_data %>%
-                     filter(grepl('Big0Springs', Site) | grepl('Little0Springs', Site)) %>%
-                     pull(Site) %>%
-                     unique()) %>%
-      unique()
-    
-    
-    # only keep Chinook data from sites in Chinook domain
-    fish_hab %<>%
-      filter(Species == 'Steelhead' |
-               (Species == 'Chinook' & (Site %in% chnk_sites | fish_dens > 0))) 
-    
-  }
-}
-  #-----------------------------------------------------------------
-  # select which habitat metrics to use in QRF model
-  #-----------------------------------------------------------------
-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
-          range = cell_cols("A:D"),
-          sheet = c("CHaMP_Summer_Chinook"))
-
-if(mod_choice == "juv_summer" & species_choice == "Chinook") {
-  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
-                             range = cell_cols("A:D"),
-                             sheet = c("CHaMP_Summer_Chinook"))
-  sel_hab_mets = crossing(Species = species_choice,
-                          mod_cov_select %>%
-                            filter(QRF2_trimmed == 1) %>%
-                            select(Metric))
-  
-}else if(mod_choice == "juv_summer" & species_choice == "Steelhead") {
-  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
-                             range = cell_cols("A:D"),
-                             sheet = c("CHaMP_Summer_Steelhead"))
-  sel_hab_mets = crossing(Species = species_choice,
-                          mod_cov_select %>%
-                            filter(QRF2_trimmed == 1) %>%
-                            select(Metric))
  
-}else if(mod_choice == "redds" & species_choice == "Chinook") {
-  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
-                             range = cell_cols("A:D"),
-                             sheet = c("CHaMP_Redds_Chinook"))
-  sel_hab_mets = crossing(Species = species_choice,
-                          mod_cov_select %>%
-                            filter(QRF2_trimmed == 1) %>%
-                            select(Metric))
+#-----------------------------------------------------------------
+# Not sure if we need to do this. Was this included in the previous 
+# data manip?
+if(mod_choice != "juv_winter") {
+  load(paste0(in_path, "rch_200.rda"))
+  load(paste0(in_path, "champ_site_rch.rda"))
   
-}else if(mod_choice == "redds" & species_choice == "Steelhead") {
-  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
-                             range = cell_cols("A:D"),
-                             sheet = c("CHaMP_Redds_Steelhead"))
-  sel_hab_mets = crossing(Species = species_choice,
-                          mod_cov_select %>%
-                            filter(QRF2_trimmed == 1) %>%
-                            select(Metric))
+  chnk_sites = champ_site_rch %>%
+    inner_join(rch_200 %>%
+                 select(UniqueID, chnk)) %>%
+    filter(chnk) %>%
+    pull(Site) %>%
+    as.character()
   
-}else if(mod_choice == "juv_winter" & species_choice == "Chinook") {
-  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
-                             range = cell_cols("A:D"),
-                             sheet = c("CHaMP_Winter_Chinook"))
-  sel_hab_mets = crossing(Species = species_choice,
-                          mod_cov_select %>%
-                            filter(QRF2_trimmed == 1) %>%
-                            select(Metric))
-  
-}else if(mod_choice == "juv_winter" & species_choice == "Steelhead") {
-  mod_cov_select<-read_xlsx(paste0(in_path, "ModelCovSelected.xlsx"),
-                             range = cell_cols("A:D"),
-                             sheet = c("CHaMP_Winter_Steelhead"))
-  sel_hab_mets = crossing(Species = species_choice,
-                          mod_cov_select %>%
-                            filter(QRF2_trimmed == 1) %>%
-                            select(Metric))
-}  
-  
-  #-----------------------------------------------------------------
-  # Fit QRF model
-  #-----------------------------------------------------------------
-  # impute missing data in fish / habitat dataset
-  
-  # impute missing habitat metrics once, for both species
-  all_covars = sel_hab_mets %>%
-    pull(Metric) %>%
+  # add Big Springs and Little Springs sites in the Lemhi
+  chnk_sites = c(chnk_sites,
+                 fish_hab %>%
+                   filter(grepl('Big0Springs', Site) | grepl('Little0Springs', Site)) %>%
+                   pull(Site) %>%
+                   unique()) %>%
     unique()
   
-  tabyl(all_covars %in% names(fish_hab))
-  all_covars[!all_covars %in% names(fish_hab)]
   
-  # how many data points per metric?
-  fish_hab %>%
-    group_by(Species) %>%
-    summarise(n_sites = n()) %>%
-    left_join(sel_hab_mets %>%
-                group_by(Species) %>%
-                summarise(n_mets = n_distinct(Metric))) %>%
-    mutate(pts_per_met = n_sites / n_mets)
+  # only keep Chinook data from sites in Chinook domain
+  fish_hab %<>%
+    filter(Species == 'Steelhead' |
+             (Species == 'Chinook' & (Site %in% chnk_sites | fish_dens > 0))) 
   
-  impute_covars = c('Watershed', 'Elev_M', 'Sin', 'Year', 'CUMDRAINAG')
-  if(mod_choice == "redds") {
-    impute_covars = impute_covars[!grepl('Year', impute_covars)]
-  }
-  if(mod_choice == "juv_summer_dash") {
-    impute_covars = str_replace(impute_covars, "^Sin$", "Sin_CL")
-  }
-  
-  qrf_mod_df = fish_hab %>%
-    mutate(id = 1:n()) %>%
-    select(id,
-           all_of(impute_covars),
-           all_of(all_covars)) %>%
-    impute_missing_data(covars = all_covars,
-                        impute_vars = impute_covars,
-                        method = 'missForest') %>%
+}
+
+#-----------------------------------------------------------------
+# select which habitat metrics to use in QRF model
+#-----------------------------------------------------------------
+
+if(mod_choice == "juv_summer"){
+  mod_cov_select<-read_xlsx("model_fit_selection/ModelCovSelected.xlsx",
+                            range = cell_cols("A:D"),
+                            sheet = paste0("CHaMP_Summer_",species_choice))
+  sel_hab_mets = crossing(Species = species_choice,
+                          mod_cov_select %>%
+                            filter(!!as.symbol(cov_choice) == 1) %>%
+                            select(Metric))
+}else if(mod_choice == "redds") {
+  mod_cov_select<-read_xlsx("model_fit_selection/ModelCovSelected.xlsx",
+                            range = cell_cols("A:D"),
+                            sheet = paste0("CHaMP_Redds_",species_choice))
+  sel_hab_mets = crossing(Species = species_choice,
+                          mod_cov_select %>%
+                            filter(!!as.symbol(cov_choice) == 1) %>%
+                            select(Metric))
+}else if(mod_choice == "juv_winter") {
+  mod_cov_select<-read_xlsx("model_fit_selection/ModelCovSelected.xlsx",
+                            range = cell_cols("A:D"),
+                            sheet = paste0("CHaMP_Winter_",species_choice))
+  sel_hab_mets = crossing(Species = species_choice,
+                          mod_cov_select %>%
+                            filter(!!as.symbol(cov_choice) == 1) %>%
+                            select(Metric))
+}
+#-----------------------------------------------------------------
+# Fit QRF model
+#-----------------------------------------------------------------
+
+# Impute covariates
+
+all_covars = sel_hab_mets %>%
+  pull(Metric)
+
+impute_covars = c('Watershed', 'Elev_M', 'Sin_CL', 'Year', 'CUMDRAINAG')
+
+qrf_mod_df = fish_hab %>%
+  mutate(id = 1:n()) %>%
+  select(id,
+         all_of(impute_covars),
+         all_of(all_covars)) %>%
+  impute_missing_data(covars = all_covars,
+                      impute_vars = impute_covars,
+                      method = 'missForest') %>%
+  left_join(fish_hab %>%
+              mutate(id = 1:n()) %>%
+              select(id, 
+                     Species, Site, Watershed,
+                     LON_DD, LAT_DD,
+                     fish_dens)) %>%
+  select(id, Species, Site, Watershed, LON_DD, LAT_DD, fish_dens, one_of(all_covars))
+
+if(mod_choice %in% c('juv_summer',
+                     'juv_summer_dash')) {
+  qrf_mod_df %<>%
     left_join(fish_hab %>%
                 mutate(id = 1:n()) %>%
                 select(id, 
-                       Species, Site, Watershed,
-                       LON_DD, LAT_DD,
-                       fish_dens)) %>%
-    select(id, Species, Site, Watershed, LON_DD, LAT_DD, fish_dens, one_of(all_covars))
-  
-  if(mod_choice %in% c('juv_summer',
-                       'juv_summer_dash')) {
-    qrf_mod_df %<>%
-      left_join(fish_hab %>%
-                  mutate(id = 1:n()) %>%
-                  select(id, 
-                         VisitID,
-                         Year)) %>%
-      select(Species:Watershed,
-             Year,
-             VisitID,
-             everything(),
-             -id)
-  } else if(mod_choice == "redds") {
-    qrf_mod_df %<>%
-      left_join(fish_hab %>%
-                  mutate(id = 1:n()) %>%
-                  select(id, 
-                         maxYr)) %>%
-      select(Species:Watershed,
-             maxYr,
-             everything(),
-             -id)
-  } else if(mod_choice == "juv_winter") {
-    qrf_mod_df %<>%
-      left_join(fish_hab %>%
-                  mutate(id = 1:n()) %>%
-                  select(id, 
-                         VisitID,
-                         Year, ChUnitNumber, SiteUnit)) %>%
-      select(Species:Watershed,
-             VisitID,
-             Year, ChUnitNumber, SiteUnit,
-             everything(),
-             -id)
-  }
-  
-  rm(all_covars)
-  
-  # fit the QRF model
-  # set the density offset (to accommodate 0s)
-  range(fish_hab$fish_dens)
-  summary(fish_hab$fish_dens)
-  dens_offset = if_else(mod_choice == 'redds',
-                        0,
-                        0.005)
-  
-  # fit random forest models
-  qrf_mods = qrf_mod_df %>%
-    split(list(.$Species)) %>%
-    map(.f = function(z) {
-      
-      covars = sel_hab_mets %>%
-        filter(Species == unique(z$Species)) %>%
-        pull(Metric)
-      
-      set.seed(3)
-      qrf_mod = quantregForest(x = z %>%
-                                 select(one_of(covars)),
-                               y = z %>%
-                                 mutate(across(fish_dens,
-                                               ~ log(. + dens_offset))) %>%
-                                 pull(fish_dens),
-                               keep.inbag = T,
-                               ntree = 1000)
-      
-      return(qrf_mod)
-    })
-  
-  # save some results
-  save(fish_hab, 
-       sel_hab_mets,
-       qrf_mod_df,
-       dens_offset,
-       qrf_mods,
-       hab_dict,
-       hab_data,
-       hab_avg,
-       file = paste0(out_path,'modelFit/qrf_', mod_choice, '.rda'))
-  
+                       VisitID,
+                       Year)) %>%
+    select(Species:Watershed,
+           Year,
+           VisitID,
+           everything(),
+           -id)
+} else if(mod_choice == "redds") {
+  qrf_mod_df %<>%
+    left_join(fish_hab %>%
+                mutate(id = 1:n()) %>%
+                select(id, 
+                       maxYr)) %>%
+    select(Species:Watershed,
+           maxYr,
+           everything(),
+           -id)
+} else if(mod_choice == "juv_winter") {
+  qrf_mod_df %<>%
+    left_join(fish_hab %>%
+                mutate(id = 1:n()) %>%
+                select(id, 
+                       VisitID,
+                       Year, ChUnitNumber, SiteUnit)) %>%
+    select(Species:Watershed,
+           VisitID,
+           Year, ChUnitNumber, SiteUnit,
+           everything(),
+           -id)
 }
+
+
+# fit the QRF model
+# set the density offset (to accommodate 0s)
+range(fish_hab$fish_dens)
+summary(fish_hab$fish_dens)
+dens_offset = if_else(mod_choice == 'redds',
+                      0,
+                      0.005)
+
+# fit random forest models
+set.seed(3)
+
+qrf_mod = quantregForest(x = qrf_mod_df %>%
+                           select(one_of(all_covars)),
+                         y = qrf_mod_df %>%
+                           mutate(across(fish_dens,
+                                         ~ log(. + dens_offset))) %>%
+                           pull(fish_dens),
+                         keep.inbag = T,
+                         ntree = 1000)
+
+# save some results
+save(fish_hab, 
+     sel_hab_mets,
+     qrf_mod_df,
+     dens_offset,
+     qrf_mod,
+     hab_dict,
+     file = paste0(out_path,'modelFit/',cov_choice,'_', mod_choice,'_', species_choice,'.rda'))
+
 
 #-----------------------------------------------------------------
 # create a few figures
@@ -298,10 +221,50 @@ if(mod_choice == "juv_summer" & species_choice == "Chinook") {
 mod_choice = c('juv_summer',
                'juv_summer_dash',
                'redds',
-               'juv_winter')[2]
+               'juv_winter')[1]
 
-load(paste0(out_path,'modelFit/qrf_', mod_choice, '.rda'))
+species_choice = c('Chinook',
+                   'Steelhead')[1]
 
+cov_choice = c('QRF2',
+               'QRF2_trimmed')[2]
+
+load(paste0(out_path,'modelFit/',cov_choice,'_', mod_choice,'_', species_choice,'.rda'))
+
+###
+rel_imp_p = qrf_mods %>%
+  map(.f = function(x) {
+    as_tibble(x$importance,
+              rownames = 'Metric') %>%
+      mutate(relImp = IncNodePurity / max(IncNodePurity)) %>%
+      left_join(hab_dict %>%
+                  select(Metric = ShortName,
+                         Name)) %>%
+      mutate_at(vars(Metric, Name),
+                list(~ fct_reorder(., relImp))) %>%
+      arrange(Metric) %>%
+      distinct() %>%
+      ggplot(aes(x = Name,
+                 y = relImp)) +
+      geom_col(fill = 'gray40') +
+      coord_flip() +
+      labs(x = 'Metric',
+           y = 'Relative Importance')
+    
+  })
+# add species name to each plot
+for(i in 1:length(rel_imp_p)) {
+  rel_imp_p[[i]] = rel_imp_p[[i]] +
+    labs(title = names(qrf_mods)[[i]])
+}
+
+ggpubr::ggarrange(plotlist = rel_imp_p,
+                  nrow = 1,
+                  ncol = 2)
+
+
+
+###
 # relative importance of habitat covariates
 rel_imp_p = tibble(Species = names(qrf_mods),
                    qrf_mod = qrf_mods) %>%
