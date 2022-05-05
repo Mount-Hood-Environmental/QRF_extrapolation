@@ -24,6 +24,9 @@ out_path = 'S:/main/data/qrf/gitrepo_data/output/'
 #load necessary functions (for now, will remove when package is available)
 source("R/impute_missing_data.r")
 
+#Load in fish-habitat data
+data("fish_hab_list")
+
 #-----------------------------------------------------------------
 # which QRF model to fit? 
 #-----------------------------------------------------------------
