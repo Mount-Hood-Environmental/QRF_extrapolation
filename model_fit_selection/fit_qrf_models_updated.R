@@ -245,7 +245,12 @@ rel_imp_p = as_tibble(qrf_mod$importance,
       coord_flip() +
       labs(x = 'Metric',
            y = 'Relative Importance')
-    
+#Save to repo
+pdf(paste0("output/figures/",mod_choice,species_choice,cov_choice,"rel_imp.pdf"), width = 6, height = 4)
+rel_imp_p
+dev.off()
+
+
 # add species name to each plot
 for(i in 1:length(rel_imp_p)) {
   rel_imp_p[[i]] = rel_imp_p[[i]] +
