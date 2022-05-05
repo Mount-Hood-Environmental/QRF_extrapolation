@@ -27,6 +27,8 @@ source("R/plot_partial_dependence.r")
 
 #Load in fish-habitat data
 data("fish_hab_list")
+#load habitat dictionary
+data("hab_dict")
 
 #-----------------------------------------------------------------
 # which life stage, species, and covariates to fit? 
@@ -57,13 +59,10 @@ if(mod_choice == "juv_summer") {
   fish_hab = fish_hab_list$Winter %>%
     filter(Species == species_choice)
 }
-
-#load habitat dictionary
-data("hab_dict")
  
 #-----------------------------------------------------------------
 # Not sure if we need to do this. Was this included in the previous 
-# data manip?
+# data manip? -reading in the rch_200 data is NOT included in the previous data manips MR
 if(mod_choice != "juv_winter") {
   load(paste0(in_path, "rch_200.rda"))
   load(paste0(in_path, "champ_site_rch.rda"))
@@ -206,12 +205,10 @@ qrf_mod = quantregForest(x = qrf_mod_df %>%
                          ntree = 1000)
 
 # save some results
-save(fish_hab, 
-     sel_hab_mets,
+save(sel_hab_mets,
      qrf_mod_df,
      dens_offset,
      qrf_mod,
-     hab_dict,
      file = paste0(out_path,'modelFit/',cov_choice,'_', mod_choice,'_', species_choice,'.rda'))
 
 
@@ -232,7 +229,7 @@ cov_choice = c('QRF2',
 load(paste0(out_path,'modelFit/',cov_choice,'_', mod_choice,'_', species_choice,'.rda'))
 
 ###
-rel_imp_p = qrf_mods %>%
+rel_imp_p = qrf_mod %>%
   map(.f = function(x) {
     as_tibble(x$importance,
               rownames = 'Metric') %>%
