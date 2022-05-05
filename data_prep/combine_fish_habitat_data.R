@@ -91,7 +91,7 @@ fh_sum_champ_2017 %<>%
   ungroup() %>%
   select(-siteSppYr, -siteSpp, -time_diff)
 
-save(fh_sum_champ_2017, file = "data/fh_sum_champ_2017_0522.rda")
+save(fh_sum_champ_2017, file = "data/fh_sum_champ_2017.rda")
 #use_data(fh_sum_champ_2017,
 #         version = 2,
 #         overwrite = T)
@@ -243,7 +243,7 @@ fh_redds_champ_2017 %<>%
 
 
 # save as R data object
-save(fh_redds_champ_2017, file = "data/fh_redds_champ_2017_0522.rda")
+save(fh_redds_champ_2017, file = "data/fh_redds_champ_2017.rda")
 #use_data(fh_redds_champ_2017,
 #         version = 2,
 #         overwrite = T)
@@ -314,7 +314,7 @@ fh_win_champ_2017 = fish_win_est %>%
   rename(fishSampDate = SampleDate,
          Tier1_fish = Tier1,
          Tier2_fish = Tier2,
-         Discharge_fish = Discharge) %>%
+         Discharge_fish = Q) %>%
   select(-Stream) %>%
   inner_join(cu_df %>%
                rename(habSampDate = SampleDate) %>%
@@ -324,7 +324,7 @@ fh_win_champ_2017 = fish_win_est %>%
   mutate_at(vars(Watershed, Tier1, Tier2),
             list(as.factor))
 
-save(fh_win_champ_2017, file = "data/fh_win_champ_2017_0522.rda")
+save(fh_win_champ_2017, file = "data/fh_win_champ_2017.rda")
 #usethis::use_data(fh_win_champ_2017,
 #                  version = 2,
 #                  overwrite = T)
