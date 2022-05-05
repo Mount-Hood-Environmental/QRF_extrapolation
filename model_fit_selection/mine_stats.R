@@ -1,7 +1,7 @@
 # Author: Kevin See
 # Purpose: Calculate MINE statistics on various fish/habitat datasets
 # Created: 2/13/2020
-# Last Modified: 3/20/2020
+# Last Modified: 5/5/2022
 # Notes: 
 
 #-----------------------------------------------------------------
@@ -27,64 +27,25 @@ source("R/estimate_MIC.r")
 # determine which set of fish/habitat data to use
 # summmer juveniles with CHaMP metrics
 #load(paste0(in_path,"fh_sum_champ_2017.rda"))
-load(paste0(in_path,"fh_sum_champ_2017_0522.rda"))
+#load(paste0(in_path,"fh_sum_champ_2017_0522.rda"))
 
 # summer juveniles with DASH metrics
-load(paste0(in_path,"fh_sum_dash_2014_17.rda"))
+#load(paste0(in_path,"fh_sum_dash_2014_17.rda"))
 
 # redds
 #load(paste0(in_path,"fh_redds_champ_2017.rda"))
-load(paste0(in_path,"fh_redds_champ_2017_0522.rda"))
+#load(paste0(in_path,"fh_redds_champ_2017_0522.rda"))
 
 # winter juveniles
 #load(paste0(in_path,"fh_win_champ_2017.rda"))
-load(paste0(in_path,"fh_win_champ_2017_0522.rda"))
-
-# combine all fish-habitat datasets into one list
-fish_hab_list = list('Redds' = fh_redds_champ_2017 %>%
-                       mutate_at(vars(Watershed),
-                                 list(as.factor)) %>%
-                       # what kind of redd density metric should we use?
-                       mutate(fish_dens = maxReddsPerMsq),
-                     'Winter' = fh_win_champ_2017 %>%
-                       filter(!is.na(fish_dens)) %>%
-                       mutate_at(vars(Watershed, Year, Tier1),
-                                 list(as.factor)),
-                     'Summer_CHaMP' = fh_sum_champ_2017 %>%
-                       mutate_at(vars(Watershed, Year),
-                                 list(as.factor)),
-                     'Summer_DASH' = fh_sum_dash_2014_17 %>%
-                       mutate_at(vars(Watershed, Year),
-                                 list(as.factor)))
-
-# alter a few metrics consistently across all datasets
-fish_hab_list %<>%
-  map(.f = function(x) {
-    # scale some metrics by site length
-    x %>%
-      mutate_at(vars(starts_with('LWVol'),
-                     ends_with('_Vol')),
-                list(~ . / Lgth_Wet * 100))
-    
-    # add a metric showing "some" riparian canopy
-    if("RipCovCanNone" %in% names(x)) {
-      x %<>%
-        mutate(RipCovCanSome = 100 - RipCovCanNone)
-    }
-    
-    # add a metric showing "some" fish cover
-    if("FishCovNone" %in% names(x)) {
-      x %<>%
-        mutate(FishCovSome = 100 - FishCovNone)
-    }
-    
-    return(x)
-  })
+#load(paste0(in_path,"fh_win_champ_2017_0522.rda"))
 
 
+#Load in list containing all combined fish-habitat data
+data("fish_hab_list")
 #-----------------------------------------------------------------
 #Load in habitat dictionary
-data("hab_dict.rda")
+data("hab_dict")
 
 #-----------------------------------------------------------------
 # clip Chinook data to Chinook domain

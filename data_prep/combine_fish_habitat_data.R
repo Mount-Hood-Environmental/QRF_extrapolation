@@ -27,7 +27,7 @@ load(paste0(in_path,"champ_cu.rda"))
 # for temperature metrics
 load(paste0(in_path,"champ_temps.rda"))
 
-#add champ_cu maximum max_depths to site-scale habitat data
+#add champ_cu avg pool max_depths to site-scale habitat data
 
 champ_site_2011_17 <- champ_site_2011_17 %>%
   left_join( champ_cu <- champ_cu %>%
@@ -336,3 +336,52 @@ cu_fish_summary = fish_win_est %>%
   summarise(cu_count = length(unique(ChUnitNumber))) %>%
   left_join( dat <- champ_site_2011_17[,c(2,145)]) %>%
   mutate(cu_diff = ChnlUnitTotal_Ct - cu_count)
+
+
+
+
+#-----------------------------------------------------------------------------
+#Combine all data into a list, alter some metrics
+#-----------------------------------------------------------------------------
+
+fish_hab_list = list('Redds' = fh_redds_champ_2017 %>%
+                       mutate_at(vars(Watershed),
+                                 list(as.factor)) %>%
+                       # what kind of redd density metric should we use?
+                       mutate(fish_dens = maxReddsPerMsq),
+                     'Winter' = fh_win_champ_2017 %>%
+                       filter(!is.na(fish_dens)) %>%
+                       mutate_at(vars(Watershed, Year, Tier1),
+                                 list(as.factor)),
+                     'Summer_CHaMP' = fh_sum_champ_2017 %>%
+                       mutate_at(vars(Watershed, Year),
+                                 list(as.factor)),
+                     'Summer_DASH' = fh_sum_dash_2014_17 %>%
+                       mutate_at(vars(Watershed, Year),
+                                 list(as.factor)))
+
+# alter a few metrics consistently across all datasets
+fish_hab_list %<>%
+  map(.f = function(x) {
+    # scale some metrics by site length
+    x %>%
+      mutate_at(vars(starts_with('LWVol'),
+                     ends_with('_Vol')),
+                list(~ . / Lgth_Wet * 100))
+    
+    # add a metric showing "some" riparian canopy
+    if("RipCovCanNone" %in% names(x)) {
+      x %<>%
+        mutate(RipCovCanSome = 100 - RipCovCanNone)
+    }
+    
+    # add a metric showing "some" fish cover
+    if("FishCovNone" %in% names(x)) {
+      x %<>%
+        mutate(FishCovSome = 100 - FishCovNone)
+    }
+    
+    return(x)
+  })
+
+save(fish_hab_list, file = "data/fish_hab_list.rda")

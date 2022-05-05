@@ -67,7 +67,7 @@ for(mod_choice in c('juv_summer',
   }
   
 #load habitat dictionary
-data("hab_dict.rda")
+data("hab_dict")
   
   # all the related habitat data
   load(paste0(in_path, "champ_site_2011_17.rda"))
