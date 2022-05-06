@@ -32,8 +32,8 @@ plot_partial_dependence = function(rf_mod,
                                    scales = 'free') {
   
   if(is.null(data_dict)) {
-    data(hab_dict_2017)
-    data_dict = hab_dict_2017
+    data(hab_dict)
+    data_dict = hab_dict
   }
   
   type = match.arg(type)
