@@ -23,9 +23,8 @@ out_path = 'S:/main/data/qrf/gitrepo_data/output/'
 
 #load necessary functions (for now, will remove when package is available)
 source("R/impute_missing_data.r")
-#source("R/plot_partial_dependence.r")
-#source("R/plot_partial_dependence_v2.r")
-source("R/plot_pd.r")
+source("R/plot_partial_dependence.r")
+source("R/plot_partial_dependence_v2.r")
 
 #Load in fish-habitat data
 data("fish_hab_list")
@@ -253,16 +252,31 @@ rel_imp_p
 dev.off()
 
 # partial dependence plots
-pdp = plot_pd(qrf_mod,
-          qrf_mod_df,
-          data_dict = hab_dict,
-          # log_transform = F,
-          log_offset = dens_offset,
-          # scales = "free_x") +
-          scales = 'free',
-          CTsize = 6) +
-  labs(title = paste0(mod_choice,"_",species_choice,"_",cov_choice))
+pdp = plot_partial_dependence(qrf_mod,
+              qrf_mod_df,
+              data_dict = hab_dict,
+              # log_transform = F,
+              log_offset = dens_offset,
+              # scales = "free_x") +
+              scales = 'free') +
+  labs(title = paste0(mod_choice,"_",species_choice,"_",cov_choice)) +
+  theme(strip.text = element_text(size = 7))
 
 pdf(paste0("output/figures/", mod_choice,'_', species_choice,'_', cov_choice,"_pdp.pdf"), width = 10, height = 8)
 pdp
 dev.off()
+
+
+# partial dependence plots v2 -- Times out for me. BO
+pdp2 = plot_partial_dependencev2(qrf_mod,
+                              qrf_mod_df,
+                              data_dict = hab_dict,
+                              # log_transform = F,
+                              log_offset = dens_offset,
+                              # scales = "free_x") +
+                              scales = 'free') +
+  labs(title = paste0(mod_choice,"_",species_choice,"_",cov_choice)) +
+  theme(strip.text = element_text(size = 7))
+
+pdp2
+
