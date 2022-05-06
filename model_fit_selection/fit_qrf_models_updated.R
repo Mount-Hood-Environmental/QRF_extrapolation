@@ -40,7 +40,7 @@ mod_choice = c('juv_summer',
                'juv_winter')[1]
 
 species_choice = c('Chinook',
-               'Steelhead')[1]
+               'Steelhead')[2]
 
 cov_choice = c("QRF2",
                "QRF2_trimmed")[2]
@@ -216,16 +216,16 @@ save(sel_hab_mets,
 #-----------------------------------------------------------------
 # create a few figures
 #-----------------------------------------------------------------
-mod_choice = c('juv_summer',
-               'juv_summer_dash',
-               'redds',
-               'juv_winter')[1]
+#mod_choice = c('juv_summer',
+#               'juv_summer_dash',
+#               'redds',
+#               'juv_winter')[1]
 
-species_choice = c('Chinook',
-                   'Steelhead')[1]
+#species_choice = c('Chinook',
+#                   'Steelhead')[1]
 
-cov_choice = c('QRF2',
-               'QRF2_trimmed')[2]
+#cov_choice = c('QRF2',
+#               'QRF2_trimmed')[2]
 
 load(paste0(out_path,'modelFit/',cov_choice,'_', mod_choice,'_', species_choice,'.rda'))
 
@@ -246,10 +246,6 @@ rel_imp_p = as_tibble(qrf_mod$importance,
       coord_flip() +
       labs(x = 'Metric',
            y = 'Relative Importance')
-#Save to repo
-pdf(paste0("output/figures/", mod_choice,'_', species_choice,'_', cov_choice,"_rel_imp.pdf"), width = 6, height = 4)
-rel_imp_p
-dev.off()
 
 # partial dependence plots
 pdp = plot_partial_dependence(qrf_mod,
@@ -262,7 +258,8 @@ pdp = plot_partial_dependence(qrf_mod,
   labs(title = paste0(mod_choice,"_",species_choice,"_",cov_choice)) +
   theme(strip.text = element_text(size = 7))
 
-pdf(paste0("output/figures/", mod_choice,'_', species_choice,'_', cov_choice,"_pdp.pdf"), width = 10, height = 8)
+pdf(paste0("output/figures/", mod_choice,'_', species_choice,'_', cov_choice,".pdf"), width = 10, height = 8)
+rel_imp_p
 pdp
 dev.off()
 
