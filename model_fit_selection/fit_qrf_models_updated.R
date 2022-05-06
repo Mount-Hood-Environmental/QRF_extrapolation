@@ -23,7 +23,9 @@ out_path = 'S:/main/data/qrf/gitrepo_data/output/'
 
 #load necessary functions (for now, will remove when package is available)
 source("R/impute_missing_data.r")
-source("R/plot_partial_dependence.r")
+#source("R/plot_partial_dependence.r")
+#source("R/plot_partial_dependence_v2.r")
+source("R/plot_pd.r")
 
 #Load in fish-habitat data
 data("fish_hab_list")
@@ -61,8 +63,8 @@ if(mod_choice == "juv_summer") {
 }
  
 #-----------------------------------------------------------------
-# Not sure if we need to do this. Was this included in the previous 
-# data manip? -reading in the rch_200 data is NOT included in the previous data manips MR
+#
+
 if(mod_choice != "juv_winter") {
   load(paste0(in_path, "rch_200.rda"))
   load(paste0(in_path, "champ_site_rch.rda"))
@@ -246,100 +248,21 @@ rel_imp_p = as_tibble(qrf_mod$importance,
       labs(x = 'Metric',
            y = 'Relative Importance')
 #Save to repo
-pdf(paste0("output/figures/",mod_choice,species_choice,cov_choice,"rel_imp.pdf"), width = 6, height = 4)
+pdf(paste0("output/figures/", mod_choice,'_', species_choice,'_', cov_choice,"_rel_imp.pdf"), width = 6, height = 4)
 rel_imp_p
 dev.off()
 
-
-# add species name to each plot
-for(i in 1:length(rel_imp_p)) {
-  rel_imp_p[[i]] = rel_imp_p[[i]] +
-    labs(title = names(qrf_mods)[[i]])
-}
-
-ggpubr::ggarrange(plotlist = rel_imp_p,
-                  nrow = 1,
-                  ncol = 2)
-
-
-
-###
-# relative importance of habitat covariates
-rel_imp_p = tibble(Species = names(qrf_mods),
-                   qrf_mod = qrf_mods) %>%
-  mutate(rel_imp = map(qrf_mod,
-                       .f = function(x) {
-                         as_tibble(x$importance,
-                                   rownames = 'Metric') %>%
-                           mutate(relImp = IncNodePurity / max(IncNodePurity)) %>%
-                           left_join(hab_dict %>%
-                                       select(Metric = ShortName,
-                                              Name)) %>%
-                           mutate(across(c(Metric, Name),
-                                         ~ fct_reorder(., relImp))) %>%
-                           arrange(Metric) %>%
-                           distinct()
-                       })) %>%
-  unnest(cols = rel_imp) %>%
-  select(-qrf_mod) %>%
-  mutate(across(c(Metric, Name),
-                fct_reorder,
-                .x = relImp)) %>%
-  ggplot(aes(x = Name,
-             y = relImp,
-             fill = Species)) +
-  geom_col(position = "dodge") +
-  scale_fill_brewer(palette = "Set1") +
-  coord_flip() +
-  labs(x = 'Metric',
-       y = 'Relative Importance')
-rel_imp_p
-
 # partial dependence plots
-# for Chinook
-if(mod_choice == "juv_winter") {
-  chnk_pdp = plot_partial_dependence_v2(qrf_mods[['Chinook']],
-                                        qrf_mod_df %>%
-                                          filter(Species == 'Chinook'),
-                                        data_dict = hab_dict,
-                                        # log_transform = F,
-                                        log_offset = dens_offset,
-                                        # scales = "free_x") +
-                                        scales = 'free') +
-    labs(title = 'Chinook')
-} else {
-  chnk_pdp = plot_partial_dependence(qrf_mods[['Chinook']],
-                                     qrf_mod_df %>%
-                                       filter(Species == 'Chinook'),
-                                     data_dict = hab_dict,
-                                     # log_transform = F,
-                                     log_offset = dens_offset,
-                                     # scales = "free_x") +
-                                     scales = 'free') +
-    labs(title = 'Chinook')
-}
-chnk_pdp
+pdp = plot_pd(qrf_mod,
+          qrf_mod_df,
+          data_dict = hab_dict,
+          # log_transform = F,
+          log_offset = dens_offset,
+          # scales = "free_x") +
+          scales = 'free',
+          CTsize = 6) +
+  labs(title = paste0(mod_choice,"_",species_choice,"_",cov_choice))
 
-# for steelhead
-if(mod_choice == "juv_winter") {
-  sthd_pdp = plot_partial_dependence_v2(qrf_mods[['Steelhead']],
-                                        qrf_mod_df %>%
-                                          filter(Species == 'Steelhead'),
-                                        data_dict = hab_dict,
-                                        # log_transform = F,
-                                        log_offset = dens_offset,
-                                        # scales = "free_x") +
-                                        scales = 'free') +
-    labs(title = 'Steelhead')
-} else {
-  sthd_pdp = plot_partial_dependence(qrf_mods[['Steelhead']],
-                                     qrf_mod_df %>%
-                                       filter(Species == 'Steelhead'),
-                                     data_dict = hab_dict,
-                                     # log_transform = F,
-                                     log_offset = dens_offset,
-                                     # scales = "free_x") +
-                                     scales = 'free') +
-    labs(title = 'Steelhead')
-}
-sthd_pdp
+pdf(paste0("output/figures/", mod_choice,'_', species_choice,'_', cov_choice,"_pdp.pdf"), width = 10, height = 8)
+pdp
+dev.off()
