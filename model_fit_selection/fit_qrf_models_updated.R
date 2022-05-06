@@ -37,10 +37,10 @@ data("hab_dict")
 mod_choice = c('juv_summer',
                'juv_summer_dash',
                'redds',
-               'juv_winter')[1]
+               'juv_winter')[4]
 
 species_choice = c('Chinook',
-               'Steelhead')[2]
+               'Steelhead')[1]
 
 cov_choice = c("QRF2",
                "QRF2_trimmed")[2]
@@ -129,7 +129,11 @@ if(mod_choice == "juv_summer"){
 all_covars = sel_hab_mets %>%
   pull(Metric)
 
-impute_covars = c('Watershed', 'Elev_M', 'Sin_CL', 'Year', 'CUMDRAINAG')
+impute_covars = c('Watershed', 'Elev_M', 'Sin', 'Year', 'CUMDRAINAG')
+
+if(mod_choice == "redds"){
+  impute_covars = impute_covars[!grepl('Year', impute_covars)]
+}
 
 qrf_mod_df = fish_hab %>%
   mutate(id = 1:n()) %>%

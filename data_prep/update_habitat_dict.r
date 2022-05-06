@@ -45,7 +45,7 @@ hab_dict %<>%
                      Name = "Fish Cover: Some Cover",
                      DescriptiveText = "Percent of wetted area with some form of fish cover")) %>%
   #Add LW density
-  rbind(c("LWdens",
+  rbind(c("LWDens",
           "Large Wood Density",
           NA,
           "Visit Metric",
@@ -63,6 +63,26 @@ hab_dict %<>%
           "Meter",
           "m",
           "Size",
+          NA)) %>%
+  #Add elevation
+  rbind(c("Elev_M",
+          "Elevation",
+          NA,
+          NA,
+          "Elevation, meters",
+          "Meter",
+          "m",
+          "Temperature",
+          NA)) %>%
+  #Add cobble +bldr
+  rbind(c("SubEstCandBldr",
+          "Substrate Est: Cobble and Boulder",
+          NA,
+          NA,
+          "Total cobble plus boulder percentage",
+          "Percent",
+          "%",
+          "Substrate",
           NA))
 
 
