@@ -37,13 +37,15 @@ data("hab_dict")
 mod_choice = c('juv_summer',
                'juv_summer_dash',
                'redds',
-               'juv_winter')[4]
+               'juv_winter')[1]
 
 species_choice = c('Chinook',
-               'Steelhead')[1]
+               'Steelhead')[2]
 
 cov_choice = c("QRF2",
-               "QRF2_trimmed")[2]
+               "QRF2_trimmed",
+               "QRF3", # NOTE: Winter model only has QRF3_sp_comb
+               "QRF3_sp_comb")[2]
 
 #-----------------------------------------------------------------
 # determine which set of fish/habitat data to use
@@ -97,7 +99,7 @@ if(mod_choice != "juv_winter") {
 
 if(mod_choice == "juv_summer"){
   mod_cov_select<-read_xlsx("model_fit_selection/ModelCovSelected.xlsx",
-                            range = cell_cols("A:D"),
+                            range = cell_cols("A:F"),
                             sheet = paste0("CHaMP_Summer_",species_choice))
   sel_hab_mets = crossing(Species = species_choice,
                           mod_cov_select %>%
@@ -105,7 +107,7 @@ if(mod_choice == "juv_summer"){
                             select(Metric))
 }else if(mod_choice == "redds") {
   mod_cov_select<-read_xlsx("model_fit_selection/ModelCovSelected.xlsx",
-                            range = cell_cols("A:D"),
+                            range = cell_cols("A:F"),
                             sheet = paste0("CHaMP_Redds_",species_choice))
   sel_hab_mets = crossing(Species = species_choice,
                           mod_cov_select %>%
@@ -113,7 +115,7 @@ if(mod_choice == "juv_summer"){
                             select(Metric))
 }else if(mod_choice == "juv_winter") {
   mod_cov_select<-read_xlsx("model_fit_selection/ModelCovSelected.xlsx",
-                            range = cell_cols("A:D"),
+                            range = cell_cols("A:F"),
                             sheet = paste0("CHaMP_Winter_",species_choice))
   sel_hab_mets = crossing(Species = species_choice,
                           mod_cov_select %>%
@@ -266,7 +268,6 @@ pdf(paste0("output/figures/", mod_choice,'_', species_choice,'_', cov_choice,".p
 rel_imp_p
 pdp
 dev.off()
-
 
 # partial dependence plots v2 -- Times out for me. BO
 pdp2 = plot_partial_dependencev2(qrf_mod,

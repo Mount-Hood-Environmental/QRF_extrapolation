@@ -83,7 +83,9 @@ hab_dict %<>%
           "Percent",
           "%",
           "Substrate",
-          NA))
+          NA)) %>%
+  #Correct "Thalweg Exit Depth" to "Thalweg Exit Depth Avg"
+  mutate(Name = replace(Name, Name == "Thalweg Exit Depth", "Thalweg Exit Depth Avg"))
 
 
 
