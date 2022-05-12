@@ -1,7 +1,7 @@
 # Author: Kevin See
 # Purpose: Extrapolate QRF model to all 200 m reaches
 # Created: 3/20/2020
-# Last Modified: 12/15/2021
+# Last Modified: 5/12/2022
 # Notes: 
 
 #-----------------------------------------------------------------
@@ -13,6 +13,7 @@ library(magrittr)
 library(sf)
 library(quantregForest)
 library(survey)
+library(data.table)
 
 # set default theme for ggplot
 theme_set(theme_bw())
@@ -23,15 +24,18 @@ theme_set(theme_bw())
 mod_choice = c('juv_summer',
                'juv_summer_dash',
                'redds',
-               'juv_winter')[1]
+               'juv_winter')[4]
 
 species_choice = c('Chinook',
-                   'Steelhead')[1]
+                   'Steelhead')[2]
 
 cov_choice = c("QRF2",
                "QRF2_trimmed",
-               "QRF3", # NOTE: Winter model only has QRF3_sp_comb
-               "QRF3_sp_comb")[4]
+               "QRF3", # NOTE: Does not exist for winter model
+               "QRF3_sp_comb",
+               "QRF4_sp_comb",
+               "QRF5_sp_comb",
+               "QRF6_sp_comb")[6] #NOTE: Does not exist for winter model
 
 in_path = 'S:/main/data/qrf/gitrepo_data/input/'
 out_path = 'S:/main/data/qrf/gitrepo_data/output/'
@@ -454,7 +458,7 @@ site_strata = pred_hab_df %>%
   select(-site_num)
 
 # read in data from the CHaMP frame
-champ_frame_df = read_csv(paste0(in_path,"champ_frame_data.csv", sep="")) %>%
+champ_frame_df = fread(paste0(in_path,"champ_frame_data.csv")) %>%
   mutate(Target2014 = ifelse(is.na(AStrat2014), 'Non-Target', Target2014)) %>%
   mutate(AStrat2014 = ifelse(AStrat2014 == 'Entiat IMW', paste('EntiatIMW', GeoRchIMW, sep = '_'), AStrat2014)) %>%
   mutate(UseTypCHSP = ifelse(CHaMPshed == 'Lemhi' & AStrat2014 == 'Little Springs',
