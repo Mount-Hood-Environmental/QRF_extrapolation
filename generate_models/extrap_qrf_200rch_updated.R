@@ -55,7 +55,7 @@ if(mod_choice == "juv_summer") {
     select(Species, Site, Watershed, LON_DD, LAT_DD, 
            VisitID,
            Lgth_Wet, Area_Wet)
-} else if (mod_choice == "winter") {
+} else if (mod_choice == "juv_winter") {
   load(paste0(in_path,'fh_win_champ_2017_0522.rda'))
   fh = fh_win_champ_2017 %>%
     select(Species, Site, Watershed, LON_DD, LAT_DD, 
