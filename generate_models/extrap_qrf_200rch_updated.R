@@ -1,7 +1,7 @@
 # Author: Kevin See
 # Purpose: Extrapolate QRF model to all 200 m reaches
 # Created: 3/20/2020
-# Last Modified: 5/12/2022
+# Last Modified: 5/13/2022
 # Notes: 
 
 #-----------------------------------------------------------------
@@ -22,25 +22,18 @@ theme_set(theme_bw())
 # load model fit and habitat data associated with that model
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
-               'juv_summer_dash',
                'redds',
-               'juv_winter')[4]
+               'juv_winter')[3]
 
-species_choice = c('Chinook',
-                   'Steelhead')[2]
-
-cov_choice = c("QRF2",
-               "QRF2_trimmed",
-               "QRF3", # NOTE: Does not exist for winter model
-               "QRF3_sp_comb",
-               "QRF4_sp_comb",
-               "QRF5_sp_comb",
-               "QRF6_sp_comb")[6] #NOTE: Does not exist for winter model
+cov_choice = c("Reduced")[1]
 
 in_path = 'S:/main/data/qrf/gitrepo_data/input/'
 out_path = 'S:/main/data/qrf/gitrepo_data/output/'
 
-load(paste0(out_path,'modelFit/',cov_choice,'_', mod_choice,'_', species_choice,'.rda'))
+load(paste0(out_path,'modelFit/', mod_choice,'_',cov_choice, '.rda'))
+
+#load necessary functions
+source("R/impute_missing_data.r")
 
 # Need to pull length and width data for weighting further down
 if(mod_choice == "juv_summer") {
@@ -60,11 +53,9 @@ if(mod_choice == "juv_summer") {
   fh = fh_win_champ_2017 %>%
     select(Species, Site, Watershed, LON_DD, LAT_DD, 
            VisitID,
-           Lgth_Wet, Area_Wet)
+           CU_Area = AreaTotal, Lgth_Wet, Area_Wet)
 }
 
-#load necessary functions
-source("R/impute_missing_data.r")
 
 #-----------------------------------------------------------------
 # predict capacity at all CHaMP sites
@@ -72,21 +63,54 @@ source("R/impute_missing_data.r")
 # what quantile is a proxy for capacity?
 pred_quant = 0.9
 set.seed(5)
+# for overwintering juveniles, predictions done on channel unit scale, then summed up for each CHaMP site.
 
+
+
+if (mod_choice == "juv_winter") {
 pred_hab_sites = qrf_mod_df %>%
-  mutate(fish_dens = predict(qrf_mod,
-                             newdata = select(., one_of(unique(sel_hab_mets$Metric))),
-                             what = pred_quant)) %>%
+  left_join(fh) %>%
+  mutate(chnk_per_m2 = predict(qrf_mods[['Chinook']],
+                              newdata = select(., one_of(unique(sel_hab_mets$Metric))),
+                                what = pred_quant),
+         chnk_per_m2 = exp(chnk_per_m2) - dens_offset,
+         chnk_tot = chnk_per_m2 * CU_Area) %>%
+    mutate(sthd_per_m2 = predict(qrf_mods[['Steelhead']],
+                                newdata = select(., one_of(unique(sel_hab_mets$Metric))),
+                                what = pred_quant),
+           sthd_per_m2 = exp(sthd_per_m2) - dens_offset,
+           sthd_tot = sthd_per_m2 * CU_Area) %>%
   group_by(Site,
            Watershed,
            LON_DD,
            LAT_DD,
-           VisitID) %>%
-  summarise(across(fish_dens,
+           VisitID,
+           Lgth_Wet,
+           Area_Wet) %>%
+  summarise(across(c(chnk_tot, sthd_tot),
                    sum,
                    na.rm = T),
-            .groups = "drop")
-  
+            .groups = "drop") %>%
+  mutate(chnk_per_m = chnk_tot / Lgth_Wet,
+         chnk_per_m2 = chnk_tot / Area_Wet,
+         sthd_per_m = sthd_tot / Lgth_Wet,
+         sthd_per_m2 = sthd_tot / Area_Wet)
+
+} else {
+pred_hab_sites = qrf_mod_df %>%
+  left_join(fh) %>%
+    mutate(chnk_per_m = predict(qrf_mods[['Chinook']],
+                                newdata = select(., one_of(unique(sel_hab_mets$Metric))),
+                                what = pred_quant),
+           chnk_per_m = exp(chnk_per_m) - dens_offset,
+           chnk_per_m2 = chnk_per_m * Lgth_Wet / Area_Wet) %>%
+    mutate(sthd_per_m = predict(qrf_mods[['Steelhead']],
+                                newdata = select(., one_of(unique(sel_hab_mets$Metric))),
+                                what = pred_quant),
+           sthd_per_m = exp(sthd_per_m) - dens_offset,
+           sthd_per_m2 = sthd_per_m * Lgth_Wet / Area_Wet)
+}
+
 # only use sites that are in the 200 m reach dataset
 load(paste0(in_path,"champ_site_rch.rda"))
 
@@ -99,11 +123,21 @@ pred_hab_sites %<>%
 load(paste0(in_path,"rch_200.rda"))
 
 pred_hab_df = pred_hab_sites %>%
-    left_join(rch_200 %>%
+  select(-starts_with('chnk')) %>%
+  rename(cap_per_m = sthd_per_m,
+         cap_per_m2 = sthd_per_m2) %>%
+  mutate(Species = 'Steelhead') %>%
+  bind_rows(pred_hab_sites %>%
+              select(-starts_with('sthd')) %>%
+              rename(cap_per_m = chnk_per_m,
+                     cap_per_m2 = chnk_per_m2) %>%
+              mutate(Species = 'Chinook')) %>%
+  select(Species, UniqueID, Site:Area_Wet, starts_with("cap_")) %>%
+  left_join(rch_200 %>%
               st_drop_geometry() %>%
               select(UniqueID, chnk, sthd)) %>%
-  filter((species_choice == 'Steelhead' & sthd) |
-           (species_choice == 'Chinook' & chnk)) %>%
+  filter((Species == 'Steelhead' & sthd) |
+           (Species == 'Chinook' & chnk)) %>%
   # filter(cap_per_m > 0,
   #        cap_per_m2 > 0) %>%
   mutate_at(vars(Watershed),
@@ -436,7 +470,7 @@ load(paste0(in_path,"gaa.rda"))
 
 # pull in info about what strata each CHaMP site was assigned to (using 2014 as reference year)
 site_strata = pred_hab_df %>%
-  select(Site, Watershed) %>%
+  select(Species, Site, Watershed) %>%
   distinct() %>%
   left_join(gaa %>%
               select(Site,
@@ -458,7 +492,7 @@ site_strata = pred_hab_df %>%
   select(-site_num)
 
 # read in data from the CHaMP frame
-champ_frame_df = fread(paste0(in_path,"champ_frame_data.csv")) %>%
+champ_frame_df = fread(paste0(in_path,'champ_frame_data.csv')) %>%
   mutate(Target2014 = ifelse(is.na(AStrat2014), 'Non-Target', Target2014)) %>%
   mutate(AStrat2014 = ifelse(AStrat2014 == 'Entiat IMW', paste('EntiatIMW', GeoRchIMW, sep = '_'), AStrat2014)) %>%
   mutate(UseTypCHSP = ifelse(CHaMPshed == 'Lemhi' & AStrat2014 == 'Little Springs',
@@ -509,17 +543,15 @@ strata_length = chnk_strata_length %>%
 
 # how many sites in each strata? and what is the length of each strata?
 strata_tab = pred_hab_df %>%
-  select(Site, Watershed, fish_dens) %>%
+  select(Species, Site, Watershed, matches('per_m')) %>%
   left_join(site_strata) %>%
   filter(strata != 'Entiat_Entiat IMW') %>%
   mutate_at(vars(Watershed),
             list(fct_drop)) %>%
-  group_by(Watershed, strata) %>%
+  group_by(Species, Watershed, strata) %>%
   summarise(n_sites = n_distinct(Site)) %>%
   ungroup() %>%
-  left_join(strata_length %>%
-              filter(Species == species_choice) %>%
-              select(Watershed, strata, tot_length_km)) %>%
+  full_join(strata_length) %>%
   mutate(n_sites = if_else(is.na(n_sites),
                            as.integer(0),
                            n_sites)) %>%
@@ -527,6 +559,7 @@ strata_tab = pred_hab_df %>%
   mutate(site_weight = if_else(n_sites > 0,
                                tot_length_km / n_sites,
                                as.numeric(NA)))
+
 
 # test to see if we've accounted for all strata and most of each watershed
 strata_test = frame_strata %>%
@@ -536,7 +569,8 @@ strata_test = frame_strata %>%
   mutate(n_sites = if_else(is.na(n_sites),
                            as.integer(0),
                            n_sites)) %>%
-  arrange(Watershed, strata)
+  select(Species, everything()) %>%
+  arrange(Species, Watershed, strata)
 
 # # what frame strata don't have any sites in them?
 # strata_test %>%
@@ -584,12 +618,11 @@ strata_test = frame_strata %>%
 mod_data_weights = mod_data %>%
   left_join(site_strata) %>%
   left_join(strata_tab) %>%
-  left_join(fh %>% select(Site,Watershed,Lgth_Wet)) %>%
   # if site not in a strata, it gets weight proportionate to it's length
   mutate(site_weight = if_else(is.na(site_weight),
                                Lgth_Wet / 1000,
                                site_weight)) %>%
-  group_by(Watershed) %>%
+  group_by(Species, Watershed) %>%
   mutate(sum_weights = sum(site_weight)) %>%
   ungroup() %>%
   mutate(adj_weight = site_weight / sum_weights)
@@ -598,10 +631,9 @@ mod_data_weights = mod_data %>%
 # clean up some memory
 #-------------------------------------------------------------
 rm(champ_frame_df, champ_site_rch,
-   chnk_strata_length, sthd_strata_length, 
+   chnk_strata_length, sthd_strata_length,
    frame_strata, strata_length, strata_tab, strata_test,
-   gaa,
-   rch_200)
+   gaa)
 
 #-------------------------------------------------------------
 # Set up the survey design.
@@ -615,11 +647,7 @@ options(survey.lonely.psu = 'certainty')
 # extrapolation model formula
 full_form = as.formula(paste('log_qrf_cap ~ -1 + (', paste(extrap_covars, collapse = ' + '), ')'))
 
-#
-# fit various models 
-#
-#
-# BO -- This is where I left off
+# fit various models
 model_svy_df = mod_data_weights %>%
   gather(response, qrf_cap, matches('per_m')) %>%
   select(-(n_sites:sum_weights)) %>%
@@ -635,18 +663,18 @@ model_svy_df = mod_data_weights %>%
                                   weights = ~ adj_weight)
                       })) %>%
   mutate(mod_no_champ = map(design,
-                            .f = function(x) {
-                              svyglm(full_form,
-                                     design = x)
-                            }),
+                        .f = function(x) {
+                          svyglm(full_form,
+                                 design = x)
+                        }),
          mod_champ = map(design,
-                         .f = function(x) {
-                           svyglm(update(full_form, .~ . + Watershed),
-                                  design = x)
-                         })) %>%
+                            .f = function(x) {
+                              svyglm(update(full_form, .~ . + Watershed),
+                                     design = x)
+                            })) %>%
   arrange(Species, response) %>%
   ungroup()
-
+#WHERE I MADE IT TO - MR
 # make predictions at all possible reaches, using both models
 model_svy_df %<>%
   mutate(pred_all_rchs = list(rch_pred %>%
@@ -826,7 +854,7 @@ save(extrap_covars,
 #---------------------------
 # create a shapefile
 load(paste0(out_path,'modelFit/extrap_200rch_', mod_choice, '.rda'))
-load(paste0(in_path,"rch_200.rda"))
+#load(paste0(in_path,"rch_200.rda"))
 
 rch_200_cap = rch_200 %>%
   select(UniqueID, GNIS_Name, reach_leng:HUC8_code,
@@ -1416,14 +1444,14 @@ save(extrap_covars,
 
 #---------------------------
 # create a geopackage from random forest extrapolation
-load(paste0(in_path,"rch_200.rda"))
+#load(paste0(in_path,"rch_200.rda"))
 
 for(mod_choice in c('juv_summer',
                     'juv_summer_dash',
                     'redds',
                     'juv_winter')) {
   
-  load(paste0(out_path, 'modelFit/extrap_200rch_RF_', mod_choice, '.rda'))
+  #load(paste0(out_path, 'modelFit/extrap_200rch_RF_', mod_choice, '.rda'))
   
   
   rch_200_cap = rch_200 %>%

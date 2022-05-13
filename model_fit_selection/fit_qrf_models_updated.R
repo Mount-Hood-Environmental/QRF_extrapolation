@@ -37,7 +37,7 @@ data("hab_dict")
 mod_choice = c('juv_summer',
                'juv_summer_dash',
                'redds',
-               'juv_winter')[1]
+               'juv_winter')[3]
 
 cov_choice = c("Reduced")[1]
 
@@ -237,7 +237,7 @@ save(sel_hab_mets,
 #cov_choice = c('QRF2',
 #               'QRF2_trimmed')[2]
 
-load(paste0(out_path,'modelFit/',cov_choice,'_', mod_choice,'.rda'))
+load(paste0(out_path,'modelFit/', mod_choice,'_', cov_choice,'.rda'))
 
 ###
 rel_imp_p = tibble(Species = names(qrf_mods),
