@@ -23,7 +23,7 @@ theme_set(theme_bw())
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[3]
+               'juv_winter')[2]
 
 cov_choice = c("Reduced")[1]
 
@@ -46,7 +46,6 @@ if(mod_choice == "juv_summer") {
   load(paste0(in_path,'fh_redds_champ_2017_0522.rda'))
   fh = fh_redds_champ_2017 %>%
     select(Species, Site, Watershed, LON_DD, LAT_DD, 
-           VisitID,
            Lgth_Wet, Area_Wet)
 } else if (mod_choice == "juv_winter") {
   load(paste0(in_path,'fh_win_champ_2017_0522.rda'))
@@ -363,35 +362,6 @@ comp_summ = comp_df %>%
                                  (min_huc - min) / min,
                                  NA_real_))
 
-# tabyl(comp_summ,
-#       HUC6_name)
-
-# comp_summ %>%
-  # filter(!is.na(pct_min_under))
-  # arrange(pct_in_range)
-  # arrange(desc(pct_max_over))
-
-# comp_summ %>%
-#   filter(HUC6_name == "Clearwater") %>%
-#   pull(pct_in_range)
-
-# comp_df %>%
-#   filter(HUC6_name == "Upper Columbia",
-#          !in_range) %>%
-#   group_by(GNIS_Name) %>%
-#   summarise(n_rch = n_distinct(UniqueID),
-#             .groups = "drop") %>%
-#   arrange(desc(n_rch))
-
-
-
-# # correlation between numeric covariates
-# rch_200_df %>%
-#   select(one_of(extrap_num)) %>%
-#   cor(method = 'spearman',
-#       use = "pairwise")
-
-
 # Center the covariates
 # filter out reaches with covariates outside range of covariates used to fit extrapolation model
 out_range_rchs = rch_200_df %>%
@@ -421,7 +391,7 @@ extrap_summ = inner_join(pred_hab_df %>%
             metric_sd = sd(value, na.rm=T)) %>%
   ungroup()
 
-# extrapolation model data set, with normalized covariates
+# extrapolation model data set, with normalized covariates 
 mod_data = inner_join(pred_hab_df,
                       rch_200_df %>%
                         select(UniqueID, one_of(extrap_num))) %>%
@@ -429,7 +399,7 @@ mod_data = inner_join(pred_hab_df,
   left_join(extrap_summ) %>%
   mutate(norm_value = (value - metric_mean) / metric_sd) %>%
   select(-(value:metric_sd)) %>%
-  spread(metric_nm, norm_value) %>%
+  pivot_wider(names_from = metric_nm, values_from =  norm_value, values_fn = mean) %>%
   left_join(rch_200_df %>%
               select(UniqueID, one_of(extrap_catg)))
 
@@ -648,6 +618,7 @@ options(survey.lonely.psu = 'certainty')
 full_form = as.formula(paste('log_qrf_cap ~ -1 + (', paste(extrap_covars, collapse = ' + '), ')'))
 
 # fit various models
+#summer and redd models error out here, issue is that the variables are somehow lists. This is caused during the pivot_wider() function, as there are 'duplicates'
 model_svy_df = mod_data_weights %>%
   gather(response, qrf_cap, matches('per_m')) %>%
   select(-(n_sites:sum_weights)) %>%
@@ -674,8 +645,8 @@ model_svy_df = mod_data_weights %>%
                             })) %>%
   arrange(Species, response) %>%
   ungroup()
-#WHERE I MADE IT TO - MR
 # make predictions at all possible reaches, using both models
+#Winter and summer models error out here due to the 'regime' levels
 model_svy_df %<>%
   mutate(pred_all_rchs = list(rch_pred %>%
                                 select(UniqueID, one_of(extrap_covars)) %>%
@@ -701,7 +672,7 @@ model_svy_df %<>%
                               pred_all_rchs,
                               .f = function(x, y) {
                                 y %>%
-                                  select(UniqueID) %>%
+                                  #select(UniqueID) %>%
                                   bind_cols(predict(x,
                                                     newdata = y,
                                                     se = T,
