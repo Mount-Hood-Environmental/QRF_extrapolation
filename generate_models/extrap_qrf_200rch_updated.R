@@ -23,7 +23,7 @@ theme_set(theme_bw())
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[2]
+               'juv_winter')[3]
 
 cov_choice = c("Reduced")[1]
 
@@ -153,8 +153,8 @@ rch_200_df = rch_200 %>%
   mutate_at(vars(regime),
             list(~ as.factor(as.character(.))))
 
-extrap_covars = names(rch_200_df)[c(18:20,
-                                    23:29,
+extrap_covars = names(rch_200_df)[c(16, 18, 20,
+                                    24:29,
                                     37, 40:42)]
 
 # what type of covariate is each GAA?
@@ -435,7 +435,7 @@ rch_pred = rch_200_df %>%
 #----------------------------------------
 # pull in survey design related data
 #----------------------------------------
-# Calculate GRTS design weights.
+# Calculate GRTS design weights. Is this required? -MR
 load(paste0(in_path,"gaa.rda"))
 
 # pull in info about what strata each CHaMP site was assigned to (using 2014 as reference year)
@@ -820,7 +820,7 @@ save(extrap_covars,
      mod_data_weights,
      model_svy_df,
      all_preds,
-     file = paste0(out_path,'modelFit/extrap_200rch_', mod_choice, '.rda'))
+     file = paste0(out_path,'modelFit/extrap_200rch_', mod_choice, '_', '.rda'))
 
 #---------------------------
 # create a shapefile
