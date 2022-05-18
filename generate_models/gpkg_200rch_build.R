@@ -36,7 +36,6 @@ load(paste0(out_path,'modelFit/extrap_200rch_',cov_choice,"_", mod_choice, '.rda
 
 # Split and append each one subsequently to help speed it up
 
-
 rch_200_cap = rch_200 %>%
   select(UniqueID, GNIS_Name, reach_leng:HUC8_code,
          chnk, chnk_use, chnk_ESU_DPS:chnk_NWR_NAME,
@@ -63,8 +62,4 @@ for(i in 1:length(rch_200_cap_split)) {
            driver = 'GPKG',
            append = if_else(i == 1, F, T))
 }
-
-
-
-
 
