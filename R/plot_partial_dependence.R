@@ -49,6 +49,7 @@ plot_partial_dependence = function(rf_mod,
   # names of covariates
   covars = rel_imp$Metric
   if(is.null(plot_covars)) plot_covars = covars
+  plot_covars = plot_covars[plot_covars != "Watershed"]
   
   # get means and ranges of all
   covar_range = data %>%
