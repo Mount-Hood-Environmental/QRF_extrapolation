@@ -992,25 +992,43 @@ save(extrap_covars,
 # to account for design weights, might need to create new dataset by resampling original data, with probabilities weighted by design weights - update: this may not be a good idea, I think it biases the out-of-bag error rates
 
 # extrapolation model formula
-full_form = as.formula(paste('log_qrf_cap ~ -1 + (', paste(extrap_covars, collapse = ' + '), ')'))
+full_form = as.formula(paste('qrf_cap ~ -1 + (', paste(extrap_covars, collapse = ' + '), ')'))
 
 model_rf_df = inner_join(pred_hab_df,
                          rch_200_df %>%
-                           select(UniqueID, one_of(extrap_covars))) %>%
+                           select(UniqueID, one_of(extrap_covars)))
+
+model_rf_df %<>%
   gather(response, qrf_cap, matches('per_m')) %>%
-  # mutate(log_qrf_cap = log(qrf_cap)) %>%
-  group_by(Species, response) %>%
-  nest() %>%
-  ungroup() %>%
-  mutate(mod_no_champ = map(data,
-                            .f = function(x) {
-                              randomForest(update(full_form, qrf_cap ~ .),
-                                           data = x,
-                                           ntree = 2000)
-                            }),
+  mutate(Species_response = paste0(Species,'_',response)) %>%
+  ungroup()
+
+extrap_mets = as_tibble(cbind(c(rep(unique(paste0(model_rf_df$Species,'_',model_rf_df$response)), length(extrap_covars))), rep(extrap_covars, length(unique(paste0(model_rf_df$Species,'_',model_rf_df$response)))))); names(extrap_mets) = c('Species_response','Metric')
+
+  #mutate(log_qrf_cap = log(qrf_cap)) %>%
+  #group_by(Species_response) %>%
+model_rf_df %<>%  split(list(.$Species_response)) %>%
+  #nest() %>%
+  map(.f = function(z) {
+    
+    #Dumb but necessary
+    covars = extrap_mets %>%
+      filter(Species_response == unique(z$Species_response)) %>%
+      pull(Metric)
+    
+  mod_no_champ = quantregForest(x = z %>% 
+                                  select(one_of(extrap_covars)),
+                                y = z %>%
+                                  mutate(across(qrf_cap,
+                                                ~ .)) %>%
+                                pull(qrf_cap),
+                                keep.inbag = T,
+                                  ntree = 2000)
+  return(mod_no_champ)
+                            })
          mod_champ = map(data,
                          .f = function(x) {
-                           randomForest(update(full_form, qrf_cap ~. + Watershed),
+                           quantregForest(update(full_form, qrf_cap ~. + Watershed),
                                         data = x,
                                         ntree = 2000)
                          })) %>%
