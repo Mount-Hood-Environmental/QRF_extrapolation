@@ -43,12 +43,8 @@ win_juv_sf_new_extrap = st_read(paste0(out_path,'gpkg/Rch_Cap_RF_Reduced_juv_win
 redds_sf_new_extrap = st_read(paste0(out_path,'gpkg/Rch_Cap_RF_Reduced_redds.gpkg')) %>%
   st_transform(WS_crs)
 
-# read in Upper Salmon watershed boundaries from NAS -- For some reason, I can't copy the Upper_Salmon_WBD.shp to the NAS. Going to troubleshoot later -- BO
-#upper_sal_sf = st_read(paste0("S:/main/data/habitat/watershed_boundaries/WBDHU12.shp")) %>%
-#  st_transform(WS_crs)
-
-# Read off local copy until I can figure out copy/paste issue with NAS
-US_huc_sf = st_read(paste0("C:/Users/bolde/Documents/GIS_Core_Data/Upper_salmon/Upper_Salmon_WBD.shp")) %>%
+# read in Upper Salmon watershed boundaries from NAS -- THE Upper_Salmon_WBD.shp FILE WAS MANUALLY CREATED BY BO AND ADDED TO THE GPKG FOLDER --
+US_huc_sf = st_read(paste0(out_path,'gpkg/Upper_Salmon_WBD.shp')) %>%
   st_transform(WS_crs) %>%
   mutate(HUC8 = str_sub(HUC12, 1, 8),
          HUC10 = str_sub(HUC12, 1, 10),
