@@ -1007,7 +1007,8 @@ extrap_mets = as_tibble(cbind(c(rep(unique(paste0(model_rf_df$Species,'_',model_
 
   #mutate(log_qrf_cap = log(qrf_cap)) %>%
   #group_by(Species_response) %>%
-model_rf_df %<>%  split(list(.$Species_response)) %>%
+rf_mods = model_rf_df %>% 
+  split(list(.$Species_response)) %>%
   #nest() %>%
   map(.f = function(z) {
     
@@ -1016,7 +1017,7 @@ model_rf_df %<>%  split(list(.$Species_response)) %>%
       filter(Species_response == unique(z$Species_response)) %>%
       pull(Metric)
     
-  mod_no_champ = quantregForest(x = z %>% 
+mod_no_champ = quantregForest(x = z %>% 
                                   select(one_of(extrap_covars)),
                                 y = z %>%
                                   mutate(across(qrf_cap,
@@ -1025,7 +1026,7 @@ model_rf_df %<>%  split(list(.$Species_response)) %>%
                                 keep.inbag = T,
                                   ntree = 2000)
   return(mod_no_champ)
-                            })
+                            }) %>%
          mod_champ = map(data,
                          .f = function(x) {
                            quantregForest(update(full_form, qrf_cap ~. + Watershed),
