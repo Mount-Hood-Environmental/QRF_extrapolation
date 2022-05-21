@@ -992,7 +992,7 @@ save(extrap_covars,
 # to account for design weights, might need to create new dataset by resampling original data, with probabilities weighted by design weights - update: this may not be a good idea, I think it biases the out-of-bag error rates
 
 # extrapolation model formula
-full_form = as.formula(paste('qrf_cap ~ -1 + (', paste(extrap_covars, collapse = ' + '), ')'))
+#full_form = as.formula(paste('qrf_cap ~ -1 + (', paste(extrap_covars, collapse = ' + '), ')'))
 
 model_rf_df = inner_join(pred_hab_df,
                          rch_200_df %>%
@@ -1003,21 +1003,14 @@ model_rf_df %<>%
   mutate(Species_response = paste0(Species,'_',response)) %>%
   ungroup()
 
-extrap_mets = as_tibble(cbind(c(rep(unique(paste0(model_rf_df$Species,'_',model_rf_df$response)), length(extrap_covars))), rep(extrap_covars, length(unique(paste0(model_rf_df$Species,'_',model_rf_df$response)))))); names(extrap_mets) = c('Species_response','Metric')
 
-  #mutate(log_qrf_cap = log(qrf_cap)) %>%
-  #group_by(Species_response) %>%
-rf_mods = model_rf_df %>% 
-  split(list(.$Species_response)) %>%
-  #nest() %>%
-  map(.f = function(z) {
+model_rf_df %<>% 
+  group_by(Species,response) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate(mod_no_champ = map(data,.f = function(z) {
     
-    #Dumb but necessary
-    covars = extrap_mets %>%
-      filter(Species_response == unique(z$Species_response)) %>%
-      pull(Metric)
-    
-mod_no_champ = quantregForest(x = z %>% 
+  mod_no_champ = quantregForest(x = z %>% 
                                   select(one_of(extrap_covars)),
                                 y = z %>%
                                   mutate(across(qrf_cap,
@@ -1026,13 +1019,21 @@ mod_no_champ = quantregForest(x = z %>%
                                 keep.inbag = T,
                                   ntree = 2000)
   return(mod_no_champ)
-                            }) %>%
-         mod_champ = map(data,
-                         .f = function(x) {
-                           quantregForest(update(full_form, qrf_cap ~. + Watershed),
-                                        data = x,
-                                        ntree = 2000)
+                            })) %>%
+
+  mutate(mod_champ = map(data, .f = function(z) {
+    
+  mod_champ = quantregForest(x = z %>% 
+                                    select(one_of(c(extrap_covars,"Watershed"))),
+                                  y = z %>%
+                                    mutate(across(qrf_cap,
+                                                  ~ .)) %>%
+                                  pull(qrf_cap),
+                                  keep.inbag = T,
+                                  ntree = 2000)
+  return(mod_champ)
                          })) %>%
+
   # make predictions at all possible reaches, using both models
   mutate(pred_all_rchs = list(rch_200_df %>%
                                 mutate(in_covar_range = ifelse(UniqueID %in% out_range_rchs, F, T)) %>%
@@ -1064,27 +1065,18 @@ mod_no_champ = quantregForest(x = z %>%
   mutate(pred_no_champ = map2(mod_no_champ,
                               pred_all_rchs,
                               .f = function(x, y) {
-                                # this doesn't work because I run out of memory. So I can't get a SE on non-CHaMP predictions
-                                # preds = predict(x,
-                                #                 newdata = y,
-                                #                 predict.all = T)
-                                # 
-                                # y %>%
-                                #   select(UniqueID) %>%
-                                #   bind_cols(tibble(pred_cap = preds$aggregate,
-                                #                    pred_se = preds$individual %>%
-                                #                      apply(1, sd)))
-                                
+                               
                                 # split into smaller datasets by HUC
                                 y %>%
                                   group_by(HUC8_code) %>%
-                                  group_split() %>%
-                                  map_df(.f = function(z) {
+                                  group_split() %>% #This is the last line that works. The predict() function errors out stating that 'newdata' (z/pred_all_rchs) has missing values. I haven't been able to find anything that's missing. Also, the 'model_rf_df' object looks exactly the same as if I ran this with the old RF extrap - which for some reason runs with this code. The issue must lie with how 'pred_all_rchs' and 'pred_champ_rchs' are generated.
+                                  map(.f = function(z) {
                                     preds = predict(x,
                                                     newdata = z,
-                                                    predict.all = T)
+                                                    predict.all = T,
+                                                    what = mean)
                                     
-                                    z %>%
+                                    y %>%
                                       select(UniqueID) %>%
                                       bind_cols(tibble(pred_cap = preds$aggregate,
                                                        pred_se = preds$individual %>%
