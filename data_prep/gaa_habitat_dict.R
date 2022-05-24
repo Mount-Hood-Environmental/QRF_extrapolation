@@ -8,7 +8,7 @@ library(tidyverse)
 
 # GAA table
 gaa_hab_dict = tibble(
-  Metric = c("slope",
+  ShortName = c("slope",
              "rel_slope",
              "Sinuosity",
              #"regime",
@@ -22,8 +22,23 @@ gaa_hab_dict = tibble(
              "DistPrin1",
              "NatPrin1",
              "NatPrin2",
-             "Elevation"),
-  Description = c(
+             "end_elev"),
+  Name = c(
+    "Gradient %",
+    "Relative slope",
+    "Sinuosity",
+    "Alpine accumulation",
+    "Fines accumulation",
+    "Flow accumulation",
+    "Gravel accumulation",
+    "Precipitation accumulation",
+    "Floodplain width",
+    "Avg Aug stream temperature",
+    "Disturbance PCA 1",
+    "Natural PCA 1",
+    "Natural PCA 2",
+    "Elevation"),
+  DescriptiveText = c(
     "Stream gradient (%).",
     "Relative slope. Reach slope minus upstream slope.",
     "Reach sinuosity. 1 = straight, 1 < sinuous.",
@@ -38,7 +53,7 @@ gaa_hab_dict = tibble(
     "Disturbance Classification PCA 1 Score (Whittier et al. 2011).",
     "Natural Classification PCA 1 Score (Whittier et al. 2011).",
     "Natural Classification PCA 2 Score (Whittier et al. 2011).",
-    "Elevation"
+    "Elevation at downstream end of reach"
   ))
 
 #Save habitat dict to repo
