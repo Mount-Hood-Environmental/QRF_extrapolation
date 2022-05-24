@@ -84,25 +84,25 @@ stl_ri = tibble(Response = model_rf_df$response[3:4],
 chk_m = plot_partial_dependence(model_rf_df$mod_no_champ[[1]],
                                 model_rf_df$data[[1]],
                                 data_dict = gaa_hab_dict,
-                                log_transform = T)+
+                                log_transform = F)+
   labs(title = "Chinook", y = "Prediction per meter")
 
 chk_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[2]],
                                  model_rf_df$data[[2]],
                                  data_dict = gaa_hab_dict,
-                                 log_transform = T)+
+                                 log_transform = F)+
   labs(title = "Chinook", y = bquote('Prediction per meter'^2))
   
 stl_m = plot_partial_dependence(model_rf_df$mod_no_champ[[3]],
                                 model_rf_df$data[[3]],
                                 data_dict = gaa_hab_dict,
-                                log_transform = T)+
+                                log_transform = F)+
   labs(title = "Steelhead", y = "Prediction per meter")
   
 stl_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[4]],
                                  model_rf_df$data[[4]],
                                  data_dict = gaa_hab_dict,
-                                 log_transform = T)+
+                                 log_transform = F)+
   labs(title = "Steelhead", y = bquote('Prediction per meter'^2))
 
 
