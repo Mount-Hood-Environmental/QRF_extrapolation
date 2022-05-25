@@ -18,9 +18,7 @@ library(data.table)
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[3]
-
-cov_choice = c("Reduced")[1]
+               'juv_winter')[1]
 
 in_path = 'S:/main/data/qrf/gitrepo_data/input/'
 out_path = 'S:/main/data/qrf/gitrepo_data/output/'
@@ -28,8 +26,8 @@ out_path = 'S:/main/data/qrf/gitrepo_data/output/'
 load(paste0(in_path,"rch_200.rda"))
 
 # -----------------------------------------------------------------
-# Regression extrapolation 
-load(paste0(out_path,'modelFit/extrap_200rch_',cov_choice,"_", mod_choice, '.rda'))
+# Log RF extrapolation 
+load(paste0(out_path,'modelFit/extrap_200rch_RF_log_', mod_choice, '.rda'))
 
 # Split and append each one subsequently to help speed it up
 
@@ -55,7 +53,7 @@ for(i in 1:length(rch_200_cap_split)) {
             "with", nrow(rch_200_cap_split[[i]]), " rows\n"))
   
   st_write(rch_200_cap_split[[i]],
-           dsn = paste0(out_path,'gpkg/Rch_Cap_',cov_choice,"_", mod_choice, '.gpkg'),
+           dsn = paste0(out_path,'gpkg/Rch_Cap_RF_log_', mod_choice, '.gpkg'),
            driver = 'GPKG',
            append = if_else(i == 1, F, T))
 }
@@ -64,7 +62,7 @@ for(i in 1:length(rch_200_cap_split)) {
 # ------------------------------------------------------------------
 
 # RF extrapolation
-load(paste0(out_path,'modelFit/extrap_200rch_RF_',cov_choice,"_", mod_choice, '.rda'))
+load(paste0(out_path,'modelFit/extrap_200rch_RF_', mod_choice, '.rda'))
 
 # Split and append each one subsequently to help speed it up
 
@@ -90,7 +88,7 @@ for(i in 1:length(rch_200_cap_split)) {
             "with", nrow(rch_200_cap_split[[i]]), " rows\n"))
   
   st_write(rch_200_cap_split[[i]],
-           dsn = paste0(out_path,'gpkg/Rch_Cap_RF_',cov_choice,"_", mod_choice, '.gpkg'),
+           dsn = paste0(out_path,'gpkg/Rch_Cap_RF_', mod_choice, '.gpkg'),
            driver = 'GPKG',
            append = if_else(i == 1, F, T))
 }

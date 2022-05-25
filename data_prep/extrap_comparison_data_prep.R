@@ -36,11 +36,11 @@ redds_sf_old_extrap = st_read("S:/main/data/qrf/extrapolations/Rch_Cap_RF_redds.
   st_transform(WS_crs)
 
 # read in new 2022 RF extrapolations
-sum_juv_sf_new_extrap = st_read(paste0(out_path,'gpkg/Rch_Cap_RF_Reduced_juv_summer.gpkg')) %>%
+sum_juv_sf_new_extrap = st_read(paste0(out_path,'gpkg/Rch_Cap_RF_log_juv_summer.gpkg')) %>%
   st_transform(WS_crs)
-win_juv_sf_new_extrap = st_read(paste0(out_path,'gpkg/Rch_Cap_RF_Reduced_juv_winter.gpkg')) %>%
+win_juv_sf_new_extrap = st_read(paste0(out_path,'gpkg/Rch_Cap_RF_log_juv_winter.gpkg')) %>%
   st_transform(WS_crs)
-redds_sf_new_extrap = st_read(paste0(out_path,'gpkg/Rch_Cap_RF_Reduced_redds.gpkg')) %>%
+redds_sf_new_extrap = st_read(paste0(out_path,'gpkg/Rch_Cap_RF_log_redds.gpkg')) %>%
   st_transform(WS_crs)
 
 # read in Upper Salmon watershed boundaries from NAS -- THE Upper_Salmon_WBD.shp FILE WAS MANUALLY CREATED BY BO AND ADDED TO THE GPKG FOLDER --
