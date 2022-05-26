@@ -1,0 +1,547 @@
+---
+title: "Extrapolation model selection"
+author: "Mark Roes"
+date: "5/25/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(quantregForest)
+library(kableExtra)
+library(here)
+
+
+knitr::opts_chunk$set(echo = TRUE)
+
+mod_path = 'S:/main/data/qrf/gitrepo_data/output/modelFit/'
+
+source(here("R/plot_partial_dependence.r"))
+
+load(here("data/gaa_hab_dict.rda"))
+```
+
+Below are summary statistics and figures for a series of extraplation models. They are: Random forest log-response, random forest non-transformed response, and GLM log-response. Summary tables are presented by CHaMP watershed, with NA representing summary statistics for all non-CHaMP watersheds.
+
+Figures are presented for the random forest log-response model. These figures are based on the model built for extrapolation beyond CHaMP watersheds, so it does not include a watershed effect. In practice, any extrapolations made within CHaMP watersheds include a watershed effect, while extrapolations outside of these watersheds do not.
+
+# Winter model
+
+**RF, log-response**
+```{r rf_log_win summary stats, echo = F, message = F}
+mod_choice = c('juv_summer',
+               'redds',
+               'juv_winter')[3]
+
+cov_choice = c("Reduced")[1]
+
+log_mod = c("log_","")[1]
+
+load(paste0(mod_path,"extrap_200rch_RF_",log_mod,mod_choice,'.rda'))
+
+
+all_preds %<>%
+  filter(chnk == TRUE | sthd == TRUE) %>%
+  pivot_longer(cols = c("chnk","sthd")) 
+
+rf_log_win_chk = all_preds %>%
+  filter(name == 'chnk' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(chnk_per_m, probs = .5),
+               m.se = quantile(chnk_per_m_se, probs = .5),
+               p25.m = quantile(chnk_per_m, probs = .25),
+               p75.m = quantile(chnk_per_m, probs = .75),
+               max.m = max(chnk_per_m),
+               p50.m2 = quantile(chnk_per_m2, probs = .5),
+               m2.se = quantile(chnk_per_m2_se, probs = .5),
+               p25.m2 = quantile(chnk_per_m2, probs = .25),
+               p75.m2 = quantile(chnk_per_m2, probs = .75),
+               max.m2 = max(chnk_per_m2))
+  
+rf_log_win_stl = all_preds %>%
+  filter(name == 'sthd' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(sthd_per_m, probs = .5),
+               m.se = quantile(sthd_per_m_se, probs = .5),
+               p25.m = quantile(sthd_per_m, probs = .25),
+               p75.m = quantile(sthd_per_m, probs = .75),
+               max.m = max(sthd_per_m),
+               p50.m2 = quantile(sthd_per_m2, probs = .5),
+               m2.se = quantile(sthd_per_m2_se, probs = .5),
+               p25.m2 = quantile(sthd_per_m2, probs = .25),
+               p75.m2 = quantile(sthd_per_m2, probs = .75),
+               max.m2 = max(sthd_per_m2))
+
+kable(rf_log_win_chk, caption = "Chinook", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3 )
+
+kable(rf_log_win_stl, caption = "Steelhead", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3)
+
+#Figures
+load(here(paste0("output/figures/","RF_extrap_", log_mod, mod_choice,'_', cov_choice,".rda")))
+
+
+
+chk_ri
+chk_m
+chk_m2
+stl_ri
+stl_m
+stl_m2
+
+rm(model_rf_df,
+   pred_hab_df,
+   all_preds,
+   chk_ri,
+   chk_m,
+   chk_m2,
+   stl_ri,
+   stl_m,
+   stl_m2)
+```
+
+**RF, untransformed response**
+```{r rf_win summary stats, echo = F}
+mod_choice = c('juv_summer',
+               'redds',
+               'juv_winter')[3]
+
+cov_choice = c("Reduced")[1]
+
+log_mod = c("log_","")[2]
+
+load(paste0(mod_path,"extrap_200rch_RF_",log_mod,mod_choice,'.rda'))
+
+all_preds %<>%
+  filter(chnk == TRUE | sthd == TRUE) %>%
+  pivot_longer(cols = c("chnk","sthd")) 
+
+rf_win_chk = all_preds %>%
+  filter(name == 'chnk' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(chnk_per_m, probs = .5),
+               m.se = quantile(chnk_per_m_se, probs = .5),
+               p25.m = quantile(chnk_per_m, probs = .25),
+               p75.m = quantile(chnk_per_m, probs = .75),
+               max.m = max(chnk_per_m),
+               p50.m2 = quantile(chnk_per_m2, probs = .5),
+               m2.se = quantile(chnk_per_m2_se, probs = .5),
+               p25.m2 = quantile(chnk_per_m2, probs = .25),
+               p75.m2 = quantile(chnk_per_m2, probs = .75),
+               max.m2 = max(chnk_per_m2))
+  
+rf_win_stl = all_preds %>%
+  filter(name == 'sthd' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(sthd_per_m, probs = .5),
+               m.se = quantile(sthd_per_m_se, probs = .5),
+               p25.m = quantile(sthd_per_m, probs = .25),
+               p75.m = quantile(sthd_per_m, probs = .75),
+               max.m = max(sthd_per_m),
+               p50.m2 = quantile(sthd_per_m2, probs = .5),
+               m2.se = quantile(sthd_per_m2_se, probs = .5),
+               p25.m2 = quantile(sthd_per_m2, probs = .25),
+               p75.m2 = quantile(sthd_per_m2, probs = .75),
+               max.m2 = max(sthd_per_m2))
+
+kable(rf_log_win_chk, caption = "Chinook", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3 )
+
+kable(rf_log_win_stl, caption = "Steelhead", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3)
+
+
+
+```
+
+**GLM, log-response**
+```{r glm_win summary stats, echo = F}
+mod_choice = c('juv_summer',
+               'redds',
+               'juv_winter')[3]
+
+cov_choice = c("Reduced")[1]
+
+load(paste0(mod_path,"extrap_200rch_",cov_choice,'_',mod_choice,'.rda'))
+
+all_preds %<>%
+  filter(chnk == TRUE | sthd == TRUE) %>%
+  pivot_longer(cols = c("chnk","sthd")) 
+
+glm_win_chk = all_preds %>%
+  filter(name == 'chnk' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(chnk_per_m, probs = .5),
+               m.se = quantile(chnk_per_m_se, probs = .5),
+               p25.m = quantile(chnk_per_m, probs = .25),
+               p75.m = quantile(chnk_per_m, probs = .75),
+               max.m = max(chnk_per_m),
+               p50.m2 = quantile(chnk_per_m2, probs = .5),
+               m2.se = quantile(chnk_per_m2_se, probs = .5),
+               p25.m2 = quantile(chnk_per_m2, probs = .25),
+               p75.m2 = quantile(chnk_per_m2, probs = .75),
+               max.m2 = max(chnk_per_m2))
+  
+glm_win_stl = all_preds %>%
+  filter(name == 'sthd' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(sthd_per_m, probs = .5),
+               m.se = quantile(sthd_per_m_se, probs = .5),
+               p25.m = quantile(sthd_per_m, probs = .25),
+               p75.m = quantile(sthd_per_m, probs = .75),
+               max.m = max(sthd_per_m),
+               p50.m2 = quantile(sthd_per_m2, probs = .5),
+               m2.se = quantile(sthd_per_m2_se, probs = .5),
+               p25.m2 = quantile(sthd_per_m2, probs = .25),
+               p75.m2 = quantile(sthd_per_m2, probs = .75),
+               max.m2 = max(sthd_per_m2))
+
+kable(rf_log_win_chk, caption = "Chinook", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3 )
+
+kable(rf_log_win_stl, caption = "Steelhead", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3)
+
+
+```
+
+
+# Summer model
+
+**RF, log-response**
+```{r rf_log_sum summary stats, echo = F, message = F}
+mod_choice = c('juv_summer',
+               'redds',
+               'juv_winter')[1]
+
+cov_choice = c("Reduced")[1]
+
+log_mod = c("log_","")[1]
+
+load(paste0(mod_path,"extrap_200rch_RF_",log_mod,mod_choice,'.rda'))
+
+
+all_preds %<>%
+  filter(chnk == TRUE | sthd == TRUE) %>%
+  pivot_longer(cols = c("chnk","sthd")) 
+
+rf_log_sum_chk = all_preds %>%
+  filter(name == 'chnk' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(chnk_per_m, probs = .5),
+               m.se = quantile(chnk_per_m_se, probs = .5),
+               p25.m = quantile(chnk_per_m, probs = .25),
+               p75.m = quantile(chnk_per_m, probs = .75),
+               max.m = max(chnk_per_m),
+               p50.m2 = quantile(chnk_per_m2, probs = .5),
+               m2.se = quantile(chnk_per_m2_se, probs = .5),
+               p25.m2 = quantile(chnk_per_m2, probs = .25),
+               p75.m2 = quantile(chnk_per_m2, probs = .75),
+               max.m2 = max(chnk_per_m2))
+  
+rf_log_sum_stl = all_preds %>%
+  filter(name == 'sthd' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(sthd_per_m, probs = .5),
+               m.se = quantile(sthd_per_m_se, probs = .5),
+               p25.m = quantile(sthd_per_m, probs = .25),
+               p75.m = quantile(sthd_per_m, probs = .75),
+               max.m = max(sthd_per_m),
+               p50.m2 = quantile(sthd_per_m2, probs = .5),
+               m2.se = quantile(sthd_per_m2_se, probs = .5),
+               p25.m2 = quantile(sthd_per_m2, probs = .25),
+               p75.m2 = quantile(sthd_per_m2, probs = .75),
+               max.m2 = max(sthd_per_m2))
+
+kable(rf_log_sum_chk, caption = "Chinook", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3 )
+
+kable(rf_log_sum_stl, caption = "Steelhead", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3)
+
+#Figures
+load(here(paste0("output/figures/","RF_extrap_", log_mod, mod_choice,'_', cov_choice,".rda")))
+
+
+
+chk_ri
+chk_m
+chk_m2
+stl_ri
+stl_m
+stl_m2
+
+rm(model_rf_df,
+   pred_hab_df,
+   all_preds,
+   chk_ri,
+   chk_m,
+   chk_m2,
+   stl_ri,
+   stl_m,
+   stl_m2)
+```
+
+**RF, untransformed response**
+```{r rf_sum summary stats, echo = F}
+mod_choice = c('juv_summer',
+               'redds',
+               'juv_winter')[1]
+
+cov_choice = c("Reduced")[1]
+
+log_mod = c("log_","")[2]
+
+load(paste0(mod_path,"extrap_200rch_RF_",log_mod,mod_choice,'.rda'))
+
+all_preds %<>%
+  filter(chnk == TRUE | sthd == TRUE) %>%
+  pivot_longer(cols = c("chnk","sthd")) 
+
+rf_sum_chk = all_preds %>%
+  filter(name == 'chnk' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(chnk_per_m, probs = .5),
+               m.se = quantile(chnk_per_m_se, probs = .5),
+               p25.m = quantile(chnk_per_m, probs = .25),
+               p75.m = quantile(chnk_per_m, probs = .75),
+               max.m = max(chnk_per_m),
+               p50.m2 = quantile(chnk_per_m2, probs = .5),
+               m2.se = quantile(chnk_per_m2_se, probs = .5),
+               p25.m2 = quantile(chnk_per_m2, probs = .25),
+               p75.m2 = quantile(chnk_per_m2, probs = .75),
+               max.m2 = max(chnk_per_m2))
+  
+rf_sum_stl = all_preds %>%
+  filter(name == 'sthd' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(sthd_per_m, probs = .5),
+               m.se = quantile(sthd_per_m_se, probs = .5),
+               p25.m = quantile(sthd_per_m, probs = .25),
+               p75.m = quantile(sthd_per_m, probs = .75),
+               max.m = max(sthd_per_m),
+               p50.m2 = quantile(sthd_per_m2, probs = .5),
+               m2.se = quantile(sthd_per_m2_se, probs = .5),
+               p25.m2 = quantile(sthd_per_m2, probs = .25),
+               p75.m2 = quantile(sthd_per_m2, probs = .75),
+               max.m2 = max(sthd_per_m2))
+
+kable(rf_sum_chk, caption = "Chinook", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3 )
+
+kable(rf_sum_stl, caption = "Steelhead", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3)
+
+```
+
+**GLM, log-response**
+```{r glm_sum summary stats, echo = F}
+mod_choice = c('juv_summer',
+               'redds',
+               'juv_winter')[1]
+
+cov_choice = c("Reduced")[1]
+
+load(paste0(mod_path,"extrap_200rch_",cov_choice,'_',mod_choice,'.rda'))
+
+all_preds %<>%
+  filter(chnk == TRUE | sthd == TRUE) %>%
+  pivot_longer(cols = c("chnk","sthd")) 
+
+glm_sum_chk = all_preds %>%
+  filter(name == 'chnk' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(chnk_per_m, probs = .5),
+               m.se = quantile(chnk_per_m_se, probs = .5),
+               p25.m = quantile(chnk_per_m, probs = .25),
+               p75.m = quantile(chnk_per_m, probs = .75),
+               max.m = max(chnk_per_m),
+               p50.m2 = quantile(chnk_per_m2, probs = .5),
+               m2.se = quantile(chnk_per_m2_se, probs = .5),
+               p25.m2 = quantile(chnk_per_m2, probs = .25),
+               p75.m2 = quantile(chnk_per_m2, probs = .75),
+               max.m2 = max(chnk_per_m2))
+  
+glm_sum_stl = all_preds %>%
+  filter(name == 'sthd' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.m = quantile(sthd_per_m, probs = .5),
+               m.se = quantile(sthd_per_m_se, probs = .5),
+               p25.m = quantile(sthd_per_m, probs = .25),
+               p75.m = quantile(sthd_per_m, probs = .75),
+               max.m = max(sthd_per_m),
+               p50.m2 = quantile(sthd_per_m2, probs = .5),
+               m2.se = quantile(sthd_per_m2_se, probs = .5),
+               p25.m2 = quantile(sthd_per_m2, probs = .25),
+               p75.m2 = quantile(sthd_per_m2, probs = .75),
+               max.m2 = max(sthd_per_m2))
+
+kable(glm_sum_chk, caption = "Chinook", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3 )
+
+kable(glm_sum_stl, caption = "Steelhead", col.names = c("Watershed", "Median per m", "Per m SE", "Q25 per m", "Q75 per m", "Max per m","Median per m2", "Per m2 SE", "Q25 per m2", "Q75 per m2", "Max per m2"), digits = 3)
+
+```
+
+# Redd model
+
+**RF, log-response**
+```{r rf_log_redd summary stats, echo = F, message = F}
+mod_choice = c('juv_summer',
+               'redds',
+               'juv_winter')[2]
+
+cov_choice = c("Reduced")[1]
+
+log_mod = c("log_","")[1]
+
+load(paste0(mod_path,"extrap_200rch_RF_",log_mod,mod_choice,'.rda'))
+
+
+all_preds %<>%
+  filter(chnk == TRUE | sthd == TRUE) %>%
+  pivot_longer(cols = c("chnk","sthd")) 
+
+rf_log_redd_chk = all_preds %>%
+  filter(name == 'chnk' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.km = quantile(chnk_per_m, probs = .5)*1000,
+               km.se = quantile(chnk_per_m_se, probs = .5)*1000,
+               p25.km = quantile(chnk_per_m, probs = .25)*1000,
+               p75.km = quantile(chnk_per_m, probs = .75)*1000,
+               max.km = max(chnk_per_m)*1000,
+               p50.km2 = quantile(chnk_per_m2, probs = .5)*1000,
+               km2.se = quantile(chnk_per_m2_se, probs = .5)*1000,
+               p25.km2 = quantile(chnk_per_m2, probs = .25)*1000,
+               p75.km2 = quantile(chnk_per_m2, probs = .75)*1000,
+               max.km2 = max(chnk_per_m2)*1000)
+  
+rf_log_redd_stl = all_preds %>%
+  filter(name == 'sthd' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.km = quantile(sthd_per_m, probs = .5)*1000,
+               km.se = quantile(sthd_per_m_se, probs = .5)*1000,
+               p25.km = quantile(sthd_per_m, probs = .25)*1000,
+               p75.km = quantile(sthd_per_m, probs = .75)*1000,
+               max.km = max(sthd_per_m)*1000,
+               p50.km2 = quantile(sthd_per_m2, probs = .5)*1000,
+               km2.se = quantile(sthd_per_m2_se, probs = .5)*1000,
+               p25.km2 = quantile(sthd_per_m2, probs = .25)*1000,
+               p75.km2 = quantile(sthd_per_m2, probs = .75)*1000,
+               max.km2 = max(sthd_per_m2)*1000)
+
+kable(rf_log_redd_chk, caption = "Chinook", col.names = c("Watershed", "Median per km", "Per km SE", "Q25 per km", "Q75 per km", "Max per km","Median per km2", "Per km2 SE", "Q25 per km2", "Q75 per km2", "Max per km2"), digits = 3 )
+
+kable(rf_log_redd_stl, caption = "Steelhead", col.names = c("Watershed", "Median per km", "Per km SE", "Q25 per km", "Q75 per km", "Max per km","Median per km2", "Per km2 SE", "Q25 per km2", "Q75 per km2", "Max per km2"), digits = 3)
+
+#Figures
+load(here(paste0("output/figures/","RF_extrap_", log_mod, mod_choice,'_', cov_choice,".rda")))
+
+
+
+chk_ri
+chk_m
+chk_m2
+stl_ri
+stl_m
+stl_m2
+
+rm(model_rf_df,
+   pred_hab_df,
+   all_preds,
+   chk_ri,
+   chk_m,
+   chk_m2,
+   stl_ri,
+   stl_m,
+   stl_m2)
+```
+
+**RF, untransformed response**
+```{r rf_redd summary stats, echo = F}
+mod_choice = c('juv_summer',
+               'redds',
+               'juv_winter')[2]
+
+cov_choice = c("Reduced")[1]
+
+log_mod = c("log_","")[2]
+
+load(paste0(mod_path,"extrap_200rch_RF_",log_mod,mod_choice,'.rda'))
+
+all_preds %<>%
+  filter(chnk == TRUE | sthd == TRUE) %>%
+  pivot_longer(cols = c("chnk","sthd")) 
+
+rf_redd_chk = all_preds %>%
+  filter(name == 'chnk' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.km = quantile(chnk_per_m, probs = .5)*1000,
+               km.se = quantile(chnk_per_m_se, probs = .5)*1000,
+               p25.km = quantile(chnk_per_m, probs = .25)*1000,
+               p75.km = quantile(chnk_per_m, probs = .75)*1000,
+               max.km = max(chnk_per_m)*1000,
+               p50.km2 = quantile(chnk_per_m2, probs = .5)*1000,
+               km2.se = quantile(chnk_per_m2_se, probs = .5)*1000,
+               p25.km2 = quantile(chnk_per_m2, probs = .25)*1000,
+               p75.km2 = quantile(chnk_per_m2, probs = .75)*1000,
+               max.km2 = max(chnk_per_m2)*1000)
+  
+rf_redd_stl = all_preds %>%
+  filter(name == 'sthd' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.km = quantile(sthd_per_m, probs = .5)*1000,
+               km.se = quantile(sthd_per_m_se, probs = .5)*1000,
+               p25.km = quantile(sthd_per_m, probs = .25)*1000,
+               p75.km = quantile(sthd_per_m, probs = .75)*1000,
+               max.km = max(sthd_per_m)*1000,
+               p50.km2 = quantile(sthd_per_m2, probs = .5)*1000,
+               km2.se = quantile(sthd_per_m2_se, probs = .5)*1000,
+               p25.km2 = quantile(sthd_per_m2, probs = .25)*1000,
+               p75.km2 = quantile(sthd_per_m2, probs = .75)*1000,
+               max.km2 = max(sthd_per_m2)*1000)
+
+kable(rf_redd_chk, caption = "Chinook", col.names = c("Watershed", "Median per km", "Per km SE", "Q25 per km", "Q75 per km", "Max per km","Median per km2", "Per km2 SE", "Q25 per km2", "Q75 per km2", "Max per km2"), digits = 3 )
+
+kable(rf_redd_stl, caption = "Steelhead", col.names = c("Watershed", "Median per km", "Per km SE", "Q25 per km", "Q75 per km", "Max per km","Median per km2", "Per km2 SE", "Q25 per km2", "Q75 per km2", "Max per km2"), digits = 3)
+
+```
+
+**GLM, log-response**
+```{r glm_redd summary stats, echo = F}
+mod_choice = c('juv_summer',
+               'redds',
+               'juv_winter')[2]
+
+cov_choice = c("Reduced")[1]
+
+load(paste0(mod_path,"extrap_200rch_",cov_choice,'_',mod_choice,'.rda'))
+
+all_preds %<>%
+  filter(chnk == TRUE | sthd == TRUE) %>%
+  pivot_longer(cols = c("chnk","sthd")) 
+
+glm_redd_chk = all_preds %>%
+  filter(name == 'chnk' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.km = quantile(chnk_per_m, probs = .5)*1000,
+               km.se = quantile(chnk_per_m_se, probs = .5)*1000,
+               p25.km = quantile(chnk_per_m, probs = .25)*1000,
+               p75.km = quantile(chnk_per_m, probs = .75)*1000,
+               max.km = max(chnk_per_m)*1000,
+               p50.km2 = quantile(chnk_per_m2, probs = .5)*1000,
+               km2.se = quantile(chnk_per_m2_se, probs = .5)*1000,
+               p25.km2 = quantile(chnk_per_m2, probs = .25)*1000,
+               p75.km2 = quantile(chnk_per_m2, probs = .75)*1000,
+               max.km2 = max(chnk_per_m2)*1000)
+  
+glm_redd_stl = all_preds %>%
+  filter(name == 'sthd' & value == TRUE) %>%
+  group_by(Watershed) %>%
+summarise(p50.km = quantile(sthd_per_m, probs = .5)*1000,
+               km.se = quantile(sthd_per_m_se, probs = .5)*1000,
+               p25.km = quantile(sthd_per_m, probs = .25)*1000,
+               p75.km = quantile(sthd_per_m, probs = .75)*1000,
+               max.km = max(sthd_per_m)*1000,
+               p50.km2 = quantile(sthd_per_m2, probs = .5)*1000,
+               km2.se = quantile(sthd_per_m2_se, probs = .5)*1000,
+               p25.km2 = quantile(sthd_per_m2, probs = .25)*1000,
+               p75.km2 = quantile(sthd_per_m2, probs = .75)*1000,
+               max.km2 = max(sthd_per_m2)*1000)
+
+kable(glm_redd_chk, caption = "Chinook", col.names = c("Watershed", "Median per km", "Per km SE", "Q25 per km", "Q75 per km", "Max per km","Median per km2", "Per km2 SE", "Q25 per km2", "Q75 per km2", "Max per km2"), digits = 3 )
+
+kable(glm_redd_stl, caption = "Steelhead", col.names = c("Watershed", "Median per km", "Per km SE", "Q25 per km", "Q75 per km", "Max per km","Median per km2", "Per km2 SE", "Q25 per km2", "Q75 per km2", "Max per km2"), digits = 3)
+
+```
+
