@@ -95,7 +95,7 @@ US_win_sf_old_extrap = win_juv_sf_old_extrap %>%
           join = st_covered_by,
           left = F)
 
-ggplot(US_win_sf_old_extrap) + geom_sf()
+#ggplot(US_win_sf_old_extrap) + geom_sf()
 
 # Redds - old extrap
 US_redds_sf_old_extrap = redds_sf_old_extrap %>%
@@ -117,7 +117,7 @@ US_redds_sf_old_extrap = redds_sf_old_extrap %>%
           join = st_covered_by,
           left = F)
 
-ggplot(US_redds_sf_old_extrap) + geom_sf()
+#ggplot(US_redds_sf_old_extrap) + geom_sf()
 
 # -------------------------
 
@@ -141,7 +141,7 @@ US_sum_sf_new_extrap = sum_juv_sf_new_extrap %>%
           join = st_covered_by,
           left = F)
 
-ggplot(US_sum_sf_new_extrap) + geom_sf()
+#ggplot(US_sum_sf_new_extrap) + geom_sf()
 
 # Winter presmolt - new extrap
 US_win_sf_new_extrap = win_juv_sf_new_extrap %>%
@@ -163,7 +163,7 @@ US_win_sf_new_extrap = win_juv_sf_new_extrap %>%
           join = st_covered_by,
           left = F)
 
-ggplot(US_win_sf_new_extrap) + geom_sf()
+#ggplot(US_win_sf_new_extrap) + geom_sf()
 
 # Redds - new extrap
 US_redds_sf_new_extrap = redds_sf_new_extrap %>%
@@ -185,17 +185,17 @@ US_redds_sf_new_extrap = redds_sf_new_extrap %>%
           join = st_covered_by,
           left = F)
 
-ggplot(US_redds_sf_new_extrap) + geom_sf()
+#ggplot(US_redds_sf_new_extrap) + geom_sf()
 
 # get trimmed 200m reach layer for the Upper Salmon watersheds; contains a bunch of habitat metrics for the 200m reaches
 load(paste0(in_path, 'rch_200.rda'))
 
 # trim down 200m reach layer
 US_rch_sf = rch_200 %>%
-  filter(UniqueID %in% US_sum_sf$UniqueID) %>%
+  filter(UniqueID %in% US_sum_sf_new_extrap$UniqueID) %>%
   st_transform(WS_crs)
 
-ggplot(US_rch_sf) + geom_sf()
+#ggplot(US_rch_sf) + geom_sf()
 
 # save data for this repository
 save(US_sum_sf_old_extrap,
