@@ -1,25 +1,24 @@
 ---
 title: "Documentation for modified -new- QRF model"
 author:
-  - Bryce N. Oldemeyer:
-      email: Bryce.Oldemeyer@mounthoodenvironmental.com
-      institute: [mhe_challis]
-      correspondence: true
-  - Mark Roes:
-      email: mark.roes@mthoodenvironmental.com
-      institute: [mhe_sandy]
-      correspondence: false
-  - Michael W. Ackerman:
-      email: mike.ackerman@mthoodenvironmental.com
-      institute: [mhe_mccall]
-      correspondence: false
-
-institute:
-  - mhe_challis: Mount Hood Environmental, PO Box 1303, Challis, Idaho, 83226, USA
-  - mhe_mccall: Mount Hood Environmental, PO Box 4282, McCall, Idaho, 83638, USA
-  - mhe_sandy: Mount Hood Environmental, 39085 Pioneer Boulevard \#100 Mezzanine, Sandy, Oregon, 97055, USA
+- Bryce N. Oldemeyer:
+    email: Bryce.Oldemeyer@mounthoodenvironmental.com
+    institute: mhe_challis
+    correspondence: yes
+- Mark Roes:
+    email: mark.roes@mthoodenvironmental.com
+    institute: mhe_sandy
+    correspondence: no
+- Michael W. Ackerman:
+    email: mike.ackerman@mthoodenvironmental.com
+    institute: mhe_mccall
+    correspondence: no
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    df_print: paged
   bookdown::html_document2:
     theme: yeti
     toc: yes
@@ -31,10 +30,13 @@ output:
     pandoc_args:
     - --lua-filter=../templates/scholarly-metadata.lua
     - --lua-filter=../templates/author-info-blocks.lua
-    - --lua-filter=../templates/pagebreak.lua  
-csl: "../templates/american-fisheries-society.csl"
-#bibliography:
-#  - AckermanLibrary.bib
+    - --lua-filter=../templates/pagebreak.lua
+institute:
+- mhe_challis: Mount Hood Environmental, PO Box 1303, Challis, Idaho, 83226, USA
+- mhe_mccall: Mount Hood Environmental, PO Box 4282, McCall, Idaho, 83638, USA
+- mhe_sandy: Mount Hood Environmental, 39085 Pioneer Boulevard \#100 Mezzanine, Sandy,
+    Oregon, 97055, USA
+csl: ../templates/american-fisheries-society.csl
 ---
 
 <!-- the following inserts MHE logo into header -->
