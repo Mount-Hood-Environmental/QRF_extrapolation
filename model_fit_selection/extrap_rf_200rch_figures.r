@@ -6,13 +6,14 @@ library(quantregForest)
 mod_path = 'S:/main/data/qrf/gitrepo_data/output/modelFit/'
 
 mod_choice = c('juv_summer',
-               'juv_summer_dash',
                'redds',
-               'juv_winter')[4]
+               'juv_winter')[3]
 
 cov_choice = c("Reduced")[1]
 
-load(paste0(mod_path,"extrap_200rch_RF_",mod_choice,'.rda'))
+log_mod = c("log_","")[1] #log-response model or no
+
+load(paste0(mod_path,"extrap_200rch_RF_",log_mod,mod_choice,'.rda'))
 
 source("R/plot_partial_dependence.r")
 data("gaa_hab_dict")
@@ -84,29 +85,33 @@ stl_ri = tibble(Response = model_rf_df$response[3:4],
 chk_m = plot_partial_dependence(model_rf_df$mod_no_champ[[1]],
                                 model_rf_df$data[[1]],
                                 data_dict = gaa_hab_dict,
-                                log_transform = F)+
+                                log_transform = T,
+                                log_offset = 0)+
   labs(title = "Chinook", y = "Prediction per meter")
 
 chk_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[2]],
                                  model_rf_df$data[[2]],
                                  data_dict = gaa_hab_dict,
-                                 log_transform = F)+
+                                 log_transform = T,
+                                 log_offset = 0)+
   labs(title = "Chinook", y = bquote('Prediction per meter'^2))
   
 stl_m = plot_partial_dependence(model_rf_df$mod_no_champ[[3]],
                                 model_rf_df$data[[3]],
                                 data_dict = gaa_hab_dict,
-                                log_transform = F)+
+                                log_transform = T,
+                                log_offset = 0)+
   labs(title = "Steelhead", y = "Prediction per meter")
   
 stl_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[4]],
                                  model_rf_df$data[[4]],
                                  data_dict = gaa_hab_dict,
-                                 log_transform = F)+
+                                 log_transform = T,
+                                 log_offset = 0)+
   labs(title = "Steelhead", y = bquote('Prediction per meter'^2))
 
 
-pdf(paste0("output/figures/","RF_extrap_", mod_choice,'_', cov_choice,".pdf"), width = 10, height = 8)
+pdf(paste0("output/figures/","RF_extrap_", log_mod, mod_choice,'_', cov_choice,".pdf"), width = 10, height = 8)
 chk_ri
 chk_m
 chk_m2
@@ -114,3 +119,11 @@ stl_ri
 stl_m
 stl_m2
 dev.off()
+
+save(chk_ri,
+     chk_m,
+     chk_m2,
+     stl_ri,
+     stl_m,
+     stl_m2,
+     file = paste0("output/figures/","RF_extrap_", log_mod, mod_choice,'_', cov_choice,".rda"))

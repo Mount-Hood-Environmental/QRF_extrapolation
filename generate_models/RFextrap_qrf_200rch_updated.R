@@ -607,7 +607,7 @@ rm(champ_frame_df, champ_site_rch,
    gaa)
 
 #-------------------------------------------------------------
-# fit RF model - some changes may be required to properly obtain SE and such
+# fit RF model
 #-------------------------------------------------------------
 
 full_form = as.formula(paste('log_qrf_cap ~ -1 + (', paste(extrap_covars, collapse = ' + '), ')'))
