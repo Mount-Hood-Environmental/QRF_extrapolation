@@ -122,23 +122,13 @@ US_redds_df_new_extrap = US_redds_sf_new_extrap %>%
 
 # create comparison tibbles
 
-US_sum_sf_comp_extrap = bind_cols(setorder(US_sum_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_sum_df_old_extrap, UniqueID)[,c(21:32)] - setorder(US_sum_df_new_extrap, UniqueID)[,c(21:32)])
+US_sum_sf_comp_extrap = bind_cols(setorder(US_sum_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_sum_sf_old_extrap, UniqueID)[,c(21:32)] - setorder(US_sum_sf_new_extrap, UniqueID)[,c(21:32)])
 
-US_win_sf_comp_extrap = bind_cols(setorder(US_win_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_win_df_old_extrap, UniqueID)[,c(21:32)] - setorder(US_win_df_new_extrap, UniqueID)[,c(21:32)])
+US_win_sf_comp_extrap = bind_cols(setorder(US_win_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_win_sf_old_extrap, UniqueID)[,c(21:32)] - setorder(US_win_sf_new_extrap, UniqueID)[,c(21:32)])
 
-US_redds_sf_comp_extrap = bind_cols(setorder(US_redds_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_redds_df_old_extrap, UniqueID)[,c(21:32)] - setorder(US_redds_df_new_extrap, UniqueID)[,c(21:32)])
+US_redds_sf_comp_extrap = bind_cols(setorder(US_redds_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_redds_sf_old_extrap, UniqueID)[,c(21:32)] - setorder(US_redds_sf_new_extrap, UniqueID)[,c(21:32)])
 
-US_sum_df_comp_extrap = US_sum_sf_comp_extrap %>%
-  st_drop_geometry() %>%
-  as_tibble()
 
-US_redds_df_comp_extrap = US_redds_sf_comp_extrap %>%
-  st_drop_geometry() %>%
-  as_tibble()
-
-US_win_df_comp_extrap = US_win_sf_comp_extrap %>%
-  st_drop_geometry() %>%
-  as_tibble()
 ```
 
 # Background
@@ -188,27 +178,34 @@ chnk_redd_cap_new = calc_watershed_cap(US_huc_sf,
                                    capacity_se_name = "chnk_per_m_se",
                                    by_stream = T)
 
-# Comparison ####
+# Old extraps for comparison ####
 # Chinook salmon, summer parr
-chnk_sum_cap_comp = calc_watershed_cap(US_huc_sf,
-                                  US_sum_sf_comp_extrap,
+chnk_sum_cap_old = calc_watershed_cap(US_huc_sf,
+                                  US_sum_sf_old_extrap,
                                   capacity_name = "chnk_per_m",
                                   capacity_se_name = "chnk_per_m_se",
                                   by_stream = T)
 
 # Chinook salmon, winter presmolt
-chnk_win_cap_comp = calc_watershed_cap(US_huc_sf,
-                                  US_win_sf_comp_extrap,
+chnk_win_cap_old = calc_watershed_cap(US_huc_sf,
+                                  US_win_sf_old_extrap,
                                   capacity_name = "chnk_per_m",
                                   capacity_se_name = "chnk_per_m_se",
                                   by_stream = T)
 
 # Chinook salmon, redds
-chnk_redd_cap_comp = calc_watershed_cap(US_huc_sf,
-                                   US_redds_sf_comp_extrap,
+chnk_redd_cap_old = calc_watershed_cap(US_huc_sf,
+                                   US_redds_sf_old_extrap,
                                    capacity_name = "chnk_per_m",
                                    capacity_se_name = "chnk_per_m_se",
                                    by_stream = T)
+
+#old extrap
+chnk_sum_cap_old = calc_watershed_cap(US_huc_sf,
+                                  US_sum_sf_old_extrap,
+                                  capacity_name = "chnk_per_m",
+                                  capacity_se_name = "chnk_per_m_se",
+                                  by_stream = T)
 ```
 
 ```{r calc-sthd-capacity}
@@ -233,28 +230,27 @@ sthd_redd_cap_new = calc_watershed_cap(US_huc_sf,
                                    capacity_se_name = "sthd_per_m_se",
                                    by_stream = T)
 
-# Comparison ####
+# Old extrap for comparison ####
 # steelhead, summer parr
-sthd_sum_cap_comp = calc_watershed_cap(US_huc_sf,
-                                  US_sum_sf_comp_extrap,
+sthd_sum_cap_old = calc_watershed_cap(US_huc_sf,
+                                  US_sum_sf_old_extrap,
                                   capacity_name = "sthd_per_m",
                                   capacity_se_name = "sthd_per_m_se",
                                   by_stream = T)
 
 # steelhead, winter presmolt
-sthd_win_cap_comp = calc_watershed_cap(US_huc_sf,
-                                  US_win_sf_comp_extrap,
+sthd_win_cap_old = calc_watershed_cap(US_huc_sf,
+                                  US_win_sf_old_extrap,
                                   capacity_name = "sthd_per_m",
                                   capacity_se_name = "sthd_per_m_se",
                                   by_stream = T)
 
 # steelhead, redds
-sthd_redd_cap_comp = calc_watershed_cap(US_huc_sf,
-                                   US_redds_sf_comp_extrap,
+sthd_redd_cap_old = calc_watershed_cap(US_huc_sf,
+                                   US_redds_sf_old_extrap,
                                    capacity_name = "sthd_per_m",
                                    capacity_se_name = "sthd_per_m_se",
                                    by_stream = T)
-
 ```
 
 ```{r create-chnk-maps}
@@ -571,7 +567,39 @@ ggarrange(sthd_sum_comp_map,
 
 ## QRF Habitat Capacity Estimates
 
-### Chinook Salmon
+### Comparison with previous extrapolation
+
+#### Chinook Salmon
+
+```{r comp-summary-tbl}
+
+chnk_sum_cap_comp = chnk_sum_cap_old %>%
+  left_join(chnk_sum_cap_new, by = "StreamName")
+
+$StreamName, StreamName),
+  setorder(chnk_sum_cap_old[,c(4:5)], StreamName),
+  )
+
+bind_cols(setorder(US_sum_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_sum_sf_old_extrap, UniqueID)[,c(21:32)] - setorder(US_sum_sf_new_extrap, UniqueID)[,c(21:32)])
+  
+  bind_cols(apply(filter(chnk_sum_cap_new, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum),
+                             apply(filter(chnk_sum_cap_comp, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum),
+                             apply(filter(chnk_win_cap_new, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum),
+                             apply(filter(chnk_win_cap_comp, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum),
+                             apply(filter(chnk_redd_cap_new, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum),
+                             apply(filter(chnk_redd_cap_comp, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum)) %>%
+  rename_with(~ c("sum_new","sum_rel","win_new","win_rel","redd_new","redd_rel")) %>%
+  mutate(sum_rel = (sum_new/(sum_new-sum_rel)-1)*100,
+         win_rel = (win_new/(win_new-win_rel)-1)*100,
+         redd_rel = (redd_new/(redd_new-redd_rel)-1)*100)
+
+```
+
+#### Steelhead
+
+### New extrapolation 
+
+#### Chinook Salmon
 
 ```{r chnk-sum-tbl}
 chnk_sum_cap_new %>%
@@ -636,21 +664,9 @@ chnk_redd_cap_new %>%
 
 ```
 
-#### Comparison to previous extrapolation
+#### Comparison to previous extrapolation, by stream
 
-```{r comp-summary-tbl}
-chnk_summary_tbl = bind_cols(apply(filter(chnk_sum_cap_new, StreamName != "Total")[,c(4,5)],2,sum),
-                             apply(filter(chnk_sum_cap_comp, StreamName != "Total")[,c(4,5)],2,sum),
-                             apply(filter(chnk_win_cap_new, StreamName != "Total")[,c(4,5)],2,sum),
-                             apply(filter(chnk_win_cap_comp, StreamName != "Total")[,c(4,5)],2,sum),
-                             apply(filter(chnk_redd_cap_new, StreamName != "Total")[,c(4,5)],2,sum),
-                             apply(filter(chnk_redd_cap_comp, StreamName != "Total")[,c(4,5)],2,sum)) %>%
-  rename_with(~ c("sum_new","sum_rel","win_new","win_rel","redd_new","redd_rel")) %>%
-  mutate(sum_rel = (sum_new/(sum_new-sum_rel)-1)*100,
-         win_rel = (win_new/(win_new-win_rel)-1)*100,
-         redd_rel = (redd_new/(redd_new-redd_rel)-1)*100)
 
-```
 
 ```{r chnk-sum-comp-tbl}
 chnk_sum_cap_comp %>%
