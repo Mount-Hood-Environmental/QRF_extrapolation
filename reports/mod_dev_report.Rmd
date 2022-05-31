@@ -120,6 +120,34 @@ US_redds_df_new_extrap = US_redds_sf_new_extrap %>%
   st_drop_geometry() %>%
   as_tibble()
 
+# the spatial domain for the species and life stages of the old extrapolations were modified from Morgon Bond's 
+# designation to include local knowledge from biologists. To keep things consistent, we will use the same spatial domain
+# for the new extrapolations. 
+
+# redds
+US_redds_sf_new_extrap = US_redds_sf_new_extrap %>%
+  select(-chnk, -sthd) %>%
+  st_join(US_redds_sf_old_extrap %>%
+            select(chnk, sthd),
+          join = st_covered_by,
+          left = F)
+
+# summer juv
+US_sum_sf_new_extrap = US_sum_sf_new_extrap %>%
+  select(-chnk, -sthd) %>%
+  st_join(US_sum_sf_old_extrap %>%
+            select(chnk, sthd),
+          join = st_covered_by,
+          left = F)
+
+# winter juv
+US_win_sf_new_extrap = US_win_sf_new_extrap %>%
+  select(-chnk, -sthd) %>%
+  st_join(US_win_sf_old_extrap %>%
+            select(chnk, sthd),
+          join = st_covered_by,
+          left = F)
+
 # create comparison tibbles
 
 US_sum_sf_comp_extrap = bind_cols(setorder(US_sum_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_sum_sf_old_extrap, UniqueID)[,c(21:32)] - setorder(US_sum_sf_new_extrap, UniqueID)[,c(21:32)])
