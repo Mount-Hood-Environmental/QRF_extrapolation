@@ -53,7 +53,7 @@ if(mod_choice == "juv_summer") {
   fh = fh_win_champ_2017 %>%
     select(Species, Site, Watershed, LON_DD, LAT_DD, 
            VisitID,
-           CU_Area = AreaTotal, Lgth_Wet, Area_Wet)
+           AreaTotal, Lgth_Wet, Area_Wet)
 }
 
 
@@ -63,23 +63,31 @@ if(mod_choice == "juv_summer") {
 # what quantile is a proxy for capacity?
 pred_quant = 0.9
 set.seed(5)
-# for overwintering juveniles, predictions done on channel unit scale, then summed up for each CHaMP site.
+# for overwintering juveniles, predictions done on channel unit scale, then summed up for each CHaMP site. This is an issue as we only know the amount of area within each CU that was surveyed, and frequently the surveyed area > CU and reach area. This also does not provide us with the linear distance of the survey. Therefore I will stick with model predictions averaged across the reach.
 
 
 
 if (mod_choice == "juv_winter") {
+  area_wgts = qrf_mod_df %>%
+    left_join(fh) %>%
+    mutate(SiteVis = paste0(Site, VisitID)) %>%
+    group_by(SiteVis) %>%
+    summarise(AreaSurveyed = sum(AreaTotal))
+    
   pred_hab_sites = qrf_mod_df %>%
     left_join(fh) %>%
+    mutate(SiteVis = paste0(Site, VisitID)) %>%
+    left_join(area_wgts) %>%
     mutate(chnk_per_m2 = predict(qrf_mods[['Chinook']],
                                  newdata = select(., one_of(unique(sel_hab_mets$Metric))),
                                  what = pred_quant),
            chnk_per_m2 = exp(chnk_per_m2) - dens_offset,
-           chnk_tot = chnk_per_m2 * CU_Area) %>%
+           chnk_wgt_m2 = chnk_per_m2*(AreaTotal/AreaSurveyed)) %>%
     mutate(sthd_per_m2 = predict(qrf_mods[['Steelhead']],
                                  newdata = select(., one_of(unique(sel_hab_mets$Metric))),
                                  what = pred_quant),
            sthd_per_m2 = exp(sthd_per_m2) - dens_offset,
-           sthd_tot = sthd_per_m2 * CU_Area) %>%
+           sthd_wgt_m2 = sthd_per_m2*(AreaTotal/AreaSurveyed)) %>%
     group_by(Site,
              Watershed,
              LON_DD,
@@ -87,15 +95,16 @@ if (mod_choice == "juv_winter") {
              VisitID,
              Lgth_Wet,
              Area_Wet) %>%
-    summarise(across(c(chnk_tot, sthd_tot),
+    summarise(across(c(chnk_wgt_m2, sthd_wgt_m2),
                      sum,
                      na.rm = T),
               .groups = "drop") %>%
-    mutate(chnk_per_m = chnk_tot / Lgth_Wet,
-           chnk_per_m2 = chnk_tot / Area_Wet,
-           sthd_per_m = sthd_tot / Lgth_Wet,
-           sthd_per_m2 = sthd_tot / Area_Wet)
+    mutate(chnk_per_m = chnk_wgt_m2 * (Area_Wet/Lgth_Wet),
+           chnk_per_m2 = chnk_wgt_m2,
+           sthd_per_m = sthd_wgt_m2 * (Area_Wet/Lgth_Wet),
+           sthd_per_m2 = sthd_wgt_m2)
   
+  rm(area_wgts)
 } else {
   pred_hab_sites = qrf_mod_df %>%
     left_join(fh) %>%
@@ -756,8 +765,7 @@ all_preds = model_rf_df %>%
               # rename(resp_champ = pred_cap)) %>%
               rename(resp_champ = pred_cap,
                      se_champ = pred_se)) %>%
-  #Next three lines for log-response
-   mutate_at(vars(starts_with("resp"), 
+  mutate_at(vars(starts_with("resp"), 
                   starts_with("se")),
              list(exp)) %>%
   # add in direct QRF estimates
