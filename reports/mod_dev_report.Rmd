@@ -28,9 +28,9 @@ output:
       smooth_scroll: yes
     number_sections: yes
     pandoc_args:
-#    - --lua-filter=../templates/scholarly-metadata.lua
-#    - --lua-filter=../templates/author-info-blocks.lua
-#    - --lua-filter=../templates/pagebreak.lua
+    - --lua-filter=../templates/scholarly-metadata-updated.lua
+    - --lua-filter=../templates/author-info-blocks-updated.lua
+    - --lua-filter=../templates/pagebreak-updated.lua
 institute:
 - mhe_challis: Mount Hood Environmental, PO Box 1303, Challis, Idaho, 83226, USA
 - mhe_mccall: Mount Hood Environmental, PO Box 4282, McCall, Idaho, 83638, USA
@@ -148,13 +148,13 @@ US_win_sf_new_extrap = US_win_sf_new_extrap %>%
           join = st_covered_by,
           left = F)
 
-# create comparison tibbles
+# create comparison tibbles for mapping
 
-US_sum_sf_comp_extrap = bind_cols(setorder(US_sum_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_sum_sf_old_extrap, UniqueID)[,c(21:32)] - setorder(US_sum_sf_new_extrap, UniqueID)[,c(21:32)])
+US_sum_sf_comp_extrap = bind_cols(setorder(US_sum_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_sum_df_new_extrap, UniqueID)[,c(21:32)] - setorder(US_sum_df_old_extrap, UniqueID)[,c(21:32)])
 
-US_win_sf_comp_extrap = bind_cols(setorder(US_win_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_win_sf_old_extrap, UniqueID)[,c(21:32)] - setorder(US_win_sf_new_extrap, UniqueID)[,c(21:32)])
+US_win_sf_comp_extrap = bind_cols(setorder(US_win_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_win_df_new_extrap, UniqueID)[,c(21:32)] - setorder(US_win_df_old_extrap, UniqueID)[,c(21:32)])
 
-US_redds_sf_comp_extrap = bind_cols(setorder(US_redds_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_redds_sf_old_extrap, UniqueID)[,c(21:32)] - setorder(US_redds_sf_new_extrap, UniqueID)[,c(21:32)])
+US_redds_sf_comp_extrap = bind_cols(setorder(US_redds_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_redds_df_new_extrap, UniqueID)[,c(21:32)] - setorder(US_redds_df_old_extrap, UniqueID)[,c(21:32)])
 
 
 ```
@@ -180,105 +180,124 @@ Talk about GAA's
 
 <!-- Below is a bunch of script to calculate watershed capacities, make pretty figures, and create simple tables. I took it from the UWW and NF assessment .rmd's so if something isn't running, go back and look at those scripts to help troubleshoot. Additionally, use the "wtrshd" variable to filter the eight watersheds. The "watershed" variable is taken from the WBDHU12.shp and isn't that useful.  -->
 
-
-
-```{r calc-chnk-capacity}
+```{r capacity-funs}
 source(here("R/calc_watershed_cap.R"))
 
+cap_by_ws = function(x, speciescode){
+  ws_list = unique(x$wtrshd)
+  
+  out = filter(
+    bind_rows(
+    calc_watershed_cap(US_huc_sf,
+                       filter(x, wtrshd == ws_list[1]),
+                       capacity_name = paste0(speciescode,"_per_m"),
+                       capacity_se_name = paste0(speciescode,"_per_m_se"),
+                       by_stream = T) %>%
+      mutate(Watershed = ws_list[1]),
+  
+  calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[2]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[2]),
+  
+  calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[3]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[3]),
+  
+  calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[4]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[4]),
+  
+    calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[5]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[5]),
+  
+    calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[6]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[6]),
+  
+    calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[7]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[7]),
+  
+    calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[8]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[8])),
+    StreamName != "Total"|is.na(StreamName)) %>%
+    group_by(Watershed) %>%
+    summarise(across(c(n_rchs,tot_length,tot_cap,tot_cap_se),
+              sum,
+              na.rm = T),
+              .groups = "drop")
+
+  return(out)
+}
+
+```
+
+```{r calc-chnk-capacity}
+
 # Chinook salmon, summer parr
-chnk_sum_cap_new = calc_watershed_cap(US_huc_sf,
-                                  US_sum_sf_new_extrap,
-                                  capacity_name = "chnk_per_m",
-                                  capacity_se_name = "chnk_per_m_se",
-                                  by_stream = T)
+chnk_sum_cap_new = cap_by_ws(US_sum_sf_new_extrap, "chnk")
 
 # Chinook salmon, winter presmolt
-chnk_win_cap_new = calc_watershed_cap(US_huc_sf,
-                                  US_win_sf_new_extrap,
-                                  capacity_name = "chnk_per_m",
-                                  capacity_se_name = "chnk_per_m_se",
-                                  by_stream = T)
+chnk_win_cap_new = cap_by_ws(US_win_sf_new_extrap, "chnk")
 
 # Chinook salmon, redds
-chnk_redd_cap_new = calc_watershed_cap(US_huc_sf,
-                                   US_redds_sf_new_extrap,
-                                   capacity_name = "chnk_per_m",
-                                   capacity_se_name = "chnk_per_m_se",
-                                   by_stream = T)
+chnk_redd_cap_new = cap_by_ws(US_redds_sf_new_extrap, "chnk")
 
 # Old extraps for comparison ####
 # Chinook salmon, summer parr
-chnk_sum_cap_old = calc_watershed_cap(US_huc_sf,
-                                  US_sum_sf_old_extrap,
-                                  capacity_name = "chnk_per_m",
-                                  capacity_se_name = "chnk_per_m_se",
-                                  by_stream = T)
+chnk_sum_cap_old = cap_by_ws(US_sum_sf_old_extrap, "chnk")
 
 # Chinook salmon, winter presmolt
-chnk_win_cap_old = calc_watershed_cap(US_huc_sf,
-                                  US_win_sf_old_extrap,
-                                  capacity_name = "chnk_per_m",
-                                  capacity_se_name = "chnk_per_m_se",
-                                  by_stream = T)
+chnk_win_cap_old = cap_by_ws(US_win_sf_old_extrap, "chnk")
 
 # Chinook salmon, redds
-chnk_redd_cap_old = calc_watershed_cap(US_huc_sf,
-                                   US_redds_sf_old_extrap,
-                                   capacity_name = "chnk_per_m",
-                                   capacity_se_name = "chnk_per_m_se",
-                                   by_stream = T)
+chnk_redd_cap_old = cap_by_ws(US_redds_sf_old_extrap, "chnk")
 
-#old extrap
-chnk_sum_cap_old = calc_watershed_cap(US_huc_sf,
-                                  US_sum_sf_old_extrap,
-                                  capacity_name = "chnk_per_m",
-                                  capacity_se_name = "chnk_per_m_se",
-                                  by_stream = T)
 ```
 
 ```{r calc-sthd-capacity}
-# steelhead, summer parr
-sthd_sum_cap_new = calc_watershed_cap(US_huc_sf,
-                                  US_sum_sf_new_extrap,
-                                  capacity_name = "sthd_per_m",
-                                  capacity_se_name = "sthd_per_m_se",
-                                  by_stream = T)
 
-# steelhead, winter presmolt
-sthd_win_cap_new = calc_watershed_cap(US_huc_sf,
-                                  US_win_sf_new_extrap,
-                                  capacity_name = "sthd_per_m",
-                                  capacity_se_name = "sthd_per_m_se",
-                                  by_stream = T)
+# steelhead salmon, summer parr
+sthd_sum_cap_new = cap_by_ws(US_sum_sf_new_extrap, "sthd")
 
-# steelhead, redds
-sthd_redd_cap_new = calc_watershed_cap(US_huc_sf,
-                                   US_redds_sf_new_extrap,
-                                   capacity_name = "sthd_per_m",
-                                   capacity_se_name = "sthd_per_m_se",
-                                   by_stream = T)
+# steelhead salmon, winter presmolt
+sthd_win_cap_new = cap_by_ws(US_win_sf_new_extrap, "sthd")
 
-# Old extrap for comparison ####
-# steelhead, summer parr
-sthd_sum_cap_old = calc_watershed_cap(US_huc_sf,
-                                  US_sum_sf_old_extrap,
-                                  capacity_name = "sthd_per_m",
-                                  capacity_se_name = "sthd_per_m_se",
-                                  by_stream = T)
+# steelhead salmon, redds
+sthd_redd_cap_new = cap_by_ws(US_redds_sf_new_extrap, "sthd")
 
-# steelhead, winter presmolt
-sthd_win_cap_old = calc_watershed_cap(US_huc_sf,
-                                  US_win_sf_old_extrap,
-                                  capacity_name = "sthd_per_m",
-                                  capacity_se_name = "sthd_per_m_se",
-                                  by_stream = T)
+# Old extraps for comparison ####
+# steelhead salmon, summer parr
+sthd_sum_cap_old = cap_by_ws(US_sum_sf_old_extrap, "sthd")
 
-# steelhead, redds
-sthd_redd_cap_old = calc_watershed_cap(US_huc_sf,
-                                   US_redds_sf_old_extrap,
-                                   capacity_name = "sthd_per_m",
-                                   capacity_se_name = "sthd_per_m_se",
-                                   by_stream = T)
+# steelhead salmon, winter presmolt
+sthd_win_cap_old = cap_by_ws(US_win_sf_old_extrap, "sthd")
+
+# steelhead salmon, redds
+sthd_redd_cap_old = cap_by_ws(US_redds_sf_old_extrap, "sthd")
 ```
 
 ```{r create-chnk-maps}
@@ -569,13 +588,6 @@ ggarrange(chnk_sum_map,
 
 ```
 
-```{r chnk-maps-comp, fig.cap = "Change in predicted habitat capacity for Chinook salmon compared to the previous extrapolation, by life-stage, within the North Fork Salmon watershed."}
-ggarrange(chnk_sum_comp_map,
-          chnk_win_comp_map,
-          chnk_redd_comp_map)
-
-```
-
 ```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, within the North Fork Salmon watershed.."}
 ggarrange(sthd_sum_map,
           sthd_win_map,
@@ -583,12 +595,6 @@ ggarrange(sthd_sum_map,
 
 ```
 
-```{r sthd-maps-comp, fig.cap = "Change in predicted habitat capacity for steelhead compared o the previous extrapolation, by life-stage, within the North Fork Salmon watershed.."}
-ggarrange(sthd_sum_comp_map,
-          sthd_win_comp_map,
-          sthd_redd_comp_map)
-
-```
 ::: {#refs}
 :::
 
@@ -599,37 +605,92 @@ ggarrange(sthd_sum_comp_map,
 
 #### Chinook Salmon
 
-```{r comp-summary-tbl}
 
-chnk_sum_cap_comp = chnk_sum_cap_old %>%
-  left_join(chnk_sum_cap_new, by = "StreamName")
-
-$StreamName, StreamName),
-  setorder(chnk_sum_cap_old[,c(4:5)], StreamName),
-  )
-
-bind_cols(setorder(US_sum_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_sum_sf_old_extrap, UniqueID)[,c(21:32)] - setorder(US_sum_sf_new_extrap, UniqueID)[,c(21:32)])
-  
-  bind_cols(apply(filter(chnk_sum_cap_new, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum),
-                             apply(filter(chnk_sum_cap_comp, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum),
-                             apply(filter(chnk_win_cap_new, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum),
-                             apply(filter(chnk_win_cap_comp, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum),
-                             apply(filter(chnk_redd_cap_new, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum),
-                             apply(filter(chnk_redd_cap_comp, StreamName != "Total"|is.na(StreamName))[,c(4,5)],2,sum)) %>%
-  rename_with(~ c("sum_new","sum_rel","win_new","win_rel","redd_new","redd_rel")) %>%
-  mutate(sum_rel = (sum_new/(sum_new-sum_rel)-1)*100,
-         win_rel = (win_new/(win_new-win_rel)-1)*100,
-         redd_rel = (redd_new/(redd_new-redd_rel)-1)*100)
+```{r chnk-maps-comp, fig.cap = "Change in predicted habitat capacity for Chinook salmon compared to the previous extrapolation, by life-stage, within the North Fork Salmon watershed."}
+ggarrange(chnk_sum_comp_map,
+          chnk_win_comp_map,
+          chnk_redd_comp_map)
 
 ```
 
+
+```{r chnk-comp-summary-tbls}
+
+capcompare = function(cap_new,cap_old,modelname){
+  out = cap_new[,c(1,4,5)] %>%
+  left_join(cap_old[,c(1,4,5)], by = "Watershed", suffix = c("_new","_old")) %>%
+  mutate(Model = modelname,
+         cap_change_percent = (tot_cap_new/tot_cap_old-1) * 100,
+         se_change_percent = (tot_cap_se_new/tot_cap_se_old-1) * 100) %>%
+    select(Model, 
+           Watershed, 
+           tot_cap_new, 
+           cap_change_percent, 
+           tot_cap_se_new, 
+           se_change_percent)
+  
+}
+
+chnk_summary = bind_rows(
+  capcompare(chnk_sum_cap_new, chnk_sum_cap_old, "Juv summer"),
+  capcompare(chnk_win_cap_new, chnk_win_cap_old, "Juv winter"),
+  capcompare(chnk_redd_cap_new, chnk_redd_cap_old, "Redds"))
+
+chnk_summary %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Model", "Watershed", "Predicted capacity", "Capacity % change", "Predicted capacity SE", "SE % change" ),
+        caption = "Estimated **chinook** capacities and comparison with previous  random forest extrapolations for eight watersheds") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed")) %>%
+  collapse_rows(columns = 1:2)
+
+
+
+```
+
+
 #### Steelhead
 
-### New extrapolation 
 
-#### Chinook Salmon
+```{r sthd-maps-comp, fig.cap = "Change in predicted habitat capacity for steelhead compared o the previous extrapolation, by life-stage, within the North Fork Salmon watershed.."}
+ggarrange(sthd_sum_comp_map,
+          sthd_win_comp_map,
+          sthd_redd_comp_map)
 
-```{r chnk-sum-tbl}
+```
+
+```{r sthd-comp-summary-tbls}
+
+sthd_summary = bind_rows(
+  capcompare(sthd_sum_cap_new, sthd_sum_cap_old, "Juv summer"),
+  capcompare(sthd_win_cap_new, sthd_win_cap_old, "Juv winter"),
+  capcompare(sthd_redd_cap_new, sthd_redd_cap_old, "Redds"))
+
+sthd_summary %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Model", "Watershed", "Predicted capacity" , "Capacity % change", "Predicted capacity SE", "SE % change" ),
+        caption = "Estimated **winter steelhead** capacities and comparison with previous  random forest extrapolations for eight watersheds") %>%
+    collapse_rows(columns = 1:2) %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+
+```
+
+
+### Capacity by stream
+
+#### Chinook
+
+```{r chnk-sum-tbl, eval = F}
 chnk_sum_cap_new %>%
   subset(!StreamName == "Total" | is.na(StreamName)) %>%
   adorn_totals() %>%
@@ -643,14 +704,14 @@ chnk_sum_cap_new %>%
         align = "lcccc",
         format.args = list(big.mark = ","),
         col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available habitat for **juvenile summer rearing** Chinook salmon in the eight salmon watershed.") %>%
+        caption = "Estimated available habitat for **juvenile summer rearing** Chinook salmon in the eight salmon watershedss.") %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed"))
 
 ```
 
-```{r chnk-win-tbl}
+```{r chnk-win-tbl, eval = F}
 chnk_win_cap_new %>%
   subset(!StreamName == "Total" | is.na(StreamName)) %>%
   adorn_totals() %>%
@@ -664,14 +725,14 @@ chnk_win_cap_new %>%
         align = "lcccc",
         format.args = list(big.mark = ","),
         col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available habitat for **juvenile winter rearing** Chinook salmon in the eight salmon watershed.") %>%
+        caption = "Estimated available habitat for **juvenile winter rearing** Chinook salmon in the eight salmon watersheds.") %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed"))
 
 ```
 
-```{r chnk-redd-tbl}
+```{r chnk-redd-tbl, eval = F}
 chnk_redd_cap_new %>%
   subset(!StreamName == "Total" | is.na(StreamName)) %>%
   adorn_totals() %>%
@@ -685,83 +746,16 @@ chnk_redd_cap_new %>%
         align = "lcccc",
         format.args = list(big.mark = ","),
         col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available **spawning (redds)** habitat for Chinook salmon in the eight salmon watershed.") %>%
+        caption = "Estimated available **spawning (redds)** habitat for Chinook salmon in the eight salmon watersheds.") %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed"))
 
 ```
 
-#### Comparison to previous extrapolation, by stream
+#### Steelhead
 
-
-
-```{r chnk-sum-comp-tbl}
-chnk_sum_cap_comp %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
-  mutate(tot_length = tot_length / 1000) %>%
-  rename(`n Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,0,0),
-        align = "lcccc",
-        format.args = list(big.mark = ","),
-        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available habitat for **juvenile summer rearing** Chinook salmon in the eight salmon watershed.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-```{r chnk-win-comp-tbl}
-chnk_win_cap_comp %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
-  mutate(tot_length = tot_length / 1000) %>%
-  rename(`n Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,0,0),
-        align = "lcccc",
-        format.args = list(big.mark = ","),
-        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available habitat for **juvenile winter rearing** Chinook salmon in the eight salmon watershed.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-```{r chnk-redd-comp-tbl}
-chnk_redd_cap_comp %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
-  mutate(tot_length = tot_length / 1000) %>%
-  rename(`n Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,0,0),
-        align = "lcccc",
-        format.args = list(big.mark = ","),
-        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available **spawning (redds)** habitat for Chinook salmon in the eight salmon watershed.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-### Steelhead
-
-```{r sthd-sum-tbl}
+```{r sthd-sum-tbl, eval = F}
 sthd_sum_cap_new %>%
   subset(!StreamName == "Total" | is.na(StreamName)) %>%
   adorn_totals() %>%
@@ -775,14 +769,14 @@ sthd_sum_cap_new %>%
         align = "lcccc",
         format.args = list(big.mark = ","),
         col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available habitat for **juvenile summer rearing** steelhead in the eight salmon watershed.") %>%
+        caption = "Estimated available habitat for **juvenile summer rearing** steelhead in the eight salmon watersheds.") %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed"))
 
 ```
 
-```{r sthd-win-tbl}
+```{r sthd-win-tbl, eval = F}
 sthd_win_cap_new %>%
   subset(!StreamName == "Total" | is.na(StreamName)) %>%
   adorn_totals() %>%
@@ -796,7 +790,7 @@ sthd_win_cap_new %>%
         align = "lcccc",
         format.args = list(big.mark = ","),
         col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available habitat for **juvenile winter rearing** steelhead in the eight salmon watershed.") %>%
+        caption = "Estimated available habitat for **juvenile winter rearing** steelhead in the eight salmon watersheds.") %>%
   kable_styling(full_width = F,
                 position = "center",
 
@@ -804,7 +798,7 @@ sthd_win_cap_new %>%
 
 ```
 
-```{r sthd-redd-tbl}
+```{r sthd-redd-tbl, eval = F}
 sthd_redd_cap_new %>%
   subset(!StreamName == "Total" | is.na(StreamName)) %>%
   adorn_totals() %>%
@@ -818,73 +812,7 @@ sthd_redd_cap_new %>%
         align = "lcccc",
         format.args = list(big.mark = ","),
         col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available **spawning (redds)** habitat for steelhead in the eight salmon watershed.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-#### Comparison with previous extrapolation
-
-```{r sthd-sum-comp-tbl}
-sthd_sum_cap_comp %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
-  mutate(tot_length = tot_length / 1000) %>%
-  rename(`n Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,0,0),
-        align = "lcccc",
-        format.args = list(big.mark = ","),
-        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available habitat for **juvenile summer rearing** steelhead in the eight salmon watershed.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-```{r sthd-win-comp-tbl}
-sthd_win_cap_comp %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
-  mutate(tot_length = tot_length / 1000) %>%
-  rename(`n Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,0,0),
-        align = "lcccc",
-        format.args = list(big.mark = ","),
-        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available habitat for **juvenile winter rearing** steelhead in the eight salmon watershed.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-```{r sthd-redd-comp-tbl}
-sthd_redd_cap_comp %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
-  mutate(tot_length = tot_length / 1000) %>%
-  rename(`n Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,0,0),
-        align = "lcccc",
-        format.args = list(big.mark = ","),
-        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
-        caption = "Estimated available **spawning (redds)** habitat for steelhead in the eight salmon watershed.") %>%
+        caption = "Estimated available **spawning (redds)** habitat for steelhead in the eight salmon watersheds.") %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed"))
