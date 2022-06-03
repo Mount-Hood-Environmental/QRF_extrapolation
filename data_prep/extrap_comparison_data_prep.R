@@ -28,7 +28,7 @@ huc12_sf = st_read(paste0("S:/main/data/habitat/watershed_boundaries/WBDHU12.shp
   st_transform(WS_crs)
 
 # read in old extrapolations
-sum_juv_sf_old_extrap = st_read("S:/main/data/qrf/extrapolations/Rch_Cap_RF_juv_summer_dash.gpkg") %>%
+sum_juv_sf_old_extrap = st_read("S:/main/data/qrf/extrapolations/Rch_Cap_RF_juv_summer.gpkg") %>%
   st_transform(WS_crs)
 win_juv_sf_old_extrap = st_read("S:/main/data/qrf/extrapolations/Rch_Cap_RF_juv_winter.gpkg") %>%
   st_transform(WS_crs)
