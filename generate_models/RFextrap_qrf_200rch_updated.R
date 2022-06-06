@@ -483,74 +483,74 @@ champ_frame_df = fread(paste0(in_path,'champ_frame_data.csv')) %>%
   rename(Watershed = CHaMPshed)
 
 # what strata do we have?
-frame_strata = champ_frame_df %>%
-  mutate(strata = paste(Watershed, AStrat2014, sep='_')) %>%
-  select(Watershed,
-         strata) %>%
-  distinct()
+#frame_strata = champ_frame_df %>%
+#  mutate(strata = paste(Watershed, AStrat2014, sep='_')) %>%
+#  select(Watershed,
+#         strata) %>%
+#  distinct()
 
 # how long is each strata, by species?
-chnk_strata_length = champ_frame_df %>%
-  filter(!is.na(UseTypCHSP)) %>%
-  mutate(strata = paste(Watershed, AStrat2014, sep='_')) %>%
-  select(Watershed, matches("Strat"), FrameLeng) %>%
-  group_by(Watershed, strata) %>%
-  summarise(tot_length_km = sum(FrameLeng) / 1000) %>%
-  ungroup() %>%
-  mutate_at(vars(Watershed, strata),
-            list(as.factor)) %>%
-  arrange(Watershed, strata)
+#chnk_strata_length = champ_frame_df %>%
+#  filter(!is.na(UseTypCHSP)) %>%
+#  mutate(strata = paste(Watershed, AStrat2014, sep='_')) %>%
+#  select(Watershed, matches("Strat"), FrameLeng) %>%
+#  group_by(Watershed, strata) %>%
+#  summarise(tot_length_km = sum(FrameLeng) / 1000) %>%
+#  ungroup() %>%
+#  mutate_at(vars(Watershed, strata),
+#            list(as.factor)) %>%
+#  arrange(Watershed, strata)
 
-sthd_strata_length = champ_frame_df %>%
-  filter(!is.na(UseTypSTSU)) %>%
-  mutate(strata = paste(Watershed, AStrat2014, sep='_')) %>%
-  select(Watershed, matches("Strat"), FrameLeng) %>%
-  group_by(Watershed, strata) %>%
-  summarise(tot_length_km = sum(FrameLeng) / 1000) %>%
-  bind_rows(tibble(Watershed = 'Asotin',
-                   strata = paste('Asotin', c('CC', 'NF', 'SF'), sep = '_'),
-                   tot_length_km = 12)) %>%
-  ungroup() %>%
-  mutate_at(vars(Watershed, strata),
-            list(as.factor)) %>%
-  arrange(Watershed, strata)
+#sthd_strata_length = champ_frame_df %>%
+#  filter(!is.na(UseTypSTSU)) %>%
+#  mutate(strata = paste(Watershed, AStrat2014, sep='_')) %>%
+#  select(Watershed, matches("Strat"), FrameLeng) %>%
+#  group_by(Watershed, strata) %>%
+#  summarise(tot_length_km = sum(FrameLeng) / 1000) %>%
+#  bind_rows(tibble(Watershed = 'Asotin',
+#                   strata = paste('Asotin', c('CC', 'NF', 'SF'), sep = '_'),
+#                   tot_length_km = 12)) %>%
+#  ungroup() %>%
+#  mutate_at(vars(Watershed, strata),
+#            list(as.factor)) %>%
+#  arrange(Watershed, strata)
 
-strata_length = chnk_strata_length %>%
-  mutate(Species = 'Chinook') %>%
-  bind_rows(sthd_strata_length %>%
-              mutate(Species = 'Steelhead')) %>%
-  select(Species, everything())
+#strata_length = chnk_strata_length %>%
+#  mutate(Species = 'Chinook') %>%
+#  bind_rows(sthd_strata_length %>%
+#              mutate(Species = 'Steelhead')) %>%
+#  select(Species, everything())
 
 # how many sites in each strata? and what is the length of each strata?
-strata_tab = pred_hab_df %>%
-  select(Species, Site, Watershed, matches('per_m')) %>%
-  left_join(site_strata) %>%
-  filter(strata != 'Entiat_Entiat IMW') %>%
-  mutate_at(vars(Watershed),
-            list(fct_drop)) %>%
-  group_by(Species, Watershed, strata) %>%
-  summarise(n_sites = n_distinct(Site)) %>%
-  ungroup() %>%
-  full_join(strata_length) %>%
-  mutate(n_sites = if_else(is.na(n_sites),
-                           as.integer(0),
-                           n_sites)) %>%
+#strata_tab = pred_hab_df %>%
+#  select(Species, Site, Watershed, matches('per_m')) %>%
+#  left_join(site_strata) %>%
+#  filter(strata != 'Entiat_Entiat IMW') %>%
+#  mutate_at(vars(Watershed),
+#            list(fct_drop)) %>%
+#  group_by(Species, Watershed, strata) %>%
+#  summarise(n_sites = n_distinct(Site)) %>%
+#  ungroup() %>%
+#  full_join(strata_length) %>%
+#  mutate(n_sites = if_else(is.na(n_sites),
+#                           as.integer(0),
+#                           n_sites)) %>%
   # calculate the weight of each site in each strata
-  mutate(site_weight = if_else(n_sites > 0,
-                               tot_length_km / n_sites,
-                               as.numeric(NA)))
+#  mutate(site_weight = if_else(n_sites > 0,
+#                               tot_length_km / n_sites,
+#                               as.numeric(NA)))
 
 
 # test to see if we've accounted for all strata and most of each watershed
-strata_test = frame_strata %>%
-  full_join(strata_tab) %>%
-  mutate_at(vars(Watershed),
-            list(fct_drop)) %>%
-  mutate(n_sites = if_else(is.na(n_sites),
-                           as.integer(0),
-                           n_sites)) %>%
-  select(Species, everything()) %>%
-  arrange(Species, Watershed, strata)
+#strata_test = frame_strata %>%
+#  full_join(strata_tab) %>%
+#  mutate_at(vars(Watershed),
+#            list(fct_drop)) %>%
+#  mutate(n_sites = if_else(is.na(n_sites),
+#                           as.integer(0),
+#                           n_sites)) %>%
+#  select(Species, everything()) %>%
+#  arrange(Species, Watershed, strata)
 
 # # what frame strata don't have any sites in them?
 # strata_test %>%
@@ -595,31 +595,31 @@ strata_test = frame_strata %>%
 
 
 # calculate adjusted weights for all predicted QRF capacity sites
-mod_data_weights = mod_data %>%
-  left_join(site_strata) %>%
-  left_join(strata_tab) %>%
-  # if site not in a strata, it gets weight proportionate to it's length
-  mutate(site_weight = if_else(is.na(site_weight),
-                               Lgth_Wet / 1000,
-                               site_weight)) %>%
-  group_by(Species, Watershed) %>%
-  mutate(sum_weights = sum(site_weight)) %>%
-  ungroup() %>%
-  mutate(adj_weight = site_weight / sum_weights)
+#mod_data_weights = mod_data %>%
+#  left_join(site_strata) %>%
+#  left_join(strata_tab) %>%
+#  # if site not in a strata, it gets weight proportionate to it's length
+#  mutate(site_weight = if_else(is.na(site_weight),
+#                               Lgth_Wet / 1000,
+#                               site_weight)) %>%
+#  group_by(Species, Watershed) %>%
+#  mutate(sum_weights = sum(site_weight)) %>%
+#  ungroup() %>%
+#  mutate(adj_weight = site_weight / sum_weights)
 
 #-------------------------------------------------------------
 # clean up some memory
 #-------------------------------------------------------------
-rm(champ_frame_df, champ_site_rch,
-   chnk_strata_length, sthd_strata_length,
-   frame_strata, strata_length, strata_tab, strata_test,
-   gaa)
+rm(champ_frame_df, champ_site_rch, gaa)
 
 #-------------------------------------------------------------
 # fit RF model
 #-------------------------------------------------------------
+#log-response
+#full_form = as.formula(paste('log_qrf_cap ~ -1 + (', paste(extrap_covars, collapse = ' + '), ')'))
 
-full_form = as.formula(paste('log_qrf_cap ~ -1 + (', paste(extrap_covars, collapse = ' + '), ')'))
+#non-transformed response
+full_form = as.formula(paste('qrf_cap ~ -1 + (', paste(extrap_covars, collapse = ' + '), ')'))
 
 model_rf_df = inner_join(pred_hab_df,
                          rch_200_df %>%
@@ -765,10 +765,13 @@ all_preds = model_rf_df %>%
               # rename(resp_champ = pred_cap)) %>%
               rename(resp_champ = pred_cap,
                      se_champ = pred_se)) %>%
-  mutate_at(vars(starts_with("resp"), 
-                  starts_with("se")),
-             list(exp)) %>%
+  #exp for log-response
+  #mutate_at(vars(starts_with("resp"), 
+  #                starts_with("se")),
+  #           list(exp)) %>%
   # add in direct QRF estimates
+  mutate(resp_champ = if_else(resp_champ > 0, resp_champ, 0),
+         resp_no_champ = if_else(resp_no_champ > 0, resp_no_champ, 0)) %>%
   left_join(pred_hab_sites %>%
               select(UniqueID, Watershed,
                      matches("per_m")) %>%
@@ -838,4 +841,4 @@ save(extrap_covars,
      pred_hab_df,
      model_rf_df,
      all_preds,
-     file = paste0(out_path,'modelFit/extrap_200rch_RF_log_', mod_choice, '.rda'))
+     file = paste0(out_path,'modelFit/extrap_200rch_RF_', mod_choice, '.rda'))
