@@ -88,7 +88,7 @@ for(i in 1:length(rch_200_cap_split)) {
             "with", nrow(rch_200_cap_split[[i]]), " rows\n"))
   
   st_write(rch_200_cap_split[[i]],
-           dsn = paste0(out_path,'gpkg/Rch_Cap_RF_', mod_choice, '.gpkg'),
+           dsn = paste0(out_path,'gpkg/Rch_Cap_RF_New_', mod_choice, '.gpkg'),
            driver = 'GPKG',
            append = if_else(i == 1, F, T))
 }
