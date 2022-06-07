@@ -256,13 +256,16 @@ cap_by_ws = function(x, speciescode){
 ```{r calc-chnk-capacity}
 
 # Chinook salmon, summer parr
-chnk_sum_cap_new = cap_by_ws(US_sum_sf_new_extrap, "chnk")
+chnk_sum_cap_new = cap_by_ws(US_sum_sf_new_extrap, "chnk") %>%
+  mutate(modelname = "juv_summer")
 
 # Chinook salmon, winter presmolt
-chnk_win_cap_new = cap_by_ws(US_win_sf_new_extrap, "chnk")
+chnk_win_cap_new = cap_by_ws(US_win_sf_new_extrap, "chnk") %>%
+  mutate(modelname = "juv_winter")
 
 # Chinook salmon, redds
-chnk_redd_cap_new = cap_by_ws(US_redds_sf_new_extrap, "chnk")
+chnk_redd_cap_new = cap_by_ws(US_redds_sf_new_extrap, "chnk") %>%
+  mutate(modelname = "redds")
 
 # Old extraps for comparison ####
 # Chinook salmon, summer parr
@@ -279,13 +282,16 @@ chnk_redd_cap_old = cap_by_ws(US_redds_sf_old_extrap, "chnk")
 ```{r calc-sthd-capacity}
 
 # steelhead salmon, summer parr
-sthd_sum_cap_new = cap_by_ws(US_sum_sf_new_extrap, "sthd")
+sthd_sum_cap_new = cap_by_ws(US_sum_sf_new_extrap, "sthd") %>%
+  mutate(modelname = "juv_summer")
 
 # steelhead salmon, winter presmolt
-sthd_win_cap_new = cap_by_ws(US_win_sf_new_extrap, "sthd")
+sthd_win_cap_new = cap_by_ws(US_win_sf_new_extrap, "sthd") %>%
+  mutate(modelname = "juv_winter")
 
 # steelhead salmon, redds
-sthd_redd_cap_new = cap_by_ws(US_redds_sf_new_extrap, "sthd")
+sthd_redd_cap_new = cap_by_ws(US_redds_sf_new_extrap, "sthd") %>%
+  mutate(modelname = "redds")
 
 # Old extraps for comparison ####
 # steelhead salmon, summer parr
@@ -599,12 +605,60 @@ ggarrange(sthd_sum_map,
 
 ## QRF Habitat Capacity Estimates
 
-### Comparison with previous extrapolation
-
 #### Chinook Salmon
 
+```{r chnk-cap-summarytbl}
+bind_rows(chnk_sum_cap_new,
+          chnk_win_cap_new,
+          chnk_redd_cap_new) %>%
+  select(Watershed, modelname, tot_cap, tot_cap_se) %>%
+  pivot_wider(names_from = modelname, values_from = c(tot_cap, tot_cap_se)) %>%
+  select(Watershed, tot_cap_juv_summer, tot_cap_se_juv_summer,
+         tot_cap_juv_winter, tot_cap_se_juv_winter,
+         tot_cap_redds, tot_cap_se_redds) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Watershed", "Juv summer capacity", "Summer SE", "Juv winter capacity", "Winter SE", "Redd capacity", "Redd SE" ),
+        caption = "Predicted Chinook salmon habitat capacity by life-stage and watershed.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
 
-```{r chnk-maps-comp, fig.cap = "Change in predicted habitat capacity for Chinook salmon compared to the previous extrapolation, by life-stage, within the North Fork Salmon watershed."}
+```
+
+#### Steelhead
+
+```{r sthd-cap-summarytbl}
+bind_rows(sthd_sum_cap_new,
+          sthd_win_cap_new,
+          sthd_redd_cap_new) %>%
+  select(Watershed, modelname, tot_cap, tot_cap_se) %>%
+  pivot_wider(names_from = modelname, values_from = c(tot_cap, tot_cap_se)) %>%
+  select(Watershed, tot_cap_juv_summer, tot_cap_se_juv_summer,
+         tot_cap_juv_winter, tot_cap_se_juv_winter,
+         tot_cap_redds, tot_cap_se_redds) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Watershed", "Juv summer capacity", "Summer SE", "Juv winter capacity", "Winter SE", "Redd capacity", "Redd SE" ),
+        caption = "Predicted winter steelhead habitat capacity by watershed.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+### Comparison with previous extrapolation
+
+We have generated 
+
+
+
+
+```{r chnk-maps-comp, fig.cap = "Predicted change in Chinook salmon habitat capacity compared to the previous extrapolation, by life-stage, within the North Fork Salmon watershed."}
 ggarrange(chnk_sum_comp_map,
           chnk_win_comp_map,
           chnk_redd_comp_map)
@@ -644,7 +698,7 @@ chnk_summary %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed")) %>%
-  collapse_rows(columns = 1:2)
+  collapse_rows(columns = 1:2) #collapse rows is currently broken, hopefully will be fixed soon
 
 
 
@@ -654,7 +708,7 @@ chnk_summary %>%
 #### Steelhead
 
 
-```{r sthd-maps-comp, fig.cap = "Change in predicted habitat capacity for steelhead compared o the previous extrapolation, by life-stage, within the North Fork Salmon watershed.."}
+```{r sthd-maps-comp, fig.cap = "Predicted change in winter steelhead habitat capacity compared to the previous extrapolation, by life-stage, within the North Fork Salmon watershed."}
 ggarrange(sthd_sum_comp_map,
           sthd_win_comp_map,
           sthd_redd_comp_map)
@@ -675,10 +729,10 @@ sthd_summary %>%
         format.args = list(big.mark = ","),
         col.names = c("Model", "Watershed", "Predicted capacity" , "Capacity % change", "Predicted capacity SE", "SE % change" ),
         caption = "Estimated **winter steelhead** capacities and comparison with previous  random forest extrapolations for eight watersheds") %>%
-    collapse_rows(columns = 1:2) %>%
   kable_styling(full_width = F,
                 position = "center",
-                bootstrap_options = c("striped", "condensed"))
+                bootstrap_options = c("striped", "condensed")) %>%
+    collapse_rows(columns = 1:2) #collapse rows is currently broken, hopefully will be fixed soon
 
 
 ```
