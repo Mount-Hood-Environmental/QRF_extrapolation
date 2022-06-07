@@ -163,6 +163,8 @@ This is the skeleton rmd outlining the development of a revised ("new") QRF mode
 
 ## Covariate selection
 
+We fit the QRF model using a revised covariate selection process that placed more emphasis on compatibility with future data collection via DASH and the ability to predict restoration effects. Habitat data collected by CHaMP and other sources (e.g. NorWeST stream temperature) were subset to a list of potential covariates that could be reproduced using DASH data collection. This provides opportunity to collect new paired fish and habitat data using DASH protocols, reducing the reliance of the QRF model on the CHaMP habitat data. 
+
 Explain covariate selection process. DASH/resto compatible, high MIC, low correlation, missing data, lots of zeros, species specific models, and eventually converting to joint models.
 
 ## QRF Model fit
