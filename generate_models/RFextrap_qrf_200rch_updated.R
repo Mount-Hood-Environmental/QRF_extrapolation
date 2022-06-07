@@ -24,7 +24,7 @@ theme_set(theme_bw())
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[3]
+               'juv_winter')[1]
 
 cov_choice = c("Reduced")[1]
 
@@ -390,30 +390,30 @@ out_range_rchs = rch_200_df %>%
 # for linear models
 #----------------------------------------
 # center covariates
-extrap_summ = inner_join(pred_hab_df %>%
-                           select(UniqueID) %>%
-                           distinct(),
-                         rch_200_df %>%
-                           select(UniqueID, one_of(extrap_num))) %>%
-  gather(metric_nm, value, -UniqueID) %>%
-  group_by(metric_nm) %>%
-  summarise(metric_mean = mean(value, na.rm=T),
-            metric_sd = sd(value, na.rm=T)) %>%
-  ungroup()
+#extrap_summ = inner_join(pred_hab_df %>%
+#                           select(UniqueID) %>%
+#                           distinct(),
+#                         rch_200_df %>%
+#                           select(UniqueID, one_of(extrap_num))) %>%
+#  gather(metric_nm, value, -UniqueID) %>%
+#  group_by(metric_nm) %>%
+#  summarise(metric_mean = mean(value, na.rm=T),
+#            metric_sd = sd(value, na.rm=T)) %>%
+#  ungroup()
 
 # extrapolation model data set, with normalized covariates 
-mod_data = inner_join(pred_hab_df,
-                      rch_200_df %>%
-                        select(UniqueID, one_of(extrap_num))) %>%
-  gather(metric_nm, value, one_of(extrap_num)) %>%
-  left_join(extrap_summ) %>%
-  mutate(norm_value = (value - metric_mean) / metric_sd) %>%
-  select(-(value:metric_sd)) %>%
-  pivot_wider(names_from = metric_nm, values_from =  norm_value, values_fn = mean) %>%
-  left_join(rch_200_df %>%
-              select(UniqueID, one_of(extrap_catg)))
+#mod_data = inner_join(pred_hab_df,
+#                      rch_200_df %>%
+#                        select(UniqueID, one_of(extrap_num))) %>%
+#  gather(metric_nm, value, one_of(extrap_num)) %>%
+#  left_join(extrap_summ) %>%
+#  mutate(norm_value = (value - metric_mean) / metric_sd) %>%
+#  select(-(value:metric_sd)) %>%
+#  pivot_wider(names_from = metric_nm, values_from =  norm_value, values_fn = mean) %>%
+#  left_join(rch_200_df %>%
+#              select(UniqueID, one_of(extrap_catg)))
 
-sum(is.na(mod_data))
+#sum(is.na(mod_data))
 
 # mod_data %<>%
 #   bind_cols(mod_data %>%
@@ -426,61 +426,61 @@ sum(is.na(mod_data))
 #             list(fct_drop))
 
 # where to make extrapolation predictions
-rch_pred = rch_200_df %>%
-  select(UniqueID, one_of(extrap_num)) %>%
-  pivot_longer(cols = one_of(extrap_num),
-               names_to = "metric_nm",
-               values_to = "value") %>%
-  left_join(extrap_summ) %>%
-  mutate(norm_value = (value - metric_mean) / metric_sd) %>%
-  select(-(value:metric_sd)) %>%
-  pivot_wider(names_from = "metric_nm",
-              values_from = "norm_value") %>%
-  left_join(rch_200_df %>%
-              select(UniqueID, !any_of(extrap_num))) %>%
-  select(any_of(names(rch_200_df))) %>%
-  mutate(in_covar_range = if_else(UniqueID %in% out_range_rchs,
-                                  F, T))
+#rch_pred = rch_200_df %>%
+#  select(UniqueID, one_of(extrap_num)) %>%
+#  pivot_longer(cols = one_of(extrap_num),
+#               names_to = "metric_nm",
+#               values_to = "value") %>%
+#  left_join(extrap_summ) %>%
+#  mutate(norm_value = (value - metric_mean) / metric_sd) %>%
+#  select(-(value:metric_sd)) %>%
+#  pivot_wider(names_from = "metric_nm",
+#              values_from = "norm_value") %>%
+#  left_join(rch_200_df %>%
+#              select(UniqueID, !any_of(extrap_num))) %>%
+#  select(any_of(names(rch_200_df))) %>%
+#  mutate(in_covar_range = if_else(UniqueID %in% out_range_rchs,
+#                                  F, T))
 
 #----------------------------------------
 # pull in survey design related data
 #----------------------------------------
 # Calculate GRTS design weights. Is this required? -MR
-load(paste0(in_path,"gaa.rda"))
+#load(paste0(in_path,"gaa.rda"))
 
 # pull in info about what strata each CHaMP site was assigned to (using 2014 as reference year)
-site_strata = pred_hab_df %>%
-  select(Species, Site, Watershed) %>%
-  distinct() %>%
-  left_join(gaa %>%
-              select(Site,
-                     strata = AStrat2014)) %>%
-  mutate(site_num = str_split(Site, '-', simplify = T)[,2]) %>%
-  mutate(strata = if_else(Watershed == 'Asotin',
-                          site_num,
-                          if_else(Watershed == 'Entiat' & grepl('ENT00001', Site),
-                                  paste('EntiatIMW', site_num, sep = '_'),
-                                  strata))) %>%
-  mutate(strata = if_else(grepl('EntiatIMW', strata),
-                          str_remove(strata, '[[:digit:]]$'),
-                          strata),
-         strata = if_else(grepl('EntiatIMW', strata),
-                          str_remove(strata, '[[:digit:]]$'),
-                          strata)) %>%
-  filter(!is.na(strata)) %>%
-  mutate(strata = paste(Watershed, strata, sep = '_')) %>%
-  select(-site_num)
+#site_strata = pred_hab_df %>%
+#  select(Species, Site, Watershed) %>%
+#  distinct() %>%
+#  left_join(gaa %>%
+#              select(Site,
+#                     strata = AStrat2014)) %>%
+#  mutate(site_num = str_split(Site, '-', simplify = T)[,2]) %>%
+#  mutate(strata = if_else(Watershed == 'Asotin',
+#                          site_num,
+#                          if_else(Watershed == 'Entiat' & grepl('ENT00001', Site),
+#                                  paste('EntiatIMW', site_num, sep = '_'),
+#                                  strata))) %>%
+#  mutate(strata = if_else(grepl('EntiatIMW', strata),
+#                          str_remove(strata, '[[:digit:]]$'),
+#                          strata),
+#         strata = if_else(grepl('EntiatIMW', strata),
+#                          str_remove(strata, '[[:digit:]]$'),
+#                          strata)) %>%
+#  filter(!is.na(strata)) %>%
+#  mutate(strata = paste(Watershed, strata, sep = '_')) %>%
+#  select(-site_num)
 
 # read in data from the CHaMP frame
-champ_frame_df = fread(paste0(in_path,'champ_frame_data.csv')) %>%
-  mutate(Target2014 = ifelse(is.na(AStrat2014), 'Non-Target', Target2014)) %>%
-  mutate(AStrat2014 = ifelse(AStrat2014 == 'Entiat IMW', paste('EntiatIMW', GeoRchIMW, sep = '_'), AStrat2014)) %>%
-  mutate(UseTypCHSP = ifelse(CHaMPshed == 'Lemhi' & AStrat2014 == 'Little Springs',
-                             "Spawning and rearing", UseTypCHSP),
-         UseTypSTSU = ifelse(CHaMPshed == 'Lemhi' & AStrat2014 %in% c('Big Springs', 'Little Springs'),
-                             "Spawning and rearing", UseTypSTSU)) %>%
-  filter(Target2014 == 'Target') %>%
-  rename(Watershed = CHaMPshed)
+#champ_frame_df = fread(paste0(in_path,'champ_frame_data.csv')) %>%
+#  mutate(Target2014 = ifelse(is.na(AStrat2014), 'Non-Target', Target2014)) %>%
+#  mutate(AStrat2014 = ifelse(AStrat2014 == 'Entiat IMW', paste('EntiatIMW', GeoRchIMW, sep = #'_'), AStrat2014)) %>%
+#  mutate(UseTypCHSP = ifelse(CHaMPshed == 'Lemhi' & AStrat2014 == 'Little Springs',
+#                             "Spawning and rearing", UseTypCHSP),
+#         UseTypSTSU = ifelse(CHaMPshed == 'Lemhi' & AStrat2014 %in% c('Big Springs', 'Little Springs'),
+#                             "Spawning and rearing", UseTypSTSU)) %>%
+#  filter(Target2014 == 'Target') %>%
+#  rename(Watershed = CHaMPshed)
 
 # what strata do we have?
 #frame_strata = champ_frame_df %>%
@@ -610,7 +610,7 @@ champ_frame_df = fread(paste0(in_path,'champ_frame_data.csv')) %>%
 #-------------------------------------------------------------
 # clean up some memory
 #-------------------------------------------------------------
-rm(champ_frame_df, champ_site_rch, gaa)
+#rm(champ_frame_df, champ_site_rch, gaa)
 
 #-------------------------------------------------------------
 # fit RF model
@@ -638,7 +638,7 @@ model_rf_df = inner_join(pred_hab_df,
                             }),
          mod_champ = map(data,
                          .f = function(x) {
-                           randomForest(update(full_form, log_qrf_cap ~. + Watershed),
+                           randomForest(update(full_form, qrf_cap ~. + Watershed),
                                         #update(full_form, qrf_cap ~. + Watershed),
                                         data = x,
                                         ntree = 2000)
@@ -770,8 +770,8 @@ all_preds = model_rf_df %>%
   #                starts_with("se")),
   #           list(exp)) %>%
   # add in direct QRF estimates
-  mutate(resp_champ = if_else(resp_champ > 0, resp_champ, 0),
-         resp_no_champ = if_else(resp_no_champ > 0, resp_no_champ, 0)) %>%
+  #mutate(resp_champ = if_else(resp_champ > 0, resp_champ, 0),
+  #       resp_no_champ = if_else(resp_no_champ > 0, resp_no_champ, 0)) %>%
   left_join(pred_hab_sites %>%
               select(UniqueID, Watershed,
                      matches("per_m")) %>%
