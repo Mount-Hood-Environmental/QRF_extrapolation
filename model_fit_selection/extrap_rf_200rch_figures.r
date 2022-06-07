@@ -11,7 +11,7 @@ mod_choice = c('juv_summer',
 
 cov_choice = c("Reduced")[1]
 
-log_mod = c("log_","")[1] #log-response model or no
+log_mod = c("log_","")[2] #log-response model or no
 
 load(paste0(mod_path,"extrap_200rch_RF_",log_mod,mod_choice,'.rda'))
 
