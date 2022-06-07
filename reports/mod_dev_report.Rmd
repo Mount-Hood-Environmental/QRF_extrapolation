@@ -34,17 +34,18 @@ output:
     - --lua-filter=../templates/author-info-blocks.lua
     - --lua-filter=../templates/pagebreak.lua  
 csl: "../templates/american-fisheries-society.csl"
-
 ---
 
 <!-- the following inserts MHE logo into header -->
+
+```{=html}
 <script>
    $(document).ready(function() {
      $head = $('#header');
      $head.prepend('<img src=\"logo.jpg\" style=\"float: right;width: 150px;\"/>')
    });
 </script>
-
+```
 ```{r setup, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -92,32 +93,6 @@ load(paste0(out_path,'gpkg/extrap_compare/US_qrf_extraps_comp.rda'))
 # Project area polygons and 200m layer (with habitat attributes) within project area
 load(paste0(out_path,'gpkg/extrap_compare/US_spatial.rda'))
 
-# convert old sf objects to tibbles
-US_sum_df_old_extrap = US_sum_sf_old_extrap %>%
-  st_drop_geometry() %>%
-  as_tibble()
-
-US_win_df_old_extrap = US_win_sf_old_extrap %>%
-  st_drop_geometry() %>%
-  as_tibble()
-
-US_redds_df_old_extrap = US_redds_sf_old_extrap %>%
-  st_drop_geometry() %>%
-  as_tibble()
-
-# convert new sf objects to tibbles
-US_sum_df_new_extrap = US_sum_sf_new_extrap %>%
-  st_drop_geometry() %>%
-  as_tibble()
-
-US_win_df_new_extrap = US_win_sf_new_extrap %>%
-  st_drop_geometry() %>%
-  as_tibble()
-
-US_redds_df_new_extrap = US_redds_sf_new_extrap %>%
-  st_drop_geometry() %>%
-  as_tibble()
-
 # the spatial domain for the species and life stages of the old extrapolations were modified from Morgon Bond's 
 # designation to include local knowledge from biologists. To keep things consistent, we will use the same spatial domain
 # for the new extrapolations. 
@@ -146,26 +121,70 @@ US_win_sf_new_extrap = US_win_sf_new_extrap %>%
           join = st_covered_by,
           left = F)
 
+# convert old sf objects to tibbles
+US_sum_df_old_extrap = US_sum_sf_old_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+US_win_df_old_extrap = US_win_sf_old_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+US_redds_df_old_extrap = US_redds_sf_old_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+# convert new sf objects to tibbles
+US_sum_df_new_extrap = US_sum_sf_new_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+US_win_df_new_extrap = US_win_sf_new_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+US_redds_df_new_extrap = US_redds_sf_new_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
 # create comparison tibbles for mapping
 
-US_sum_sf_comp_extrap = bind_cols(setorder(US_sum_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_sum_df_new_extrap, UniqueID)[,c(21:32)] - setorder(US_sum_df_old_extrap, UniqueID)[,c(21:32)])
+US_sum_sf_comp_extrap = bind_cols(setorder(US_sum_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_sum_df_new_extrap, UniqueID)[,c(19:30)] - setorder(US_sum_df_old_extrap, UniqueID)[,c(21:32)])
 
-US_win_sf_comp_extrap = bind_cols(setorder(US_win_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_win_df_new_extrap, UniqueID)[,c(21:32)] - setorder(US_win_df_old_extrap, UniqueID)[,c(21:32)])
+US_win_sf_comp_extrap = bind_cols(setorder(US_win_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_win_df_new_extrap, UniqueID)[,c(19:30)] - setorder(US_win_df_old_extrap, UniqueID)[,c(21:32)])
 
-US_redds_sf_comp_extrap = bind_cols(setorder(US_redds_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_redds_df_new_extrap, UniqueID)[,c(21:32)] - setorder(US_redds_df_old_extrap, UniqueID)[,c(21:32)])
+US_redds_sf_comp_extrap = bind_cols(setorder(US_redds_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_redds_df_new_extrap, UniqueID)[,c(19:30)] - setorder(US_redds_df_old_extrap, UniqueID)[,c(21:32)])
 
 
 ```
 
 # Background
 
-This is the skeleton rmd outlining the development of a revised ("new") QRF model (See et al. 2021). This will eventually highlight the covariate selection process, QRF model fit, the RF extrapolation model, and finally compare extrapolation estimates between the original and new models for eight watersheds within the Upper Salmon Basin. 
+Habitat covariates recently used in six quantile random forest (QRF) capacity models (Chinook salmon and steelhead; summer parr, winter presmolts and redds) were chosen because of their high predictive power to estimate capacity across the Columbia River Basin (cite IRA?). However, a subset of the covariates included the QRF models were not necessarily useful for restoration project monitoring, or to describe target conditions for restoration design due to the habitat covariate not being easily manipulated by project actions. Additionally, some of the CHaMP covariates used in previous models are difficult to replicate or measure using streamlined fish habitat protocols (DASH - Carmichael et al. 2019). To increase the utility of the QRF model for project monitoring/design and future data collection efforts, we explored alternative covariates to include in the QRF models that: 1) maintained high predictive power, 2) were informative for restoration efforts and monitoring, 3) could be calculated from DASH surveys, 4) were not missing an overabundance of data, and 5) were not highly correlated with other covariates in the models. Using this criterion, we developed six modified QRF model that were more informative for restoration design and monitoring, included covariates that could be calculated using newly developed stream habitat protocols, and maintained a similar level of predictive power as the original QRF habitat capacity models.
+
+Similarly, a random forest extrapolation model was used to predict capacity estimates across larger scales where CHaMP or DASH data are absent (cite IRA). We revisited the globally available attributes (GAA) included in the original random forest extrapolation model and made minor modifications so GAA's included in the extrapolation model better aligned with the modified QRF model covariates.
+
+Below is a brief outline documenting these efforts, as well as a comparison of extrapolation estimates for the original and modified QRF models for eight watersheds in the Upper Salmon River region.
 
 ## Covariate selection
 
-We fit the QRF model using a revised covariate selection process that placed more emphasis on compatibility with future data collection via DASH and the ability to predict restoration effects. Habitat data collected by CHaMP and other sources (e.g. NorWeST stream temperature) were subset to a list of potential covariates that could be reproduced using DASH data collection. This provides opportunity to collect new paired fish and habitat data using DASH protocols, reducing the reliance of the QRF model on the CHaMP habitat data. 
+The QRF model was fit using a revised covariate selection process that placed more emphasis on compatibility with future data collection via DASH and the ability to predict restoration effects. Habitat data collected by CHaMP and other sources (e.g. NorWeST stream temperature) were subset to a list of potential covariates that could be reproduced using DASH data collection. This provides opportunity to collect new paired fish and habitat data using DASH protocols, reducing the reliance of the QRF model on the CHaMP habitat data.
 
-Explain covariate selection process. DASH/resto compatible, high MIC, low correlation, missing data, lots of zeros, species specific models, and eventually converting to joint models.
+Below is a rubric that was used to help inform the covariate selection process for each of the six models (Chinook and steelhead; winter, summer, and redds)
+
+1.  Strength between covariate and response variable (based on MIC score)
+
+2.  Informative for restoration efforts (Yes/No)
+
+3.  Could be calculated using DASH data (Yes/No)
+
+4.  How much data were missing and/or the amount of "0"s?
+
+5.  How correlated was the covariate with other covariates in the original QRF model, and covariates within the same model?
+
+An oversimplified example of the theoretical covariate selection process might unfold as follows. In the original QRF model, discharge might have been included in the model because it had a high MIC score and it made biological sense. Unfortunately, discharge isn't that informative for restoration efforts because most restoration efforts can't create water. Discharge (like many habitat covariates) are highly correlated to other habitat covariates, but these other covariates maybe have been left out of the original QRF model for any number of reasons (highly correlated with other covariates already in the model, redundant, etc.). Using the rubric, we found that average thalweg depth had a MIC score that was nearly as high as discharge, it was informative for restoration, it could be calculated with DASH, and the two covariates were highly correlated (the high correlation is likely why average thalweg depth was left out of the original QRF model). Based on all the information above, we would substitute mean thalweg depth for discharge in that particular model. Repeat this process for all other QRF covariates for each of the six models.
+
+Briefly discuss how we compared outputs between species and settled on a joint model.
 
 ## QRF Model fit
 
@@ -176,9 +195,6 @@ Talk about relative importance and pdp plots.
 Talk about GAA's
 
 ## Extrapolation comparison
-
-
-<!-- Below is a bunch of script to calculate watershed capacities, make pretty figures, and create simple tables. I took it from the UWW and NF assessment .rmd's so if something isn't running, go back and look at those scripts to help troubleshoot. Additionally, use the "wtrshd" variable to filter the eight watersheds. The "watershed" variable is taken from the WBDHU12.shp and isn't that useful.  -->
 
 ```{r capacity-funs}
 source(here("R/calc_watershed_cap.R"))
@@ -587,14 +603,14 @@ sthd_redd_comp_map = US_redds_sf_comp_extrap %>%
 
 ```
 
-```{r chnk-maps, fig.cap = "Extrapolations of habitat capacity for Chinook salmon, by life-stage, within the North Fork Salmon watershed."}
+```{r chnk-maps, fig.cap = "Extrapolations of habitat capacity for Chinook salmon, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the modified models."}
 ggarrange(chnk_sum_map,
           chnk_win_map,
           chnk_redd_map)
 
 ```
 
-```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, within the North Fork Salmon watershed.."}
+```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the modified models."}
 ggarrange(sthd_sum_map,
           sthd_win_map,
           sthd_redd_map)
@@ -603,7 +619,6 @@ ggarrange(sthd_sum_map,
 
 ::: {#refs}
 :::
-
 
 ## QRF Habitat Capacity Estimates
 
@@ -623,7 +638,7 @@ bind_rows(chnk_sum_cap_new,
         align = "lcccc",
         format.args = list(big.mark = ","),
         col.names = c("Watershed", "Juv summer capacity", "Summer SE", "Juv winter capacity", "Winter SE", "Redd capacity", "Redd SE" ),
-        caption = "Predicted Chinook salmon habitat capacity by life-stage and watershed.") %>%
+        caption = "Predicted Chinook salmon habitat capacity by life-stage and watershed using the modified models.") %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed"))
@@ -646,7 +661,7 @@ bind_rows(sthd_sum_cap_new,
         align = "lcccc",
         format.args = list(big.mark = ","),
         col.names = c("Watershed", "Juv summer capacity", "Summer SE", "Juv winter capacity", "Winter SE", "Redd capacity", "Redd SE" ),
-        caption = "Predicted winter steelhead habitat capacity by watershed.") %>%
+        caption = "Predicted steelhead habitat capacity by life-stage and watershed using the modified models.") %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed"))
@@ -655,18 +670,14 @@ bind_rows(sthd_sum_cap_new,
 
 ### Comparison with previous extrapolation
 
-We have generated 
+We have generated
 
-
-
-
-```{r chnk-maps-comp, fig.cap = "Predicted change in Chinook salmon habitat capacity compared to the previous extrapolation, by life-stage, within the North Fork Salmon watershed."}
+```{r chnk-maps-comp, fig.cap = "Comparison of Chinook salmon habitat capacity estimates between modified and original model extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
 ggarrange(chnk_sum_comp_map,
           chnk_win_comp_map,
           chnk_redd_comp_map)
 
 ```
-
 
 ```{r chnk-comp-summary-tbls}
 
@@ -706,11 +717,9 @@ chnk_summary %>%
 
 ```
 
-
 #### Steelhead
 
-
-```{r sthd-maps-comp, fig.cap = "Predicted change in winter steelhead habitat capacity compared to the previous extrapolation, by life-stage, within the North Fork Salmon watershed."}
+```{r sthd-maps-comp, fig.cap = "Comparison of steelhead habitat capacity estimates between modified  and original models extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
 ggarrange(sthd_sum_comp_map,
           sthd_win_comp_map,
           sthd_redd_comp_map)
@@ -730,7 +739,7 @@ sthd_summary %>%
         align = "lcccc",
         format.args = list(big.mark = ","),
         col.names = c("Model", "Watershed", "Predicted capacity" , "Capacity % change", "Predicted capacity SE", "SE % change" ),
-        caption = "Estimated **winter steelhead** capacities and comparison with previous  random forest extrapolations for eight watersheds") %>%
+        caption = "Estimated **steelhead** capacities and comparison with previous  random forest extrapolations for eight watersheds") %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed")) %>%
@@ -738,7 +747,6 @@ sthd_summary %>%
 
 
 ```
-
 
 ### Capacity by stream
 

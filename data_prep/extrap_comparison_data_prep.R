@@ -50,8 +50,7 @@ US_huc_sf = st_read(paste0(out_path,'gpkg/Upper_Salmon_WBD.shp')) %>%
          HUC10 = str_sub(HUC12, 1, 10),
          wtrshd = layer)
 
-ggplot(data = US_huc_sf) +
-  geom_sf()
+#ggplot(data = US_huc_sf) +  geom_sf()
 
 # Summer parr - old extrap
 US_sum_sf_old_extrap = sum_juv_sf_old_extrap %>%
@@ -73,7 +72,7 @@ US_sum_sf_old_extrap = sum_juv_sf_old_extrap %>%
           join = st_covered_by,
           left = F)
 
-ggplot(US_sum_sf_old_extrap) + geom_sf()
+#ggplot(US_sum_sf_old_extrap) + geom_sf()
 
 # Winter presmolt - old extrap
 US_win_sf_old_extrap = win_juv_sf_old_extrap %>%
