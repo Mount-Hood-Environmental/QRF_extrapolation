@@ -192,7 +192,8 @@ Talk about relative importance and pdp plots.
 
 # Extrapolation model
 
-Talk about GAA's
+The spatial extent of QRF capacity predictions was limited to reaches CHaMP habitat data, so capacity for all wadable streams in the Columbia basin was estimated through the development of an extrapolation model. This model used 'globally available attributes' (GAAs) obtained from a stream layer created by Morgan Bond and Tyler Nodine based on the National Hydrography Dataset High Resolution 1:24,000 line network to estimate capacities predicted by the QRF model at the 200 meter reach scale.
+ 
 
 ## Extrapolation comparison
 
@@ -750,7 +751,7 @@ sthd_summary %>%
 
 ```
 
-# Supplemental tables
+# Supplemental figures and tables
 
 ## Capacity by stream
 
