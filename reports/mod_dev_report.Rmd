@@ -160,31 +160,60 @@ US_redds_sf_comp_extrap = bind_cols(setorder(US_redds_sf_old_extrap[,-c(21:32)],
 
 # Background
 
-Habitat covariates recently used in six quantile random forest (QRF) capacity models (Chinook salmon and steelhead; summer parr, winter presmolts and redds) were chosen because of their high predictive power to estimate capacity across the Columbia River Basin (cite IRA?). However, a subset of the covariates included the QRF models were not necessarily useful for restoration project monitoring, or to describe target conditions for restoration design due to the habitat covariate not being easily manipulated by project actions. Additionally, some of the CHaMP covariates used in previous models were difficult to replicate or measure using streamlined fish habitat protocols (DASH - Carmichael et al. 2019). To increase the utility of the QRF model for project monitoring/design and future data collection efforts, we explored alternative covariates to include in the QRF models that: 1) maintained high predictive power, 2) were informative for restoration efforts and monitoring, 3) could be calculated from DASH surveys, 4) were not missing an overabundance of data, and 5) were not highly correlated with other covariates in the models. Using this criterion, we developed six modified QRF model that were more informative for restoration design and monitoring, included covariates that could be calculated using newly developed stream habitat protocols, and maintained a similar level of predictive power as the original QRF habitat capacity models.
+Quantile random forest (QRF) models have become an increasingly popular tool for quantifying freshwater habitat carrying capacity due to their flexible framework that avoid common pitfalls associated with noisy data, correlated variables, and non-linear relationships. Recently, three QRF models were developed using large fish-habitat datasets (CHaMP dataset) within the Columbia River Basin to estimate carrying capacity for ESA-listed populations of Chinook salmon and steelhead during three critical life-stages (juvenile summer parr, juvenile winter presmolt, and adult redds). The covariates included in those models were selected from \>100 potential covariates and chosen for their high predictive power to estimate capacity across the Columbia River Basin (cite IRA, See et al 2021, or another document outlining the original QRf selection process). While the covariates in the model likely provide high predictive power, many of the covariates are not informative for restoration project monitoring, restoration project planning and can be difficult to measure or replicate using streamlined fish habitat protocols (DASH - Carmichael et al. 2019). To increase the utility of the QRF model for restoration efforts and future data collection, we explored alternative covariates options for the QRF models that: 1) maintained high predictive power, 2) were informative for restoration efforts and monitoring, 3) could be calculated from DASH surveys, 4) were not missing an overabundance of data in the fish-habitat dataset, and 5) were not highly correlated with other covariates in the models (avoid overfitting the models). Additionally, we wanted to test the assumption made during the development of the original QRF model that a single model was appropriate for both Chinook salmon and steelhead during each of the three life stages.
 
-Similarly, a random forest extrapolation model has been used to predict capacity estimates across larger scales where CHaMP or DASH data are absent (cite IRA). We revisited the globally available attributes (GAA) included in the original random forest extrapolation model and made minor modifications so GAA's included in the extrapolation model better aligned with the modified QRF model covariates.
+Similarly, a random forest (RF) model has been used to predict habitat capacity estimates across larger spatial scales where CHaMP and/or DASH data aren't available (cite IRA). We revisited the globally available attributes (GAAs) included in the original RF extrapolation model and made minor modifications to the extrapolation model that: 1) maintained covariates with high predictive power and 2) included covariates that better aligned with the revised QRF model covariates. To compare relative performance between the original and modified RF extrapolation models, we evaluated watershed carrying capacity estimates produced by the two models for eight watersheds located within the Upper Salmon River basin.
 
-Below is a brief document outlining these efforts, as well as a comparison of extrapolation estimates from the original and modified QRF models for eight watersheds in the Upper Salmon River region.
+Through this process, we successfuly developed three modified QRF model that were more informative for restoration design and monitoring, included covariates that could be calculated using newly developed stream habitat protocols, and maintained a similar level of predictive power as the original QRF habitat capacity models. Below is a brief document outlining these efforts.
 
-# Covariate selection
+# Covariate selection process
 
-The QRF model was fit using a revised covariate selection process that placed more emphasis on compatibility with future data collection via DASH and the ability to predict restoration effects. Habitat data collected by CHaMP and other sources (e.g. NorWeST stream temperature) were subset to a list of potential covariates that could be reproduced using DASH data collection. This provides opportunity to collect new paired fish and habitat data using DASH protocols, reducing the reliance of the QRF model on the CHaMP habitat data.
+Potential habitat covariates for the QRF models were generated from the CHaMP dataset or obtained from other sources (e.g. NorWest stream temperature data). In total, 129 covariates were included in the selection process. Covariates were aggregated into eleven metric categories and 1-4 metrics were chosen from each category based on the rubric below.
 
-Below is the rubric used to inform the covariate selection process for each of the six models (Chinook and steelhead; winter, summer, and redds)
+1.  What was the strength between the covariate and the response variable (based on MIC score)?
 
-1.  Strength between covariate and response variable (based on MIC score)
+2.  Could the covariate be calculated using DASH data?
 
-2.  Informative for restoration efforts (Yes/No)
+3.  Was the covariate informative for restoration efforts?
 
-3.  Could be calculated using DASH data (Yes/No)
+4.  How much data were missing and/or the amount of "0"s for the covariate in the fish-habitat dataset?
 
-4.  How much data were missing and/or the amount of "0"s?
+5.  How correlated was the covariate with other covariates within the same metric category, particularly with covariates with higher MIC scores?
 
-5.  How correlated was the covariate with other covariates in the original QRF model, and covariates within the same model?
+An oversimplified example of how a theoretical covariate might be selected for a model is described as follows.
 
-An oversimplified example of the theoretical covariate selection process might unfold as follows. In the original QRF model, discharge was likely included in the model because it had a high MIC score and it made biological sense. Unfortunately, discharge isn't that informative for restoration efforts because most restoration efforts can't create water. Discharge (like many habitat covariates) is highly correlated to other habitat covariates, but these covariates were left out of the original QRF model for any number of reasons (highly correlated with other covariates already in the model, redundant, etc.). Using the rubric, we found that average thalweg depth had a MIC score that was nearly as high as discharge, it was informative for restoration, it could be calculated with DASH, and the two covariates were highly correlated (the high correlation is likely why average thalweg depth was left out of the original QRF model). Based on all the information above, we would substitute mean thalweg depth for discharge in the model. Repeat this process for all other QRF covariates for each of the six models.
+--
 
-The covariate selection process was done independently for both species for all three life stages. At the end of the covariate selection process, final covariates were compared for each life-stage between the two species. While the relative importance of the final covariates selected to be in the models were slightly different between species, the final covariates themselves were nearly identical between species for all three life stages. Because of this, we consolidated the species-specific models and proceeded with one winter juvenile, summer parr, and redd model to be used for both species.
+*In the original QRF model, discharge was likely selected as a covariate because it had a high MIC score and it made biological sense (i.e. discharge is a significant factor impacting fish habitat use and, presumably, habitat carrying capacity). Unfortunately, discharge isn't that informative for restoration efforts because most restoration actions can't create water. Discharge, like many habitat covariates, is highly correlated to other habitat covariates but these other covariates may have been left out of the original QRF model for any number of reasons (highly correlated with other covariates already in the model, excluded to avoid overfitting the model, etc.). Using the rubric, it is observed that average thalweg depth has a MIC score that is nearly as high as discharge, it is informative for restoration efforts, it can be calculated with DASH, and the two covariates are highly correlated (the high correlation is likely why average thalweg depth was left out of the original QRF model). Based on all the information above, mean thalweg depth would be substituted for discharge in the model. This process would be repeated for all the remaining covariates for that model.*
+
+--
+
+Last, the covariate selection process was done independently for both species for all three life stages to test the assumption made during the original QRF model development that the top covariates for the three life stages were the same between species.
+
+# Covariate selection results
+
+There were 12-14 covariates selected for each of the six models. While the relative importance of the final covariates in the three life stage models differed between species, the final covariates themselves were nearly identical. (Figure \@ref(fig:qrf-relimp-summer) , Figure \@ref(fig:qrf-relimp-winter), and Figure \@ref(fig:qrf-relimp-redds) ). Because of this, we consolidated the species-specific models into a single winter juvenile, summer juvenile, and redd models to be used for both species (Table \@ref(tab:cov-tab)).
+
+```{r qrf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the juvenile summer QRF models"}
+
+load(here('output/figures/juv_summer_figs.rda'))
+rel_imp_p
+
+```
+
+```{r qrf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the juvenile winter QRF models"}
+
+load(here('output/figures/juv_winter_figs.rda'))
+rel_imp_p
+
+```
+
+```{r qrf-relimp-redds, fig.cap = "Relative importance plots for covariates included in the QRF redds models"}
+
+load(here('output/figures/redds_figs.rda'))
+rel_imp_p
+
+```
 
 ```{r cov-tab}
 load(here("data/QRF_new_hab_cov_tbl.rda"))
@@ -193,22 +222,17 @@ QRF_new_hab_cov_tbl %>%
   select(-Covariate) %>%
   kable(booktabs = T,
         align = "ccccccccl",
-        caption = "Habitat covariates and their descriptions used the three life stage QRF capacity models. Numbers indicate where each metric ranked in relative importance for each species. Dots indicate a metric was not used for a given model.") %>%
+        caption = "Habitat covariates and their descriptions for the three life stage QRF capacity models. Numbers indicate where each metric ranked in relative importance for each species. Dots indicate a metric was not used for a given model.") %>%
   kable_styling(position = "center",
                 bootstrap_options = c("striped", "condensed"))
 
 ```
 
-# QRF Model fit
-
-Talk about relative importance and pdp plots.
-
 # Extrapolation model
 
-The spatial extent of QRF capacity predictions was limited to reaches CHaMP habitat data, so capacity for all wadable streams in the Columbia basin was estimated through the development of an extrapolation model. This model used 'globally available attributes' (GAAs) obtained from a stream layer created by Morgan Bond and Tyler Nodine based on the National Hydrography Dataset High Resolution 1:24,000 line network to estimate capacities predicted by the QRF model at the 200 meter reach scale. The extrapolation model utilized a random forest model structure. Consistent with the QRF model, the extrapolation model made not assumptions about the direction and distribution of effects of predictors and constrained density estimates within the range of predictions from the QRF model. However, random forest methods did not account for variable strata weights across the CHaMP dataset, a source of potential bias that could be alleviated through the collection of additional paired fish and habitat data.
+The spatial extent of QRF capacity predictions was/is limited to reaches with high-resolution habitat data (i.e. CHaMP or DASH data). To estimate capacity outside of the QRF capacity spatial extent, an extrapolation model was developed using "globally available attributes" (GAAs) obtained from a continuous, linear, stream network created by Morgan Bond and Tyler Nodine based on the National Hydrography Dataset High Resolution 1:24,000 for the entire Columbia River Basin. Using the GAAs from the linear stream network and a random forest model structure, capacity estimates at the 200 meter reach scale for the entire Columbia River Basin. Consistent with the QRF model, the extrapolation model makes no assumptions about the direction and distribution of effects of predictors, and constrains density estimates within the range of predictions produced by the QRF model. However, random forest methods do not account for variable strata weights across the CHaMP dataset, a source of potential bias that could be alleviated through the collection of additional paired fish and habitat data.
 
 Extrapolation model covariates were selected from the list of GAAs and examined for inclusion by examining relative importance and partial dependence plots and correlation between covariates. We used the covariates included in the previous extrapolation as a starting point for selection. This resulted in the replacement of regime (an indicator of dominant precipitation type) for elevation and the removal of relative slope, which we found was redundant with gradient. Model results indicated that elevation was consistently one of the most important predictors in the model. This is particularly true for the Chinook parr summer model where capacity predictions were primarily driven by elevation.
-
 
 ```{r gaa-tbl}
 load(here("data/gaa_hab_dict.rda"))
@@ -823,7 +847,8 @@ sthd_summary %>%
 # Supplemental figures and tables
 
 ## QRF partial dependence plots
-```{r qrf-pdp-summer, caption = "Partial dependence plots for covariates included in the juvenile summer QRF models"}
+
+```{r qrf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the juvenile summer QRF models"}
 
 load(here('output/figures/juv_summer_figs.rda'))
 chnk_pdp
@@ -831,7 +856,7 @@ sthd_pdp
 
 ```
 
-```{r qrf-pdp-winter, caption = "Partial dependence plots for covariates included in the juvenile winter QRF models"}
+```{r qrf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the juvenile winter QRF models"}
 
 load(here('output/figures/juv_winter_figs.rda'))
 chnk_pdp
@@ -839,7 +864,7 @@ sthd_pdp
 
 ```
 
-```{r qrf-pdp-redds, caption = "Partial dependence plots for covariates included in the QRF redds models"}
+```{r qrf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the QRF redds models"}
 
 load(here('output/figures/redds_figs.rda'))
 chnk_pdp

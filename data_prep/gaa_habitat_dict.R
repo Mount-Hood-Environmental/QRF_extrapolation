@@ -5,11 +5,12 @@
 
 #---------------------------------------------------------------------------
 library(tidyverse)
+library(here)
 
 # GAA table
 gaa_hab_dict = tibble(
   ShortName = c("slope",
-             "rel_slope",
+             #"rel_slope",
              "Sinuosity",
              #"regime",
              "alp_accum",
@@ -25,7 +26,7 @@ gaa_hab_dict = tibble(
              "end_elev"),
   Name = c(
     "Gradient %",
-    "Relative slope",
+   # "Relative slope",
     "Sinuosity",
     "Alpine accumulation",
     "Fines accumulation",
@@ -40,7 +41,7 @@ gaa_hab_dict = tibble(
     "Elevation"),
   DescriptiveText = c(
     "Stream gradient (%).",
-    "Relative slope. Reach slope minus upstream slope.",
+   # "Relative slope. Reach slope minus upstream slope.",
     "Reach sinuosity. 1 = straight, 1 < sinuous.",
     #"Flow regime. 1 = mixed. 2 = snow dominated, 3 = rain dominated.",
     "Number of upstream cells in alpine terrain.",
@@ -57,4 +58,4 @@ gaa_hab_dict = tibble(
   ))
 
 #Save habitat dict to repo
-save(gaa_hab_dict, file = "data/gaa_hab_dict.rda")
+save(gaa_hab_dict, file = here("data/gaa_hab_dict.rda"))
