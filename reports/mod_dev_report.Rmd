@@ -1,5 +1,5 @@
 ---
-title: "Documentation for modified -new- QRF model"
+title: "Modified QRF habitat capacity model and RF extrapolation model brief"
 author:
 - Bryce N. Oldemeyer:
     email: Bryce.Oldemeyer@mounthoodenvironmental.com
@@ -160,15 +160,17 @@ US_redds_sf_comp_extrap = bind_cols(setorder(US_redds_sf_old_extrap[,-c(21:32)],
 
 # Background
 
-Quantile random forest (QRF) models have become an increasingly popular tool for quantifying freshwater habitat carrying capacity due to their flexible framework that avoid common pitfalls associated with noisy data, correlated variables, and non-linear relationships. Recently, three QRF models were developed using large fish-habitat datasets (CHaMP dataset) within the Columbia River Basin to estimate carrying capacity for ESA-listed populations of Chinook salmon and steelhead during three critical life-stages (juvenile summer parr, juvenile winter presmolt, and adult redds). The covariates included in those models were selected from \>100 potential covariates and chosen for their high predictive power to estimate capacity across the Columbia River Basin (cite IRA, See et al 2021, or another document outlining the original QRf selection process). While the covariates in the model likely provide high predictive power, many of the covariates are not informative for restoration project monitoring, restoration project planning and can be difficult to measure or replicate using streamlined fish habitat protocols (DASH - Carmichael et al. 2019). To increase the utility of the QRF model for restoration efforts and future data collection, we explored alternative covariates options for the QRF models that: 1) maintained high predictive power, 2) were informative for restoration efforts and monitoring, 3) could be calculated from DASH surveys, 4) were not missing an overabundance of data in the fish-habitat dataset, and 5) were not highly correlated with other covariates in the models (avoid overfitting the models). Additionally, we wanted to test the assumption made during the development of the original QRF model that a single model was appropriate for both Chinook salmon and steelhead during each of the three life stages.
+Quantile random forest (QRF) models have become popular for quantifying freshwater habitat carrying capacity due to their flexible framework that avoid common pitfalls associated with noisy data, correlated variables, and non-linear relationships. Recently, three QRF models were developed using large fish-habitat datasets (CHaMP dataset) within the Columbia River Basin to estimate carrying capacity for ESA-listed populations of Chinook salmon and steelhead during three critical life-stages (juvenile summer parr, juvenile winter presmolt, and adult redds). The covariates included in those models were selected from \>100 potential covariates and chosen for their high predictive power to estimate capacity across the Columbia River Basin (cite IRA, See et al 2021, or another document outlining the original QRf selection process). While the covariates in the model likely provide high predictive power, many of the covariates are not informative for restoration project monitoring, restoration project planning and can be difficult to measure or replicate using streamlined fish habitat protocols (DASH - Carmichael et al. 2019). To increase the utility of the QRF model for restoration efforts and future data collection, we explored alternative covariates options for the QRF models that: 1) maintained high predictive power, 2) were informative for restoration efforts and monitoring, 3) could be calculated from DASH surveys, 4) were not missing an overabundance of data in the fish-habitat dataset, and 5) were not highly correlated with other covariates in the models (avoid overfitting the models). Additionally, we wanted to test the assumption made during the development of the original QRF model that a single model was appropriate for both Chinook salmon and steelhead during each of the three life stages.
 
-Similarly, a random forest (RF) model has been used to predict habitat capacity estimates across larger spatial scales where CHaMP and/or DASH data aren't available (cite IRA). We revisited the globally available attributes (GAAs) included in the original RF extrapolation model and made minor modifications to the extrapolation model that: 1) maintained covariates with high predictive power and 2) included covariates that better aligned with the revised QRF model covariates. To compare relative performance between the original and modified RF extrapolation models, we evaluated watershed carrying capacity estimates produced by the two models for eight watersheds located within the Upper Salmon River basin.
+Similarly, a random forest (RF) model has been used to predict habitat capacity estimates across larger spatial scales where CHaMP and/or DASH data aren't available (cite IRA). We revisited the globally available attributes (GAAs) included in the original RF extrapolation model and made minor modifications to the extrapolation model that: 1) maintained covariates with high predictive power and 2) included covariates that better aligned with the revised QRF model covariates. To compare relative performance between the original and modified QRF capacity and RF extrapolation models, we evaluated watershed carrying capacity estimates produced by the models for eight watersheds located within the Upper Salmon River basin.
 
 Through this process, we successfuly developed three modified QRF model that were more informative for restoration design and monitoring, included covariates that could be calculated using newly developed stream habitat protocols, and maintained a similar level of predictive power as the original QRF habitat capacity models. Below is a brief document outlining these efforts.
 
-# Covariate selection process
+# Modified QRF habitat capacity model
 
-Potential habitat covariates for the QRF models were generated from the CHaMP dataset or obtained from other sources (e.g. NorWest stream temperature data). In total, 129 covariates were included in the selection process. Covariates were aggregated into eleven metric categories and 1-4 metrics were chosen from each category based on the rubric below.
+## Covariate selection process
+
+Potential habitat covariates for the QRF models were generated from the CHaMP dataset or obtained from other sources (e.g. NorWest stream temperature data). In total, 129 covariates were included in the selection process. Covariates were aggregated into eleven metric categories and 1-4 metrics were chosen from each category based on the criteria below.
 
 1.  What was the strength between the covariate and the response variable (based on MIC score)?
 
@@ -178,7 +180,7 @@ Potential habitat covariates for the QRF models were generated from the CHaMP da
 
 4.  How much data were missing and/or the amount of "0"s for the covariate in the fish-habitat dataset?
 
-5.  How correlated was the covariate with other covariates within the same metric category, particularly with covariates with higher MIC scores?
+5.  How correlated was the covariate with other covariates within the same metric category, particularly covariates with higher MIC scores?
 
 An oversimplified example of how a theoretical covariate might be selected for a model is described as follows.
 
@@ -190,25 +192,25 @@ An oversimplified example of how a theoretical covariate might be selected for a
 
 Last, the covariate selection process was done independently for both species for all three life stages to test the assumption made during the original QRF model development that the top covariates for the three life stages were the same between species.
 
-# Covariate selection results
+## Covariate selection results
 
 There were 12-14 covariates selected for each of the six models. While the relative importance of the final covariates in the three life stage models differed between species, the final covariates themselves were nearly identical. (Figure \@ref(fig:qrf-relimp-summer) , Figure \@ref(fig:qrf-relimp-winter), and Figure \@ref(fig:qrf-relimp-redds) ). Because of this, we consolidated the species-specific models into a single winter juvenile, summer juvenile, and redd models to be used for both species (Table \@ref(tab:cov-tab)).
 
-```{r qrf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the juvenile summer QRF models"}
+```{r qrf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the modified juvenile summer QRF models"}
 
 load(here('output/figures/juv_summer_figs.rda'))
 rel_imp_p
 
 ```
 
-```{r qrf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the juvenile winter QRF models"}
+```{r qrf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the modified juvenile winter QRF models"}
 
 load(here('output/figures/juv_winter_figs.rda'))
 rel_imp_p
 
 ```
 
-```{r qrf-relimp-redds, fig.cap = "Relative importance plots for covariates included in the QRF redds models"}
+```{r qrf-relimp-redds, fig.cap = "Relative importance plots for covariates included in the modified QRF redds models"}
 
 load(here('output/figures/redds_figs.rda'))
 rel_imp_p
@@ -228,7 +230,7 @@ QRF_new_hab_cov_tbl %>%
 
 ```
 
-# Extrapolation model
+# RF extrapolation model
 
 The spatial extent of QRF capacity predictions was/is limited to reaches with high-resolution habitat data (i.e. CHaMP or DASH data). To estimate capacity outside of the QRF capacity spatial extent, an extrapolation model was developed using "globally available attributes" (GAAs) obtained from a continuous, linear, stream network created by Morgan Bond and Tyler Nodine based on the National Hydrography Dataset High Resolution 1:24,000 for the entire Columbia River Basin. Using the GAAs from the linear stream network and a random forest model structure, capacity estimates at the 200 meter reach scale for the entire Columbia River Basin. Consistent with the QRF model, the extrapolation model makes no assumptions about the direction and distribution of effects of predictors, and constrains density estimates within the range of predictions produced by the QRF model. However, random forest methods do not account for variable strata weights across the CHaMP dataset, a source of potential bias that could be alleviated through the collection of additional paired fish and habitat data.
 
@@ -656,6 +658,15 @@ sthd_redd_comp_map = US_redds_sf_comp_extrap %>%
 
 ```
 
+::: {#refs}
+:::
+
+## Habitat capacity estimates
+
+Habitat carrying capacity was estimated using the modified models for Chinook salmon and steelhead for juvenile summer, juvenile winter, and redd life stages for eight watersheds in the Upper Salmon River Basin. Spatial domains for both species were based off Streamnet (cite) designations and modified to incorporate local knowledge from regional biologists.
+
+### Chinook
+
 ```{r chnk-maps, fig.cap = "Extrapolations of habitat capacity for Chinook salmon, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the modified models."}
 ggarrange(chnk_sum_map,
           chnk_win_map,
@@ -663,22 +674,8 @@ ggarrange(chnk_sum_map,
 
 ```
 
-```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the modified models."}
-ggarrange(sthd_sum_map,
-          sthd_win_map,
-          sthd_redd_map)
-
-```
-
-::: {#refs}
-:::
-
-# Habitat Capacity Estimates
-
-### Chinook Salmon
-
 ```{r chnk-cap-summarytbl}
-chnk_cap_summary = bind_rows(chnk_sum_cap_new,
+bind_rows(chnk_sum_cap_new,
           chnk_win_cap_new,
           chnk_redd_cap_new) %>%
   select(Watershed, modelname, tot_cap, tot_cap_se) %>%
@@ -722,6 +719,13 @@ bind_rows(chnk_sum_cap_new,
 
 ### Steelhead
 
+```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the modified models."}
+ggarrange(sthd_sum_map,
+          sthd_win_map,
+          sthd_redd_map)
+
+```
+
 ```{r sthd-cap-summarytbl}
 bind_rows(sthd_sum_cap_new,
           sthd_win_cap_new,
@@ -764,13 +768,13 @@ bind_rows(sthd_sum_cap_new,
                 bootstrap_options = c("striped", "condensed"))
 ```
 
-## Comparison with previous extrapolation
+## Habitat capacity estimate comparison - modified vs original extrapolation models
 
-Comparisons of watershed capacity estimates from the previous QRF and extrapolation model and the new revised versions reveal modest differences in most cases, with an exception of Chinook parr summer capacities in several watersheds. The substantial increases in Chinook parr summer capacity are likely due to the inclusion of elevation in the extrapolation model and range from 21 - 222% compared to the previous extrapolation.
+Comparisons of watershed capacity estimates from the original QRF and RF extrapolation models and the modified models reveal modest differences in most cases, with an exception of Chinook parr summer capacities in several watersheds. The substantial increases in Chinook parr summer capacity are likely due to the inclusion of elevation in the RF extrapolation model and range from 21 - 222% compared to the previous extrapolation.
 
 ### Chinook
 
-```{r chnk-maps-comp, fig.cap = "Comparison of Chinook salmon habitat capacity estimates between revised and original model extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
+```{r chnk-maps-comp, fig.cap = "Comparison of Chinook salmon habitat capacity estimates between modified and original model extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
 ggarrange(chnk_sum_comp_map,
           chnk_win_comp_map,
           chnk_redd_comp_map)
@@ -815,7 +819,7 @@ bind_rows(
 
 ### Steelhead
 
-```{r sthd-maps-comp, fig.cap = "Comparison of steelhead habitat capacity estimates between modified  and original models extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
+```{r sthd-maps-comp, fig.cap = "Comparison of steelhead habitat capacity estimates between modified and original models extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
 ggarrange(sthd_sum_comp_map,
           sthd_win_comp_map,
           sthd_redd_comp_map)
@@ -846,9 +850,11 @@ sthd_summary %>%
 
 # Supplemental figures and tables
 
-## QRF partial dependence plots
+## Modified QRF habitat capacity model - partial dependence plots
 
-```{r qrf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the juvenile summer QRF models"}
+Write out a brief explanation on how to interpret the pdp plots, caveats, etc.
+
+```{r qrf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the modified juvenile summer QRF models"}
 
 load(here('output/figures/juv_summer_figs.rda'))
 chnk_pdp
@@ -856,7 +862,7 @@ sthd_pdp
 
 ```
 
-```{r qrf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the juvenile winter QRF models"}
+```{r qrf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the modified juvenile winter QRF models"}
 
 load(here('output/figures/juv_winter_figs.rda'))
 chnk_pdp
@@ -864,7 +870,7 @@ sthd_pdp
 
 ```
 
-```{r qrf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the QRF redds models"}
+```{r qrf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the modified QRF redds models"}
 
 load(here('output/figures/redds_figs.rda'))
 chnk_pdp
