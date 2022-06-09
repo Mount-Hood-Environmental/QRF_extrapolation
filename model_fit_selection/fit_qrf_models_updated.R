@@ -37,7 +37,7 @@ data("hab_dict")
 mod_choice = c('juv_summer',
                'juv_summer_dash',
                'redds',
-               'juv_winter')[3]
+               'juv_winter')[4]
 
 cov_choice = c("Reduced")[1]
 
@@ -297,3 +297,10 @@ rel_imp_p
 chnk_pdp
 sthd_pdp
 dev.off()
+
+
+#Save figures
+save(rel_imp_p,
+     chnk_pdp,
+     sthd_pdp,
+     file = paste0("output/figures/", mod_choice,'_figs',".rda"))

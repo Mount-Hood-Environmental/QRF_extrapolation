@@ -205,7 +205,10 @@ Talk about relative importance and pdp plots.
 
 # Extrapolation model
 
-The spatial extent of QRF capacity predictions was limited to reaches CHaMP habitat data, so capacity for all wadable streams in the Columbia basin was estimated through the development of an extrapolation model. This model used 'globally available attributes' (GAAs) obtained from a stream layer created by Morgan Bond and Tyler Nodine based on the National Hydrography Dataset High Resolution 1:24,000 line network to estimate capacities predicted by the QRF model at the 200 meter reach scale.
+The spatial extent of QRF capacity predictions was limited to reaches CHaMP habitat data, so capacity for all wadable streams in the Columbia basin was estimated through the development of an extrapolation model. This model used 'globally available attributes' (GAAs) obtained from a stream layer created by Morgan Bond and Tyler Nodine based on the National Hydrography Dataset High Resolution 1:24,000 line network to estimate capacities predicted by the QRF model at the 200 meter reach scale. The extrapolation model utilized a random forest model structure. Consistent with the QRF model, the extrapolation model made not assumptions about the direction and distribution of effects of predictors and constrained density estimates within the range of predictions from the QRF model. However, random forest methods did not account for variable strata weights across the CHaMP dataset, a source of potential bias that could be alleviated through the collection of additional paired fish and habitat data.
+
+Extrapolation model covariates were selected from the list of GAAs and examined for inclusion by examining relative importance and partial dependence plots and correlation between covariates. We used the covariates included in the previous extrapolation as a starting point for selection. This resulted in the replacement of regime (an indicator of dominant precipitation type) for elevation and the removal of relative slope, which we found was redundant with gradient. Model results indicated that elevation was consistently one of the most important predictors in the model. This is particularly true for the Chinook parr summer model where capacity predictions were primarily driven by elevation.
+
 
 ```{r gaa-tbl}
 load(here("data/gaa_hab_dict.rda"))
@@ -221,8 +224,6 @@ gaa_hab_dict %>%
                 bootstrap_options = c("striped", "condensed"))
 
 ```
-
-## Extrapolation comparison
 
 ```{r capacity-funs}
 source(here("R/calc_watershed_cap.R"))
@@ -653,7 +654,7 @@ ggarrange(sthd_sum_map,
 ### Chinook Salmon
 
 ```{r chnk-cap-summarytbl}
-bind_rows(chnk_sum_cap_new,
+chnk_cap_summary = bind_rows(chnk_sum_cap_new,
           chnk_win_cap_new,
           chnk_redd_cap_new) %>%
   select(Watershed, modelname, tot_cap, tot_cap_se) %>%
@@ -662,14 +663,36 @@ bind_rows(chnk_sum_cap_new,
          tot_cap_juv_winter, tot_cap_se_juv_winter,
          tot_cap_redds, tot_cap_se_redds) %>%
   kable(booktabs = T,
-        digits = c(0,0,1,0,0),
-        align = "lcccc",
+        digits = c(0,0,1,0,1,0,1),
+        align = "lccccccc",
         format.args = list(big.mark = ","),
         col.names = c("Watershed", "Juv summer capacity", "Summer SE", "Juv winter capacity", "Winter SE", "Redd capacity", "Redd SE" ),
         caption = "Predicted Chinook salmon habitat capacity by life-stage and watershed using the modified models.") %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed"))
+
+bind_rows(chnk_sum_cap_new,
+          chnk_win_cap_new,
+          chnk_redd_cap_new) %>%
+  select(Watershed, modelname, tot_cap, tot_cap_se, tot_length) %>%
+  mutate(cap_km = tot_cap/(tot_length/1000),
+         cap_km_se = tot_cap_se/(tot_length/1000)) %>%
+  select(Watershed, modelname, cap_km,cap_km_se) %>%
+  pivot_wider(names_from = modelname, values_from = c(cap_km, cap_km_se)) %>%
+  select(Watershed, cap_km_juv_summer, cap_km_se_juv_summer,
+         cap_km_juv_winter, cap_km_se_juv_winter,
+         cap_km_redds, cap_km_se_redds) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,1,0,1),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Watershed", "Juv summer capacity/km", "Summer SE/km", "Juv winter capacity/km", "Winter SE/km", "Redd capacity/km", "Redd SE/km" ),
+        caption = "Predicted Chinook salmon habitat capacity per kilometer by life-stage and watershed using the modified models.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
 
 ```
 
@@ -694,11 +717,32 @@ bind_rows(sthd_sum_cap_new,
                 position = "center",
                 bootstrap_options = c("striped", "condensed"))
 
+
+bind_rows(sthd_sum_cap_new,
+          sthd_win_cap_new,
+          sthd_redd_cap_new) %>%
+  select(Watershed, modelname, tot_cap, tot_cap_se, tot_length) %>%
+  mutate(cap_km = tot_cap/(tot_length/1000),
+         cap_km_se = tot_cap_se/(tot_length/1000)) %>%
+  select(Watershed, modelname, cap_km,cap_km_se) %>%
+  pivot_wider(names_from = modelname, values_from = c(cap_km, cap_km_se)) %>%
+  select(Watershed, cap_km_juv_summer, cap_km_se_juv_summer,
+         cap_km_juv_winter, cap_km_se_juv_winter,
+         cap_km_redds, cap_km_se_redds) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,1,0,1),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Watershed", "Juv summer capacity/km", "Summer SE/km", "Juv winter capacity/km", "Winter SE/km", "Redd capacity/km", "Redd SE/km" ),
+        caption = "Predicted steelhead habitat capacity per kilometer by life-stage and watershed using the modified models.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
 ```
 
 ## Comparison with previous extrapolation
 
-Below are comparisons with the results from the previous QRF model and random forest extrapolation.
+Comparisons of watershed capacity estimates from the previous QRF and extrapolation model and the new revised versions reveal modest differences in most cases, with an exception of Chinook parr summer capacities in several watersheds. The substantial increases in Chinook parr summer capacity are likely due to the inclusion of elevation in the extrapolation model and range from 21 - 222% compared to the previous extrapolation.
 
 ### Chinook
 
@@ -712,31 +756,29 @@ ggarrange(chnk_sum_comp_map,
 ```{r chnk-comp-summary-tbls}
 
 capcompare = function(cap_new,cap_old,modelname){
-  out = cap_new[,c(1,4,5)] %>%
+  out = cap_new[,c(1,3,4,5)] %>%
   left_join(cap_old[,c(1,4,5)], by = "Watershed", suffix = c("_new","_old")) %>%
   mutate(Model = modelname,
          cap_change_percent = (tot_cap_new/tot_cap_old-1) * 100,
-         se_change_percent = (tot_cap_se_new/tot_cap_se_old-1) * 100) %>%
+         cap_km = tot_cap_new/(tot_length/1000)) %>%
     select(Model, 
-           Watershed, 
+           Watershed,
+           cap_km,
            tot_cap_new, 
            cap_change_percent, 
-           tot_cap_se_new, 
-           se_change_percent)
+           tot_cap_se_new)
   
 }
 
-chnk_summary = bind_rows(
+bind_rows(
   capcompare(chnk_sum_cap_new, chnk_sum_cap_old, "Juv summer"),
   capcompare(chnk_win_cap_new, chnk_win_cap_old, "Juv winter"),
-  capcompare(chnk_redd_cap_new, chnk_redd_cap_old, "Redds"))
-
-chnk_summary %>%
+  capcompare(chnk_redd_cap_new, chnk_redd_cap_old, "Redds")) %>%
   kable(booktabs = T,
-        digits = c(0,0,1,0,0),
-        align = "lcccc",
+        digits = c(0,0,1,0,0,0,0),
+        align = "lcccccc",
         format.args = list(big.mark = ","),
-        col.names = c("Model", "Watershed", "Predicted capacity", "Capacity % change", "Predicted capacity SE", "SE % change" ),
+        col.names = c("Model", "Watershed", "Capacity per km", "Total capacity", "Capacity % change", "Capacity SE"),
         caption = "Estimated **chinook** capacities and comparison with previous  random forest extrapolations for eight watersheds") %>%
   kable_styling(full_width = F,
                 position = "center",
@@ -765,10 +807,10 @@ sthd_summary = bind_rows(
 
 sthd_summary %>%
   kable(booktabs = T,
-        digits = c(0,0,1,0,0),
-        align = "lcccc",
+        digits = c(0,0,1,0,0,0,0),
+        align = "lcccccc",
         format.args = list(big.mark = ","),
-        col.names = c("Model", "Watershed", "Predicted capacity" , "Capacity % change", "Predicted capacity SE", "SE % change" ),
+        col.names = c("Model", "Watershed", "Capacity per km", "Total capacity", "Capacity % change", "Capacity SE" ),
         caption = "Estimated **steelhead** capacities and comparison with previous  random forest extrapolations for eight watersheds") %>%
   kable_styling(full_width = F,
                 position = "center",
@@ -779,6 +821,31 @@ sthd_summary %>%
 ```
 
 # Supplemental figures and tables
+
+## QRF partial dependence plots
+```{r qrf-pdp-summer, caption = "Partial dependence plots for covariates included in the juvenile summer QRF models"}
+
+load(here('output/figures/juv_summer_figs.rda'))
+chnk_pdp
+sthd_pdp
+
+```
+
+```{r qrf-pdp-winter, caption = "Partial dependence plots for covariates included in the juvenile winter QRF models"}
+
+load(here('output/figures/juv_winter_figs.rda'))
+chnk_pdp
+sthd_pdp
+
+```
+
+```{r qrf-pdp-redds, caption = "Partial dependence plots for covariates included in the QRF redds models"}
+
+load(here('output/figures/redds_figs.rda'))
+chnk_pdp
+sthd_pdp
+
+```
 
 ## Capacity by stream
 
