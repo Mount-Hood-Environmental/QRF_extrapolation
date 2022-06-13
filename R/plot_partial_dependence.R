@@ -29,7 +29,8 @@ plot_partial_dependence = function(rf_mod,
                                    n_pts = 200,
                                    log_transform = T,
                                    log_offset = 0.005,
-                                   scales = 'free') {
+                                   scales = 'free',
+                                   km = F) {
   
   if(is.null(data_dict)) {
     data(hab_dict)
@@ -150,7 +151,12 @@ plot_partial_dependence = function(rf_mod,
     mutate_at(vars(Metric, covar_label),
               list(fct_rev)) %>%
     select(Metric, covar_label, Watershed, value)
-  
+
+  #Multiply densities by 1000 if results by km  
+  if(km){
+    pdp_df = pdp_df %>%
+      mutate(pred = pred*1000)  
+  }
   
   my_p = pdp_df %>%
     filter(Metric %in% plot_covars) %>%

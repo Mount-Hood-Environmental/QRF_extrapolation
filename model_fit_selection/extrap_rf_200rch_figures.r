@@ -7,7 +7,7 @@ mod_path = 'S:/main/data/qrf/gitrepo_data/output/modelFit/'
 
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[3]
+               'juv_winter')[2]
 
 cov_choice = c("Reduced")[1]
 
@@ -81,36 +81,82 @@ stl_ri = tibble(Response = model_rf_df$response[3:4],
        x = 'Metric',
        y = 'Relative Importance')
 
-#PDP
+#PDPS for summer, winter ####
+if(mod_choice != 'redds'){
 chk_m = plot_partial_dependence(model_rf_df$mod_no_champ[[1]],
                                 model_rf_df$data[[1]],
                                 data_dict = gaa_hab_dict,
-                                log_transform = T,
-                                log_offset = 0)+
+                                log_transform = F,
+                                log_offset = 0,
+                                scales = 'free_x')+
   labs(title = "Chinook", y = "Prediction per meter")
 
 chk_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[2]],
                                  model_rf_df$data[[2]],
                                  data_dict = gaa_hab_dict,
-                                 log_transform = T,
-                                 log_offset = 0)+
+                                 log_transform = F,
+                                 log_offset = 0,
+                                 scales = 'free_x')+
   labs(title = "Chinook", y = bquote('Prediction per meter'^2))
   
 stl_m = plot_partial_dependence(model_rf_df$mod_no_champ[[3]],
                                 model_rf_df$data[[3]],
                                 data_dict = gaa_hab_dict,
-                                log_transform = T,
-                                log_offset = 0)+
+                                log_transform = F,
+                                log_offset = 0,
+                                scales = 'free_x')+
   labs(title = "Steelhead", y = "Prediction per meter")
   
 stl_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[4]],
                                  model_rf_df$data[[4]],
                                  data_dict = gaa_hab_dict,
-                                 log_transform = T,
-                                 log_offset = 0)+
+                                 log_transform = F,
+                                 log_offset = 0,
+                                 scales = 'free_x')+
   labs(title = "Steelhead", y = bquote('Prediction per meter'^2))
+}
 
+#PDPs for redds (in kms) ####
+if(mod_choice == 'redds'){
+chk_m = plot_partial_dependence(model_rf_df$mod_no_champ[[1]],
+                                model_rf_df$data[[1]],
+                                data_dict = gaa_hab_dict,
+                                log_transform = F,
+                                log_offset = 0,
+                                scales = 'free_x',
+                                km = T)+
+  labs(title = "Chinook", y = "Prediction per km")
 
+chk_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[2]],
+                                 model_rf_df$data[[2]],
+                                 data_dict = gaa_hab_dict,
+                                 log_transform = F,
+                                 log_offset = 0,
+                                 scales = 'free_x',
+                                 km = T)+
+  labs(title = "Chinook", y = bquote('Prediction per km'^2))
+
+stl_m = plot_partial_dependence(model_rf_df$mod_no_champ[[3]],
+                                model_rf_df$data[[3]],
+                                data_dict = gaa_hab_dict,
+                                log_transform = F,
+                                log_offset = 0,
+                                scales = 'free_x',
+                                km = T)+
+  labs(title = "Steelhead", y = "Prediction per km")
+
+stl_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[4]],
+                                 model_rf_df$data[[4]],
+                                 data_dict = gaa_hab_dict,
+                                 log_transform = F,
+                                 log_offset = 0,
+                                 scales = 'free_x',
+                                 km = T)+
+  labs(title = "Steelhead", y = bquote('Prediction per km'^2))
+
+}
+
+#Output ####
 pdf(paste0("output/figures/","RF_extrap_", log_mod, mod_choice,'_', cov_choice,".pdf"), width = 10, height = 8)
 chk_ri
 chk_m

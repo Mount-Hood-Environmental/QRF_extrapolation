@@ -35,9 +35,8 @@ data("hab_dict")
 # which life stage, species, and covariates to fit? 
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
-               'juv_summer_dash',
                'redds',
-               'juv_winter')[4]
+               'juv_winter')[2]
 
 cov_choice = c("Reduced")[1]
 
@@ -270,15 +269,17 @@ rel_imp_p = tibble(Species = names(qrf_mods),
        y = 'Relative Importance')
 
 # partial dependence plots
+#Summer, winter
 # for Chinook
+if(mod_choice != 'redds'){
 chnk_pdp = plot_partial_dependence(qrf_mods[['Chinook']],
                                      qrf_mod_df %>%
                                        filter(Species == 'Chinook'),
                                      data_dict = hab_dict,
                                      # log_transform = F,
                                      log_offset = dens_offset,
-                                     # scales = "free_x") +
-                                     scales = 'free') +
+                                     scales = "free_x") +
+                                     #scales = 'free') +
     labs(title = 'Chinook')
 
 # for steelhead
@@ -288,9 +289,36 @@ sthd_pdp = plot_partial_dependence(qrf_mods[['Steelhead']],
                                      data_dict = hab_dict,
                                      # log_transform = F,
                                      log_offset = dens_offset,
-                                     # scales = "free_x") +
-                                     scales = 'free') +
+                                     scales = "free_x") +
+                                     #scales = 'free') +
     labs(title = 'Steelhead')
+}
+
+if(mod_choice == 'redds'){
+  chnk_pdp = plot_partial_dependence(qrf_mods[['Chinook']],
+                                     qrf_mod_df %>%
+                                       filter(Species == 'Chinook'),
+                                     data_dict = hab_dict,
+                                     # log_transform = F,
+                                     log_offset = dens_offset,
+                                     scales = "free_x",
+                                     km = T) +
+    labs(title = 'Chinook')
+  
+  # for steelhead
+  sthd_pdp = plot_partial_dependence(qrf_mods[['Steelhead']],
+                                     qrf_mod_df %>%
+                                       filter(Species == 'Steelhead'),
+                                     data_dict = hab_dict,
+                                     # log_transform = F,
+                                     log_offset = dens_offset,
+                                     scales = "free_x",
+                                     km = T) +
+    labs(title = 'Steelhead')
+  
+  
+  
+}
 
 pdf(paste0("output/figures/", mod_choice,'_', cov_choice,".pdf"), width = 10, height = 8)
 rel_imp_p
