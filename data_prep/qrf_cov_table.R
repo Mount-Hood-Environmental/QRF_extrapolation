@@ -19,7 +19,7 @@ load(paste0(file_path,'modelFit/juv_summer_Reduced.rda'))
 juv_sum_chnk_covs = qrf_mods$Chinook$importance
 juv_sum_sthd_covs = qrf_mods$Steelhead$importance
 
-load(paste0(file_path,'modelFit/juv_winter_Reduced.rda'))
+load(paste0(file_path,'modelFit/juv_winter_CovLW.rda'))
 juv_win_chnk_covs = qrf_mods$Chinook$importance
 juv_win_sthd_covs = qrf_mods$Steelhead$importance
 
