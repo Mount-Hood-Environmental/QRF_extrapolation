@@ -24,7 +24,7 @@ theme_set(theme_bw())
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[2]
+               'juv_winter')[3]
 
 cov_choice = c("Reduced")[1]
 

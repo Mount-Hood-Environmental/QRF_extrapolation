@@ -36,9 +36,9 @@ data("hab_dict")
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[2]
+               'juv_winter')[3]
 
-cov_choice = c("Reduced")[1]
+cov_choice = c("Reduced", "CovLW")[2]
 
 #-----------------------------------------------------------------
 # determine which set of fish/habitat data to use
@@ -106,7 +106,7 @@ if(mod_choice == "juv_summer"){
                             select(Metric))
 }else if(mod_choice == "juv_winter") {
   mod_cov_select<-read_xlsx("model_fit_selection/ModelCovSelected.xlsx",
-                            range = cell_cols("A:C"),
+                            range = cell_cols("A:D"),
                             sheet = "CHaMP_Winter")
   sel_hab_mets = crossing(Species = c('Chinook', 
                                                 'Steelhead'),
@@ -331,4 +331,4 @@ dev.off()
 save(rel_imp_p,
      chnk_pdp,
      sthd_pdp,
-     file = paste0("output/figures/", mod_choice,'_figs',".rda"))
+     file = paste0("output/figures/", mod_choice,'_',cov_choice,'_figs',".rda"))
