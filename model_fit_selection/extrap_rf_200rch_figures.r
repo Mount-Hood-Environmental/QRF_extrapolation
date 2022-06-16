@@ -7,9 +7,9 @@ mod_path = 'S:/main/data/qrf/gitrepo_data/output/modelFit/'
 
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[2]
+               'juv_winter')[3]
 
-cov_choice = c("Reduced")[1]
+cov_choice = c("Reduced","CovLW")[2]
 
 log_mod = c("log_","")[2] #log-response model or no
 
