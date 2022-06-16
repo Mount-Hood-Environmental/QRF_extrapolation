@@ -247,7 +247,7 @@ ggarrange(chk_ri,
 
 ```{r rf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_juv_winter_Reduced.rda'))
+load(here('output/figures/RF_extrap_juv_winter_CovLW.rda'))
 ggarrange(chk_ri,
           stl_ri,
           common.legend = TRUE)
