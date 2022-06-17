@@ -908,27 +908,27 @@ sthd_pdp
 
 load(here('output/figures/RF_extrap_juv_summer_Reduced.rda'))
 chk_m
-chk_m2
+#chk_m2
 stl_m
-stl_m2
+#stl_m2
 ```
 
 ```{r rf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the revised juvenile winter RF extrapolation models"}
 
 load(here('output/figures/RF_extrap_juv_winter_CovLW.rda'))
 chk_m
-chk_m2
+#chk_m2
 stl_m
-stl_m2
+#stl_m2
 ```
 
 ```{r rf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the revised redds RF extrapolation models"}
 
 load(here('output/figures/RF_extrap_redds_Reduced.rda'))
 chk_m
-chk_m2
+#chk_m2
 stl_m
-stl_m2
+#stl_m2
 ```
 
 <!-- ## Capacity by stream --REQUIRES NEW WRAPPER FUNCTION TO WORK, RIGHT NOW SUMS CAPACITY FOR ALL STREAMS WITH THE SAME NAME ACROSS WATERSHEDS  -->

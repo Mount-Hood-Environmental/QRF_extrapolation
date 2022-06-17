@@ -95,7 +95,7 @@ for(i in 1:length(rch_200_cap_split)) {
 
 
 #################################
-# Bonus winter CovLW extrapolation
+# Bonus winter CovLW extrapolation - MR I don't think we want this, juv_winter_CovLW is a qrf model fit, not an extrap fit
 #################################
 
 load(paste0(out_path,'modelFit/juv_winter_CovLW.rda'))

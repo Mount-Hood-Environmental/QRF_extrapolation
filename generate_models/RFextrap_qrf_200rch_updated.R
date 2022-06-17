@@ -24,9 +24,9 @@ theme_set(theme_bw())
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[3]
+               'juv_winter')[1]
 
-cov_choice = c("Reduced")[1]
+cov_choice = c("Reduced","CovLW")[1]
 
 in_path = 'S:/main/data/qrf/gitrepo_data/input/'
 out_path = 'S:/main/data/qrf/gitrepo_data/output/'
