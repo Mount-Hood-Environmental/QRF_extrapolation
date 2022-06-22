@@ -1,7 +1,8 @@
 # Author: Kevin See
 # Purpose: Fit QRF models
 # Created: 10/19/2020
-# Last Modified: 10/19/2020
+# Last Modified: 06/2022
+# Modified by: Mark Roes, Bryce Oldemeyer
 # Notes: fish density is fish / m for summer juvs and redds, but fish / m^2 for winter juvs
 
 #-----------------------------------------------------------------
@@ -37,9 +38,9 @@ data("hab_dict")
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[1]
+               'juv_winter')[3]
 
-cov_choice = c("Reduced", "CovLW")[1]
+cov_choice = c("Reduced", "CovLW", "Dash")[3]
 
 #-----------------------------------------------------------------
 # determine which set of fish/habitat data to use
@@ -89,7 +90,7 @@ if(mod_choice != "juv_winter") {
 
 if(mod_choice == "juv_summer"){
   mod_cov_select<-read_xlsx("model_fit_selection/ModelCovSelected.xlsx",
-                            range = cell_cols("A:C"),
+                            range = cell_cols("A:D"),
                             sheet = "CHaMP_Summer")
   sel_hab_mets = crossing(Species = c('Chinook', 
                                                 'Steelhead'),
@@ -98,7 +99,7 @@ if(mod_choice == "juv_summer"){
                             select(Metric))
 }else if(mod_choice == "redds") {
   mod_cov_select<-read_xlsx("model_fit_selection/ModelCovSelected.xlsx",
-                            range = cell_cols("A:C"),
+                            range = cell_cols("A:D"),
                             sheet = "CHaMP_Redds")
   sel_hab_mets = crossing(Species = c('Chinook', 
                                                 'Steelhead'),
@@ -107,7 +108,7 @@ if(mod_choice == "juv_summer"){
                             select(Metric))
 }else if(mod_choice == "juv_winter") {
   mod_cov_select<-read_xlsx("model_fit_selection/ModelCovSelected.xlsx",
-                            range = cell_cols("A:D"),
+                            range = cell_cols("A:E"),
                             sheet = "CHaMP_Winter")
   sel_hab_mets = crossing(Species = c('Chinook', 
                                                 'Steelhead'),
@@ -127,7 +128,7 @@ elev_DEM = fish_hab %>%
 
 # elevtr() needs a data frame with x & y coordinates
 
-out <- get_elev_point(locations = as.data.frame(elev_DEM), units ="meters", src = "epqs", prj = 4326) #WGS84
+out = get_elev_point(locations = as.data.frame(elev_DEM), units ="meters", src = "epqs", prj = 4326) #WGS84
 
 fish_hab = fish_hab %>%
   mutate(Elev_M_DEM = out@data[["elevation"]],
@@ -234,7 +235,7 @@ save(sel_hab_mets,
      qrf_mod_df,
      dens_offset,
      qrf_mods,
-     file = paste0(out_path,'modelFit/',cov_choice,'_', mod_choice,'.rda'))
+     file = paste0(out_path,'modelFit/',mod_choice,'_', cov_choice,'.rda'))
 
 
 #-----------------------------------------------------------------

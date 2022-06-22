@@ -1,7 +1,7 @@
 # Author: Kevin See
 # Purpose: Extrapolate QRF model to all 200 m reaches
 # Created: 3/20/2020
-# Last Modified: 5/13/2022
+# Last Modified: 6/2022
 # Modified by: Mark Roes, Bryce Oldemeyer
 # Notes: 
 
@@ -26,7 +26,7 @@ mod_choice = c('juv_summer',
                'redds',
                'juv_winter')[1]
 
-cov_choice = c("Reduced","CovLW")[1]
+cov_choice = c("Reduced","CovLW","Dash")[3]
 
 in_path = 'S:/main/data/qrf/gitrepo_data/input/'
 out_path = 'S:/main/data/qrf/gitrepo_data/output/'
@@ -841,4 +841,4 @@ save(extrap_covars,
      pred_hab_df,
      model_rf_df,
      all_preds,
-     file = paste0(out_path,'modelFit/extrap_200rch_RF_', mod_choice, '.rda'))
+     file = paste0(out_path,'modelFit/extrap_200rch_RF_', mod_choice,'_',cov_choice, '.rda'))

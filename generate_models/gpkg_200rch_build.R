@@ -20,6 +20,8 @@ mod_choice = c('juv_summer',
                'redds',
                'juv_winter')[3]
 
+cov_choice = c("","Dash")[2]
+
 in_path = 'S:/main/data/qrf/gitrepo_data/input/'
 out_path = 'S:/main/data/qrf/gitrepo_data/output/'
 
@@ -62,7 +64,7 @@ load(paste0(in_path,"rch_200.rda"))
 # ------------------------------------------------------------------
 
 # RF extrapolation
-load(paste0(out_path,'modelFit/extrap_200rch_RF_', mod_choice, '.rda'))
+load(paste0(out_path,'modelFit/extrap_200rch_RF_', mod_choice,"-",cov_choice, '.rda'))
 
 # Split and append each one subsequently to help speed it up
 
