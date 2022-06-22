@@ -18,7 +18,7 @@ library(data.table)
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[3]
+               'juv_winter')[1]
 
 cov_choice = c("","Dash")[2]
 
@@ -94,42 +94,3 @@ for(i in 1:length(rch_200_cap_split)) {
            driver = 'GPKG',
            append = if_else(i == 1, F, T))
 }
-
-
-#################################
-# Bonus winter CovLW extrapolation - MR I don't think we want this, juv_winter_CovLW is a qrf model fit, not an extrap fit
-#################################
-
-load(paste0(out_path,'modelFit/juv_winter_CovLW.rda'))
-
-# Split and append each one subsequently to help speed it up
-
-rch_200_cap = rch_200 %>%
-  select(UniqueID, GNIS_Name, reach_leng:HUC8_code,
-         chnk, chnk_use, chnk_ESU_DPS:chnk_NWR_NAME,
-         sthd, sthd_use, sthd_ESU_DPS:sthd_NWR_NAME) %>%
-  left_join(all_preds %>%
-              select(-HUC8_code)) %>%
-  filter(reach_leng < 500)
-
-rch_200_cap %>%
-  mutate_at(vars(HUC6_name),
-            list(fct_explicit_na)) %>%
-  tabyl(HUC6_name) %>%
-  adorn_totals()
-
-rch_200_cap_split = rch_200_cap %>%
-  group_split(HUC6_name)
-
-for(i in 1:length(rch_200_cap_split)) {
-  cat(paste("Working on group", i, "of", length(rch_200_cap_split),
-            "with", nrow(rch_200_cap_split[[i]]), " rows\n"))
-  
-  st_write(rch_200_cap_split[[i]],
-           dsn = paste0(out_path,'gpkg/Rch_Cap_RF_New_juv_winter.gpkg'),
-           driver = 'GPKG',
-           append = if_else(i == 1, F, T))
-}
-
-
-
