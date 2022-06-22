@@ -13,6 +13,7 @@ library(magrittr)
 library(sf)
 library(quantregForest)
 library(readxl)
+library(elevatr)
 
 # set default theme for ggplot
 theme_set(theme_bw())
@@ -36,9 +37,9 @@ data("hab_dict")
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[3]
+               'juv_winter')[1]
 
-cov_choice = c("Reduced", "CovLW")[2]
+cov_choice = c("Reduced", "CovLW")[1]
 
 #-----------------------------------------------------------------
 # determine which set of fish/habitat data to use
@@ -117,6 +118,20 @@ if(mod_choice == "juv_summer"){
 #-----------------------------------------------------------------
 # Fit QRF model
 #-----------------------------------------------------------------
+
+# Fill in missing elevation data using elevtR() package based on USGS - 3DEP dataset
+
+elev_DEM = fish_hab %>%
+  select(x = LON_DD,
+         y = LAT_DD)
+
+# elevtr() needs a data frame with x & y coordinates
+
+out <- get_elev_point(locations = as.data.frame(elev_DEM), units ="meters", src = "epqs", prj = 4326) #WGS84
+
+fish_hab = fish_hab %>%
+  mutate(Elev_M_DEM = out@data[["elevation"]],
+         Elev_M = coalesce(Elev_M, Elev_M_DEM)) 
 
 # Impute covariates
 
