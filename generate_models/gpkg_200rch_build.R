@@ -18,7 +18,7 @@ library(data.table)
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[1]
+               'juv_winter')[3]
 
 cov_choice = c("","Dash")[2]
 
@@ -64,7 +64,7 @@ load(paste0(in_path,"rch_200.rda"))
 # ------------------------------------------------------------------
 
 # RF extrapolation
-load(paste0(out_path,'modelFit/extrap_200rch_RF_', mod_choice,"-",cov_choice, '.rda'))
+load(paste0(out_path,'modelFit/extrap_200rch_RF_',mod_choice,"_",cov_choice,'.rda'))
 
 # Split and append each one subsequently to help speed it up
 
@@ -90,7 +90,7 @@ for(i in 1:length(rch_200_cap_split)) {
             "with", nrow(rch_200_cap_split[[i]]), " rows\n"))
   
   st_write(rch_200_cap_split[[i]],
-           dsn = paste0(out_path,'gpkg/Rch_Cap_RF_New_', mod_choice, '.gpkg'),
+           dsn = paste0(out_path,'gpkg/Rch_Cap_RF_Dash_', mod_choice, '.gpkg'),
            driver = 'GPKG',
            append = if_else(i == 1, F, T))
 }

@@ -24,7 +24,7 @@ theme_set(theme_bw())
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[1]
+               'juv_winter')[3]
 
 cov_choice = c("Reduced","CovLW","Dash")[3]
 
@@ -64,8 +64,6 @@ if(mod_choice == "juv_summer") {
 pred_quant = 0.9
 set.seed(5)
 # for overwintering juveniles, predictions done on channel unit scale, then summed up for each CHaMP site. This is an issue as we only know the amount of area within each CU that was surveyed, and frequently the surveyed area > CU and reach area. This also does not provide us with the linear distance of the survey. Therefore I will stick with model predictions averaged across the reach.
-
-
 
 if (mod_choice == "juv_winter") {
   area_wgts = qrf_mod_df %>%
