@@ -9,7 +9,7 @@ mod_choice = c('juv_summer',
                'redds',
                'juv_winter')[3]
 
-cov_choice = c("Reduced","CovLW")[2]
+cov_choice = c("Reduced","CovLW","Dash")[3]
 
 log_mod = c("log_","")[2] #log-response model or no
 

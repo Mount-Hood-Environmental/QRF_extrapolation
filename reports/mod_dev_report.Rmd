@@ -238,7 +238,7 @@ RF extrapolation model covariates were selected from the list of GAAs and evalua
 
 ```{r rf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the revised juvenile summer RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_juv_summer_Reduced.rda'))
+load(here('output/figures/RF_extrap_juv_summer_Dash.rda'))
 ggarrange(chk_ri,
           stl_ri,
           common.legend = TRUE)
@@ -247,7 +247,7 @@ ggarrange(chk_ri,
 
 ```{r rf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_juv_winter_CovLW.rda'))
+load(here('output/figures/RF_extrap_juv_winter_Dash.rda'))
 ggarrange(chk_ri,
           stl_ri,
           common.legend = TRUE)
@@ -255,7 +255,7 @@ ggarrange(chk_ri,
 
 ```{r rf-relimp-redds, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_redds_Reduced.rda'))
+load(here('output/figures/RF_extrap_redds_Dash.rda'))
 ggarrange(chk_ri,
           stl_ri,
           common.legend = TRUE)
@@ -906,7 +906,7 @@ sthd_pdp
 
 ```{r rf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_juv_summer_Reduced.rda'))
+load(here('output/figures/RF_extrap_juv_summer_Dash.rda'))
 chk_m
 #chk_m2
 stl_m
@@ -915,7 +915,7 @@ stl_m
 
 ```{r rf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the revised juvenile winter RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_juv_winter_CovLW.rda'))
+load(here('output/figures/RF_extrap_juv_winter_Dash.rda'))
 chk_m
 #chk_m2
 stl_m
@@ -924,7 +924,7 @@ stl_m
 
 ```{r rf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the revised redds RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_redds_Reduced.rda'))
+load(here('output/figures/RF_extrap_redds_Dash.rda'))
 chk_m
 #chk_m2
 stl_m
