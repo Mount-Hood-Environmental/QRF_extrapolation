@@ -20,7 +20,7 @@ mod_choice = c('juv_summer',
                'redds',
                'juv_winter')[3]
 
-cov_choice = c("","Dash")[2]
+cov_choice = c("","No_elev")[2]
 
 in_path = 'S:/main/data/qrf/gitrepo_data/input/'
 out_path = 'S:/main/data/qrf/gitrepo_data/output/'
@@ -90,7 +90,7 @@ for(i in 1:length(rch_200_cap_split)) {
             "with", nrow(rch_200_cap_split[[i]]), " rows\n"))
   
   st_write(rch_200_cap_split[[i]],
-           dsn = paste0(out_path,'gpkg/Rch_Cap_RF_Dash_', mod_choice, '.gpkg'),
+           dsn = paste0(out_path,'gpkg/Rch_Cap_RF_No_elev_', mod_choice, '.gpkg'),
            driver = 'GPKG',
            append = if_else(i == 1, F, T))
 }
