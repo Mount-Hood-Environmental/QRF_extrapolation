@@ -15,15 +15,15 @@ file_path = 'S:/main/data/qrf/gitrepo_data/output/'
 
 #-----------------------------------------------------------------
 # load QRF model fits
-load(paste0(file_path,'modelFit/juv_summer_Dash.rda'))
+load(paste0(file_path,'modelFit/juv_summer_No_elev.rda'))
 juv_sum_chnk_covs = qrf_mods$Chinook$importance
 juv_sum_sthd_covs = qrf_mods$Steelhead$importance
 
-load(paste0(file_path,'modelFit/juv_winter_Dash.rda'))
+load(paste0(file_path,'modelFit/juv_winter_No_elev.rda'))
 juv_win_chnk_covs = qrf_mods$Chinook$importance
 juv_win_sthd_covs = qrf_mods$Steelhead$importance
 
-load(paste0(file_path,'modelFit/redds_Dash.rda'))
+load(paste0(file_path,'modelFit/redds_No_elev.rda'))
 redds_chnk_covs = qrf_mods$Chinook$importance
 redds_sthd_covs = qrf_mods$Steelhead$importance
 

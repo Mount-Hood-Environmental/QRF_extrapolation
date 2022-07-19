@@ -1,7 +1,7 @@
 #Author: Bryce Oldemeyer Mark Roes
 #Purpose: Basic habitat dictionary for GAA's used in 2022 RF extrapolation
 #Created: 5/17/2022
-#Modified:
+#Modified:7/18/2022
 
 #---------------------------------------------------------------------------
 library(tidyverse)
@@ -22,8 +22,8 @@ gaa_hab_dict = tibble(
              "S2_02_11",
              "DistPrin1",
              "NatPrin1",
-             "NatPrin2",
-             "end_elev"),
+             "NatPrin2"),
+            # "end_elev"),
   Name = c(
     "Gradient %",
    # "Relative slope",
@@ -37,8 +37,8 @@ gaa_hab_dict = tibble(
     "Avg Aug stream temperature",
     "Disturbance PCA 1",
     "Natural PCA 1",
-    "Natural PCA 2",
-    "Elevation"),
+    "Natural PCA 2"),
+   # "Elevation"),
   DescriptiveText = c(
     "Stream gradient (%).",
    # "Relative slope. Reach slope minus upstream slope.",
@@ -53,8 +53,8 @@ gaa_hab_dict = tibble(
     "Historical composite scenario representing 10 year average August mean stream temperatures for 2002-2011 (Isaak et al. 2017).",
     "Disturbance Classification PCA 1 Score (Whittier et al. 2011).",
     "Natural Classification PCA 1 Score (Whittier et al. 2011).",
-    "Natural Classification PCA 2 Score (Whittier et al. 2011).",
-    "Elevation at downstream end of reach"
+    "Natural Classification PCA 2 Score (Whittier et al. 2011)."
+   # "Elevation at downstream end of reach"
   ))
 
 #Save habitat dict to repo
