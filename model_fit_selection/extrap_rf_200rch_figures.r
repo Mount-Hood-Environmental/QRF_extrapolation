@@ -9,11 +9,11 @@ mod_choice = c('juv_summer',
                'redds',
                'juv_winter')[3]
 
-cov_choice = c("Reduced","CovLW","Dash")[3]
+cov_choice = c("Reduced","CovLW","Dash","No_elev")[4]
 
 log_mod = c("log_","")[2] #log-response model or no
 
-load(paste0(mod_path,"extrap_200rch_RF_",log_mod,mod_choice,'.rda'))
+load(paste0(mod_path,"extrap_200rch_RF_",log_mod,mod_choice,'_',cov_choice,'.rda'))
 
 source("R/plot_partial_dependence.r")
 data("gaa_hab_dict")

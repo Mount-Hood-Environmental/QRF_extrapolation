@@ -198,21 +198,21 @@ There were 12-14 covariates selected for each of the six QRF habitat capacity mo
 
 ```{r qrf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the revised juvenile summer QRF models"}
 
-load(here('output/figures/juv_summer_Dash_figs.rda'))
+load(here('output/figures/juv_summer_No_elev_figs.rda'))
 rel_imp_p
 
 ```
 
 ```{r qrf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter QRF models"}
 
-load(here('output/figures/juv_winter_Dash_figs.rda'))
+load(here('output/figures/juv_winter_No_elev_figs.rda'))
 rel_imp_p
 
 ```
 
 ```{r qrf-relimp-redds, fig.cap = "Relative importance plots for covariates included in the revised QRF redds models"}
 
-load(here('output/figures/redds_Dash_figs.rda'))
+load(here('output/figures/redds_No_elev_figs.rda'))
 rel_imp_p
 
 ```
@@ -238,7 +238,7 @@ RF extrapolation model covariates were selected from the list of GAAs and evalua
 
 ```{r rf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the revised juvenile summer RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_juv_summer_Dash.rda'))
+load(here('output/figures/RF_extrap_juv_summer_No_elev.rda'))
 ggarrange(chk_ri,
           stl_ri,
           common.legend = TRUE)
@@ -247,7 +247,7 @@ ggarrange(chk_ri,
 
 ```{r rf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_juv_winter_Dash.rda'))
+load(here('output/figures/RF_extrap_juv_winter_No_elev.rda'))
 ggarrange(chk_ri,
           stl_ri,
           common.legend = TRUE)
@@ -255,7 +255,7 @@ ggarrange(chk_ri,
 
 ```{r rf-relimp-redds, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_redds_Dash.rda'))
+load(here('output/figures/RF_extrap_redds_No_elev.rda'))
 ggarrange(chk_ri,
           stl_ri,
           common.legend = TRUE)
@@ -880,7 +880,7 @@ To support the covariate selection process for the QRF capacity and RF extrapola
 
 ```{r qrf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer QRF models"}
 
-load(here('output/figures/juv_summer_Dash_figs.rda'))
+load(here('output/figures/juv_summer_No_elev_figs.rda'))
 chnk_pdp
 sthd_pdp
 
@@ -888,7 +888,7 @@ sthd_pdp
 
 ```{r qrf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the revised juvenile winter QRF models"}
 
-load(here('output/figures/juv_winter_Dash_figs.rda'))
+load(here('output/figures/juv_winter_No_elev_figs.rda'))
 chnk_pdp
 sthd_pdp
 
@@ -896,7 +896,7 @@ sthd_pdp
 
 ```{r qrf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the revised QRF redds models"}
 
-load(here('output/figures/redds_Dash_figs.rda'))
+load(here('output/figures/redds_No_elev_figs.rda'))
 chnk_pdp
 sthd_pdp
 
@@ -906,7 +906,7 @@ sthd_pdp
 
 ```{r rf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_juv_summer_Dash.rda'))
+load(here('output/figures/RF_extrap_juv_summer_No_elev.rda'))
 chk_m
 #chk_m2
 stl_m
@@ -915,7 +915,7 @@ stl_m
 
 ```{r rf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the revised juvenile winter RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_juv_winter_Dash.rda'))
+load(here('output/figures/RF_extrap_juv_winter_No_elev.rda'))
 chk_m
 #chk_m2
 stl_m
@@ -924,7 +924,7 @@ stl_m
 
 ```{r rf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the revised redds RF extrapolation models"}
 
-load(here('output/figures/RF_extrap_redds_Dash.rda'))
+load(here('output/figures/RF_extrap_redds_No_elev.rda'))
 chk_m
 #chk_m2
 stl_m

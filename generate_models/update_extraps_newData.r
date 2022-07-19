@@ -7,6 +7,8 @@
 #-----------------------------------------------------------------
 #libraries
 library(tidyverse)
+library(sf)
+library(quantregForest)
 
 #-----------------------------------------------------------------
 # load model fits and DASH data to be added
@@ -17,7 +19,7 @@ mod_choice = c('juv_summer',
 
 cov_choice = c("Reduced","CovLW","Dash")[3]
 
-dash_path = 'S:/main/data/qrf/gitrepo_data/input/'
+dash_path = 'S:/main/data/habitat/DASH/prepped/'
 mod_path = 'S:/main/data/qrf/gitrepo_data/output/modelFit/'
 
 #load QRF modelfit and preds
@@ -27,13 +29,13 @@ load(paste0(mod_path, mod_choice,'_',cov_choice, '.rda'))
 load(paste0(mod_path,'extrap_200rch_RF_', mod_choice,'_',cov_choice, '.rda'))
 
 #load in new habitat data
-#hab_new =
-
+#hab_new = st_read(paste0(dash_path,''))
+hab_new = read_csv(paste0(dash_path, 'dash_hr_18-21.csv'))
 #-----------------------------------------------------------------
 # Make predictions with new data
 #-----------------------------------------------------------------
 
-pred_hab_sites = qrf_mod_df %>%
+pred_hab_sites = pred_hab_df %>%
   left_join(hab_new) %>%
   mutate(chnk_per_m = predict(qrf_mods[['Chinook']],
                               newdata = select(., one_of(unique(sel_hab_mets$Metric))),

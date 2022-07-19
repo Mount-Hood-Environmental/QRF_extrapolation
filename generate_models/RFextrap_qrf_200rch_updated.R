@@ -24,9 +24,9 @@ theme_set(theme_bw())
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[3]
+               'juv_winter')[2]
 
-cov_choice = c("Reduced","CovLW","Dash")[3]
+cov_choice = c("Reduced","CovLW","Dash", "No_elev")[4]
 
 in_path = 'S:/main/data/qrf/gitrepo_data/input/'
 out_path = 'S:/main/data/qrf/gitrepo_data/output/'
@@ -161,7 +161,7 @@ rch_200_df = rch_200 %>%
   mutate_at(vars(regime),
             list(~ as.factor(as.character(.))))
 
-extrap_covars = names(rch_200_df)[c(16, 18, 20,
+extrap_covars = names(rch_200_df)[c(18, 20,
                                     24:29,
                                     37, 40:42)]
 
