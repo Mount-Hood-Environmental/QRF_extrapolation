@@ -120,7 +120,7 @@ new_preds = hab_rds %>%
   st_as_sf()
 
 save(new_preds,
-     file = paste0(out_path,'modelFit/extrap_200rch_RF_', mod_choice,'_',cov_choice, '.rda')
+     file = paste0('S:/main/data/qrf/reference_reach_assessment/preds_fromDASH', mod_choice,'_',cov_choice, '.rda'))
 
 #-----------------------------------------------------------------
 # Replace old (no-champ) extraps
