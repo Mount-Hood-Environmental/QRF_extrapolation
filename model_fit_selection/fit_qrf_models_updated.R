@@ -38,7 +38,7 @@ data("hab_dict")
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[3]
+               'juv_winter')[1]
 
 cov_choice = c("Reduced", "CovLW", "Dash", "No_elev")[4]
 
