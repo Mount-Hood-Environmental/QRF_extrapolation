@@ -9,14 +9,14 @@
 library(tidyverse)
 library(sf)
 library(quantregForest)
-library(fuzzyjoin)
+library(patchwork)
 
 #-----------------------------------------------------------------
 # load model fits and DASH data to be added
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[1]
+               'juv_winter')[3]
 
 cov_choice = c("Reduced","CovLW","Dash","No_elev")[4]
 
@@ -51,32 +51,12 @@ hab_rds = read_rds(paste0(dash_path,"dash_hr_18-21.rds")) %>%
          Sin = hr_sin_cl,
          SubEstBldr = sub_est_bldr,
          SubEstCbl = sub_est_cbl,
+         SubEstCandBldr = sub_est_cbl + sub_est_bldr,
          SubEstGrvl = sub_est_gravl,
          SubEstSandFines = sub_est_sand_fines,
+         FishCovLW = fish_cov_lwd,
          WetBraid = hr_braidedness,
          id = 1:n())
-
-
-# #Deal with fh data (only need geometry and avg_aug_temp)
-# if(mod_choice == "juv_summer") {
-#   load(paste0(in_path,'fh_sum_champ_2017_0522.rda'))
-#   fh = fh_sum_champ_2017 %>%
-#     st_as_sf(coords = c("Lon","Lat"),
-#              crs = "+proj=longlat +datum=WGS84") %>%
-#     select(avg_aug_temp)
-# 
-# } else if (mod_choice == "redds") {
-#   load(paste0(in_path,'fh_redds_champ_2017_0522.rda'))
-#   fh = fh_redds_champ_2017 %>%
-#     select(Species, Site, Watershed, LON_DD, LAT_DD, 
-#            Lgth_Wet, Area_Wet)
-# } else if (mod_choice == "juv_winter") {
-#   load(paste0(in_path,'fh_win_champ_2017_0522.rda'))
-#   fh = fh_win_champ_2017 %>%
-#     select(Species, Site, Watershed, LON_DD, LAT_DD, 
-#            VisitID,
-#            AreaTotal, Lgth_Wet, Area_Wet)
-# }
 
 #-----------------------------------------------------------------
 # Make predictions with new data
@@ -119,10 +99,57 @@ new_preds = hab_rds %>%
   left_join(hab_rds %>% select(id, geometry)) %>%
   st_as_sf()
 
+
+
+#-----------------------------------------------------------------
+# Summaries
+#-----------------------------------------------------------------
+pred_caps = new_preds %>%
+  group_by(site_name, year) %>%
+  summarize(length_m = sum(hr_length_m),
+            chnk_sitecap = sum(chnk_cap),
+            chnk_density_m = weighted.mean(chnk_per_m, hr_length_m),
+            sthd_sitecap = sum(sthd_cap),
+            sthd_densit_m = weighted.mean(sthd_per_m, hr_length_m)) %>%
+  ungroup()
+
+#----- Save preds
 save(new_preds,
+     pred_caps,
      file = paste0('S:/main/data/qrf/reference_reach_assessment/preds_fromDASH', mod_choice,'_',cov_choice, '.rda'))
 
-#-----------------------------------------------------------------
-# Replace old (no-champ) extraps
-#-----------------------------------------------------------------
 
+
+#---- Histograms of habitat data
+
+
+hab_plots = new_preds %>%
+  mutate(site = gsub("[[:digit:]]","", site_name)) %>%
+  group_by(site, year) %>%
+  summarize(LWFreq_Wet = weighted.mean((LWFreq_Wet/hr_length_m)*100,hr_length_m),
+            CU_Freq = weighted.mean(CU_Freq,hr_length_m),
+            DpthThlwg_Avg = weighted.mean(DpthThlwg_Avg,hr_length_m),
+            FishCovSome = weighted.mean(FishCovSome,hr_length_m),
+            FstNT_Freq = weighted.mean(FstNT_Freq, hr_length_m),
+            FstTurb_Freq = weighted.mean(FstTurb_Freq, hr_length_m),
+            PoolResidDpth = weighted.mean(PoolResidDpth, hr_length_m),
+            Sin = weighted.mean(Sin, hr_length_m),
+            SubEstBldr = weighted.mean(SubEstBldr, hr_length_m),
+            SubEstCbl = weighted.mean(SubEstCbl, hr_length_m),
+            SubEstGrvl = weighted.mean(SubEstGrvl, hr_length_m),
+            SubEstSandFines = weighted.mean(SubEstSandFines, hr_length_m),
+            WetBraid = weighted.mean(WetBraid, hr_length_m)) %>%
+  pivot_longer(cols = c(LWFreq_Wet:WetBraid),
+               names_to ="hab_feature",
+               values_to="value") %>%
+  ggplot(aes(x = site, y = value, color = site))+
+  geom_point()+
+  facet_wrap(vars(hab_feature), scales = "free", ncol = 1) +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+tiff(hab_plots, filename = 'output/figures/DASH/DASH_hab_plots.tiff', compression = 'lzw', units = 'in', width = 10, height = 20, res = 300)
+hab_plots
+dev.off()
