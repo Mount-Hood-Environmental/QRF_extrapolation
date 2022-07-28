@@ -61,10 +61,8 @@ hab_rds = read_rds(paste0(dash_path,"dash_hr_18-21.rds")) %>%
 #-----------------------------------------------------------------
 # Make predictions with new data
 #-----------------------------------------------------------------
-# extrap_hab = pred_hab_df %>%
-#   st_as_sf(coords = c("LON_DD","LAT_DD"),
-#             crs = "+proj=longlat +datum=WGS84")
-  
+
+#Append temperatures from rch_200 file
 load(paste0(in_path,"rch_200.rda")) 
 
 temps = rch_200 %>%
@@ -75,7 +73,7 @@ temps = rch_200 %>%
 impute_covars = c("Sin", "end_elev", "region", "slope")
 pred_quant = 0.9
 
-#This chunk takes a minute
+#Make predictions
 new_preds = hab_rds %>%
   st_join(temps,
           left = T, join = st_nearest_feature) %>%
