@@ -48,6 +48,8 @@ hab_rds = read_rds(paste0(dash_path,"dash_hr_18-21.rds")) %>%
          FstNT_Freq = run_freq,
          FstTurb_Freq = fst_turb_freq,
          PoolResidDpth = hr_avg_resid_pool_dpth_m,
+         DpthResid = hr_avg_resid_pool_dpth_m,
+         DpthThlwgExit = hr_thlwg_dpth_avg_m,
          Sin = hr_sin_cl,
          SubEstBldr = sub_est_bldr,
          SubEstCbl = sub_est_cbl,
@@ -56,6 +58,7 @@ hab_rds = read_rds(paste0(dash_path,"dash_hr_18-21.rds")) %>%
          SubEstSandFines = sub_est_sand_fines,
          FishCovLW = fish_cov_lwd,
          WetBraid = hr_braidedness,
+         Q = hr_discharge_cfs,
          id = 1:n())
 
 #-----------------------------------------------------------------
@@ -79,10 +82,10 @@ new_preds = hab_rds %>%
           left = T, join = st_nearest_feature) %>%
   st_drop_geometry() %>%
   mutate(region = as.factor(region)) %>%
-  impute_missing_data(covars = c("avg_aug_temp", "PoolResidDpth"),
+  impute_missing_data(covars = c("avg_aug_temp", "PoolResidDpth", "DpthResid", "Q"),
                     impute_vars = impute_covars,
                     method = 'missForest') %>%
-  select(site_name, year, id, unique(pull(sel_hab_mets, Metric)), hr_length_m) %>%
+  select(site_name, year, LWFreq_Wet:id, avg_aug_temp, hr_length_m) %>%
   mutate(WetBraid = ifelse(WetBraid > 2, 2, WetBraid)) %>%
   mutate(chnk_per_m = predict(qrf_mods[['Chinook']],
                               newdata = select(., one_of(unique(sel_hab_mets$Metric))),
@@ -114,7 +117,7 @@ pred_caps = new_preds %>%
 #----- Save preds
 save(new_preds,
      pred_caps,
-     file = paste0('S:/main/data/qrf/reference_reach_assessment/preds_fromDASH', mod_choice,'_',cov_choice, '.rda'))
+     file = paste0('S:/main/data/qrf/DASH_estimates/', mod_choice,'_',cov_choice, '.rda'))
 
 
 
@@ -136,8 +139,10 @@ hab_plots = new_preds %>%
             SubEstCbl = weighted.mean(SubEstCbl, hr_length_m),
             SubEstGrvl = weighted.mean(SubEstGrvl, hr_length_m),
             SubEstSandFines = weighted.mean(SubEstSandFines, hr_length_m),
-            WetBraid = weighted.mean(WetBraid, hr_length_m)) %>%
-  pivot_longer(cols = c(LWFreq_Wet:WetBraid),
+            WetBraid = weighted.mean(WetBraid, hr_length_m),
+            avg_aug_temp = weighted.mean(avg_aug_temp, hr_length_m),
+            Q = weighted.mean(Q, hr_length_m)) %>%
+  pivot_longer(cols = c(LWFreq_Wet:Q),
                names_to ="hab_feature",
                values_to="value") %>%
   ggplot(aes(x = site, y = value, color = site))+
