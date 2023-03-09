@@ -5,11 +5,13 @@
 # Notes: 
 
 #-----------------------------------------------------------------
+rm()
 #libraries
 library(tidyverse)
 library(sf)
 library(quantregForest)
 library(patchwork)
+library(missForest)
 
 #-----------------------------------------------------------------
 # load model fits and DASH data to be added
@@ -38,29 +40,51 @@ load(paste0(mod_path, mod_choice,'_',cov_choice, '.rda'))
 
 #load in new habitat data
 #hab_new = st_read(paste0(dash_path,''))
-hab_rds = read_rds(paste0(dash_path,"dash_hr_18-21.rds")) %>%
+
+#Data for summer and redd models
+if(mod_choice != 'juv_winter'){
+  
+hab_rds_sum = read_rds(paste0(dash_path,"dash_hr_18-21.rds")) %>%
   st_transform(crs = "+proj=longlat +datum=WGS84") %>%
   mutate(point = st_centroid(geometry)) %>%
-  mutate(LWFreq_Wet = (n_lwd_wetted/hr_length_m)*100,
-         CU_Freq = cu_freq,
+  mutate(CU_Freq = cu_freq,
+         LWFreq_Wet = (n_lwd_wetted/hr_length_m)*100,
          DpthThlwg_Avg = hr_thlwg_dpth_avg_m,
          FishCovSome = fish_cov_total,
          FstNT_Freq = run_freq,
          FstTurb_Freq = fst_turb_freq,
          PoolResidDpth = hr_avg_resid_pool_dpth_m,
-         DpthResid = hr_avg_resid_pool_dpth_m,
-         DpthThlwgExit = hr_thlwg_dpth_avg_m,
          Sin = hr_sin_cl,
          SubEstBldr = sub_est_bldr,
          SubEstCbl = sub_est_cbl,
-         SubEstCandBldr = sub_est_cbl + sub_est_bldr,
          SubEstGrvl = sub_est_gravl,
          SubEstSandFines = sub_est_sand_fines,
-         FishCovLW = fish_cov_lwd,
          WetBraid = hr_braidedness,
-         Q = hr_discharge_cfs,
          id = 1:n())
+}
 
+#Data for winter model
+if(mod_choice == 'juv_winter'){
+  
+  hab_rds = read_rds(paste0(dash_path,"dash_cu_18-21.rds")) %>%
+    st_transform(crs = "+proj=longlat +datum=WGS84") %>%
+    mutate(point = st_centroid(geometry)) %>%
+    mutate(CU_Freq = cu_freq,
+           Sin = hr_sin_cl,
+           WetBraid = hr_braidedness,
+           FishCovLW = woody_debris_percent,
+           FishCovSome = 100 - total_no_cover_percent,
+           DpthResid = resid_depth_m,
+           DpthThlwgExit = thalweg_exit_depth_m,
+           Q = discharge_cfs,
+           SubEstGrvl = gravel_2_64mm_percent,
+           SubEstSandFines = sand_fines_2mm_percent,
+           SubEstCandBldr = SubEstCandBldr,
+           channel_unit_type = as.factor(channel_unit_type),
+           id = 1:n())
+  
+  
+}
 #-----------------------------------------------------------------
 # Make predictions with new data
 #-----------------------------------------------------------------
@@ -77,15 +101,16 @@ impute_covars = c("Sin", "end_elev", "region", "slope")
 pred_quant = 0.9
 
 #Make predictions
+if(mod_choice != "juv_winter"){
 new_preds = hab_rds %>%
   st_join(temps,
           left = T, join = st_nearest_feature) %>%
   st_drop_geometry() %>%
   mutate(region = as.factor(region)) %>%
-  impute_missing_data(covars = c("avg_aug_temp", "PoolResidDpth", "DpthResid", "Q"),
+  impute_missing_data(covars = c("avg_aug_temp", "PoolResidDpth"),
                     impute_vars = impute_covars,
                     method = 'missForest') %>%
-  select(site_name, year, LWFreq_Wet:id, avg_aug_temp, hr_length_m) %>%
+  select(site_name, year,  CU_Freq:id, avg_aug_temp, hr_length_m) %>%
   mutate(WetBraid = ifelse(WetBraid > 2, 2, WetBraid)) %>%
   mutate(chnk_per_m = predict(qrf_mods[['Chinook']],
                               newdata = select(., one_of(unique(sel_hab_mets$Metric))),
@@ -100,6 +125,32 @@ new_preds = hab_rds %>%
   left_join(hab_rds %>% select(id, geometry)) %>%
   st_as_sf()
 
+}else{
+  impute_covars = c("Sin", "end_elev", "region", "slope", "channel_unit_type")
+  
+  new_preds = hab_rds %>%
+    st_join(temps,
+            left = T, join = st_nearest_feature) %>%
+    st_drop_geometry() %>%
+    mutate(region = as.factor(region)) %>%
+    impute_missing_data(covars = c("DpthThlwgExit","DpthResid", "Q"),
+                        impute_vars = impute_covars,
+                        method = 'missForest') %>%
+    #select(site_name, year, CU_Freq:id, avg_aug_temp, cu_length_m) %>%
+    mutate(WetBraid = ifelse(WetBraid > 2, 2, WetBraid)) %>%
+    mutate(chnk_per_m = predict(qrf_mods[['Chinook']],
+                                newdata = select(., one_of(unique(sel_hab_mets$Metric))),
+                                what = pred_quant),
+           chnk_per_m = exp(chnk_per_m) - dens_offset) %>%
+    mutate(sthd_per_m = predict(qrf_mods[['Steelhead']],
+                                newdata = select(., one_of(unique(sel_hab_mets$Metric))),
+                                what = pred_quant),
+           sthd_per_m = exp(sthd_per_m) - dens_offset) %>%
+    mutate(chnk_cap = chnk_per_m * cu_length_m,
+           sthd_cap = sthd_per_m * cu_length_m) %>%
+    left_join(hab_rds %>% select(id, geometry)) %>%
+    st_as_sf()
+}
 
 
 #-----------------------------------------------------------------
@@ -107,17 +158,17 @@ new_preds = hab_rds %>%
 #-----------------------------------------------------------------
 pred_caps = new_preds %>%
   group_by(site_name, year) %>%
-  summarize(length_m = sum(hr_length_m),
+  summarize(length_m = sum(cu_length_m),
             chnk_sitecap = sum(chnk_cap),
-            chnk_density_m = weighted.mean(chnk_per_m, hr_length_m),
+            chnk_density_m = weighted.mean(chnk_per_m, cu_length_m),
             sthd_sitecap = sum(sthd_cap),
-            sthd_densit_m = weighted.mean(sthd_per_m, hr_length_m)) %>%
+            sthd_density_m = weighted.mean(sthd_per_m, cu_length_m)) %>%
   ungroup()
 
 #----- Save preds
 save(new_preds,
      pred_caps,
-     file = paste0('S:/main/data/qrf/DASH_estimates/', mod_choice,'_',cov_choice, '.rda'))
+     file = paste0('S:/main/data/qrf/DASH_estimates/', mod_choice,'_',cov_choice,'_CU', '.rda'))
 
 
 
