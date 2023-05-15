@@ -186,7 +186,7 @@ Below is a simplified, theoretical example of how a covariate might be selected 
 
 --
 
-*In the original QRF model, discharge was included as a covariate because it had a high MIC score and it made biological sense (i.e. discharge is a significant factor impacting fish habitat use and, presumably, habitat carrying capacity). Unfortunately, discharge isn't that informative for restoration efforts because most restoration actions can't create water. Discharge, like many habitat metrics, is highly correlated with other potential covariates which may have been left out of the original QRF model for any number of reasons (highly correlated with other model covariates, excluded to avoid overfitting, etc.). Using the revised model selection criteria, we observed that average thalweg depth has a MIC score  nearly as high as discharge, is informative for restoration efforts, can be calculated from DASH, and is highly highly correlated with discharge. Based on all the information above, mean thalweg depth would be substituted for discharge in the model.*
+*In the original QRF model, discharge was included as a covariate because it had a high MIC score and it made biological sense (i.e. discharge is a significant factor impacting fish habitat use and, presumably, habitat carrying capacity). Unfortunately, discharge isn't that informative for restoration efforts because most restoration actions can't create water. Discharge, like many habitat metrics, is highly correlated with other potential covariates which may have been left out of the original QRF model for any number of reasons (highly correlated with other model covariates, excluded to avoid overfitting, etc.). Using the revised model selection criteria, we observed that average thalweg depth has a MIC score nearly as high as discharge, is informative for restoration efforts, can be calculated from DASH, and is highly highly correlated with discharge. Based on all the information above, mean thalweg depth would be substituted for discharge in the model.*
 
 --
 
@@ -234,7 +234,7 @@ QRF_new_hab_cov_tbl %>%
 
 The spatial extent of QRF capacity predictions is limited to reaches with high-resolution habitat data (i.e. CHaMP or DASH data). To estimate capacity outside of the QRF habitat capacity spatial extent, an extrapolation model fit to "globally available attributes" (GAAs) obtained from a continuous, linear stream network created by Morgan Bond and Tyler Nodine (<https://www.fisheries.noaa.gov/resource/data/columbia-basin-historical-ecology-project-data>) was used for the entire Columbia River Basin. A random forest model was fit using the GAAs from the linear stream network and used to estimate habitat capacity for the entire Columbia River Basin at a 200 meter reach scale. Consistent with the QRF habitat capacity models, the RF extrapolation model makes no assumptions about the direction and distribution of effects of predictors, and constrains capacity estimates within the range of predictions produced by the QRF habitat capacity model. However, random forest methods do not account for variable strata weights across the CHaMP dataset, a source of potential bias that could be alleviated through the collection of additional paired fish and habitat data.
 
-RF extrapolation model covariates were selected from the list of GAAs and evaluated for inclusion by examining relative importance plots (Figure \@ref(fig:rf-relimp-summer), Figure \@ref(fig:rf-relimp-winter), and Figure \@ref(fig:rf-relimp-redds) ), partial dependence plots (Section \@ref(revised-rf-extrapolation-model---partial-dependence-plots) ), and correlations between covariates. We used the previous extrapolation model as a starting point for covariate selection. This resulted in the replacement of the "regime" covariate (a categorical indicator of dominant precipitation type) for elevation and the removal of relative slope, which we found was redundant with gradient. Model results indicated that elevation was consistently one of the most important predictors in the model. This is particularly evident in the Chinook parr summer model where capacity predictions were primarily driven by elevation.
+RF extrapolation model covariates were selected from the list of GAAs and evaluated for inclusion by examining relative importance plots (Figure \@ref(fig:rf-relimp-summer), Figure \@ref(fig:rf-relimp-winter), and Figure \@ref(fig:rf-relimp-redds) ), partial dependence plots (Section \@ref(revised-rf-extrapolation-model---partial-dependence-plots) ), and correlations between covariates. We used the previous extrapolation model as a starting point for covariate selection. CONTINUE DISCUSSION
 
 ```{r rf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the revised juvenile summer RF extrapolation models"}
 
@@ -683,11 +683,17 @@ sthd_redd_comp_map = US_redds_sf_comp_extrap %>%
 
 ```
 
-## Habitat capacity estimates
+# Species spatial extents
+## Current Chinook
+## Current Steelhead
+## Potential Chinook
+## Potential Steelhead
+
+# Habitat capacity estimates
 
 Habitat carrying capacity was estimated with the revised QRF and RF extrapolation models for Chinook salmon and steelhead during juvenile summer, juvenile winter, and redd life stages for eight watersheds in the Upper Salmon River Basin. Spatial domains for species were originally defined by Streamnet (<https://www.streamnet.org/home/data-maps/gis-data-sets/>) and revised based on expert knowledge from regional biologists.
 
-### Chinook
+## Chinook
 
 ```{r chnk-maps, fig.cap = "Extrapolations of habitat capacity for Chinook salmon, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the revised models."}
 ggarrange(chnk_sum_map,
@@ -739,7 +745,7 @@ bind_rows(chnk_sum_cap_new,
 
 ```
 
-### Steelhead
+## Steelhead
 
 ```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the revised models."}
 ggarrange(sthd_sum_map,
@@ -792,9 +798,7 @@ bind_rows(sthd_sum_cap_new,
 
 ## Habitat capacity estimates compared with previous QRF and extrapolation
 
-Comparisons of watershed capacity estimates between the previous and revised QRF and RF extrapolation models reveal modest differences in most cases, with the exception of Chinook parr summer capacities in several watersheds. The substantial increases observed for Chinook parr summer capacity were likely due to the inclusion of the elevation coviariate in the RF extrapolation model, and increases range from 13 - 222% compared to the previous extrapolation.
-
-### Chinook
+Comparisons of watershed capacity estimates between the previous and revised QRF and RF extrapolation models reveal modest differences in most cases, with the exception of Chinook parr summer capacities in several watersheds. More discussion here...
 
 ```{r chnk-maps-comp, fig.cap = "Change in predicted Chinook salmon habitat capacity estimates from the original model and extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
 ggarrange(chnk_sum_comp_map,
@@ -839,7 +843,7 @@ bind_rows(
 
 ```
 
-### Steelhead
+## Steelhead
 
 ```{r sthd-maps-comp, fig.cap = "Change in steelhead habitat capacity estimates from the original model and extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
 ggarrange(sthd_sum_comp_map,
@@ -870,13 +874,19 @@ sthd_summary %>%
 
 ```
 
+# Generalized capacity model
+Need to pull from other document
+
+# Habitat Deficit
+Need to update for each watershed.
+
 # Supplemental Figures and Tables
 
-## Partial dependence plots  
+## Partial dependence plots
 
 To support the covariate selection process for the QRF capacity and RF extrapolation models, we generated partial dependence plots that illustrate the predicted effect of covariates on fish density and capacity. These function similarly to traditional covariate effects plots where predictions on the response are made by altering the value of the covariate of interest while all others are fixed at mean values. Because random forest models do not place any constraints on the possible mathematical relationships between predictor and response variables, effects curves have been visualized using smoothing methods (LOESS) and may not reflect actual model behavior across the range of covariate values.
 
-### Revised QRF habitat capacity model  
+### Revised QRF habitat capacity model
 
 ```{r qrf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer QRF models"}
 
