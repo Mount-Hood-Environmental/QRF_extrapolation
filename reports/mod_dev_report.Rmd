@@ -683,15 +683,9 @@ sthd_redd_comp_map = US_redds_sf_comp_extrap %>%
 
 ```
 
-# Species spatial extents
-## Current Chinook
-## Current Steelhead
-## Potential Chinook
-## Potential Steelhead
-
 # Habitat capacity estimates
 
-Habitat carrying capacity was estimated with the revised QRF and RF extrapolation models for Chinook salmon and steelhead during juvenile summer, juvenile winter, and redd life stages for eight watersheds in the Upper Salmon River Basin. Spatial domains for species were originally defined by Streamnet (<https://www.streamnet.org/home/data-maps/gis-data-sets/>) and revised based on expert knowledge from regional biologists.
+Habitat carrying capacity was estimated with the revised QRF and RF extrapolation models for Chinook salmon and steelhead during juvenile summer, juvenile winter, and redd life stages for eight watersheds in the Upper Salmon River Basin. Spatial domains for species were originally defined by Streamnet (<https://www.streamnet.org/home/data-maps/gis-data-sets/>) and spatial extents were revised based on expert knowledge from regional biologists.
 
 ## Chinook
 
@@ -796,9 +790,11 @@ bind_rows(sthd_sum_cap_new,
                 bootstrap_options = c("striped", "condensed"))
 ```
 
-## Habitat capacity estimates compared with previous QRF and extrapolation
+# Habitat capacity estimates compared with previous QRF and extrapolation
 
 Comparisons of watershed capacity estimates between the previous and revised QRF and RF extrapolation models reveal modest differences in most cases, with the exception of Chinook parr summer capacities in several watersheds. More discussion here...
+
+## Chinook
 
 ```{r chnk-maps-comp, fig.cap = "Change in predicted Chinook salmon habitat capacity estimates from the original model and extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
 ggarrange(chnk_sum_comp_map,
@@ -873,12 +869,6 @@ sthd_summary %>%
 
 
 ```
-
-# Generalized capacity model
-Need to pull from other document
-
-# Habitat Deficit
-Need to update for each watershed.
 
 # Supplemental Figures and Tables
 
