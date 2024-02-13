@@ -1063,3 +1063,15 @@ sthd_redd_cap_new %>%
                 bootstrap_options = c("striped", "condensed"))
 
 ```
+
+
+
+``` {r spawn-rec-validation, eval = T}
+load(here("data/spawn_rec_params.rda"))
+
+
+
+
+```
+
+
