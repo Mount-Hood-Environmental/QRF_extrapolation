@@ -3,21 +3,17 @@ title: "Revised QRF Habitat Capacity Model and RF Extrapolation Model Brief"
 author:
 - Bryce N. Oldemeyer:
     email: bryce.oldemeyer@mounthoodenvironmental.com
-    institute: mhe_challis
+    institute: mhe_salmon
     correspondence: true
 - Mark Roes:
     email: mark.roes@mthoodenvironmental.com
     institute: mhe_sandy
     correspondence: true
-- Michael W. Ackerman:
-    email: mike.ackerman@mthoodenvironmental.com
-    institute: mhe_mccall
-    correspondence: false
+
 institute:
-- mhe_challis: Mount Hood Environmental, PO Box 1303, Challis, Idaho, 83226, USA
+- mhe_salmon: Mount Hood Environmental, 803 Monroe St, Suite 106, Salmon, Idaho, 83467, USA
 - mhe_sandy: Mount Hood Environmental, 39085 Pioneer Boulevard \#100 Mezzanine, Sandy,
     Oregon, 97055, USA
-- mhe_mccall: Mount Hood Environmental, PO Box 4282, McCall, Idaho, 83638, USA
 
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
@@ -935,11 +931,11 @@ sthd_summary %>%
 
 ## Partial dependence plots
 
-To support the covariate selection process for the QRF capacity and RF extrapolation models, we generated partial dependence plots that illustrate the predicted effect of covariates on fish density and capacity. These function similarly to traditional covariate effects plots where predictions on the response are made by altering the value of the covariate of interest while all others are fixed at mean values. Because random forest models do not place any constraints on the possible mathematical relationships between predictor and response variables, effects curves have been visualized using smoothing methods (LOESS) and may not reflect actual model behavior across the range of covariate values.
+To support the covariate selection process for the QRF capacity and RF extrapolation models,partial dependence plots were generated to illustrate the predicted effect of covariates on fish density and capacity. Partial dependence plots function similarly to traditional covariate effects plots where predictions on the response are made by altering the value of the covariate of interest while all others are fixed at mean values. Because random forest models do not place any constraints on the possible mathematical relationships between predictor and response variables, effects curves have been visualized using smoothing methods (LOESS) and may not reflect actual model behavior across the range of covariate values.
 
 ### Revised QRF habitat capacity model
 
-```{r qrf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer QRF models"}
+```{r qrf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer QRF models",fig.width=6, fig.height=8}
 
 load(here('output/figures/juv_summer_No_elev_figs.rda'))
 chnk_pdp

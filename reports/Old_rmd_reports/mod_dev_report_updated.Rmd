@@ -1,0 +1,1065 @@
+---
+title: "Revised QRF Habitat Capacity Model and RF Extrapolation Model Brief"
+author:
+- Bryce N. Oldemeyer:
+    email: bryce.oldemeyer@mounthoodenvironmental.com
+    institute: mhe_challis
+    correspondence: true
+- Mark Roes:
+    email: mark.roes@mthoodenvironmental.com
+    institute: mhe_sandy
+    correspondence: true
+- Michael W. Ackerman:
+    email: mike.ackerman@mthoodenvironmental.com
+    institute: mhe_mccall
+    correspondence: false
+institute:
+- mhe_challis: Mount Hood Environmental, PO Box 1303, Challis, Idaho, 83226, USA
+- mhe_sandy: Mount Hood Environmental, 39085 Pioneer Boulevard \#100 Mezzanine, Sandy,
+    Oregon, 97055, USA
+- mhe_mccall: Mount Hood Environmental, PO Box 4282, McCall, Idaho, 83638, USA
+
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  bookdown::html_document2:
+    theme: yeti
+    toc: yes
+    toc_depth: 2
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    number_sections: yes
+    pandoc_args:
+    - --lua-filter=../templates/scholarly-metadata.lua
+    - --lua-filter=../templates/author-info-blocks.lua
+    - --lua-filter=../templates/pagebreak.lua  
+csl: "../templates/american-fisheries-society.csl"
+---
+
+<!-- the following inserts MHE logo into header -->
+
+```{=html}
+<script>
+   $(document).ready(function() {
+     $head = $('#header');
+     $head.prepend('<img src=\"logo.jpg\" style=\"float: right;width: 150px;\"/>')
+   });
+</script>
+```
+```{r setup, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  echo = FALSE,
+  comment = "#>",
+  fig.path = "../figures/",
+  dpi = 600
+)
+
+options(knitr.kable.NA = '--')
+
+```
+
+```{r load-libraries}
+# run this if running chunks directly
+
+# for formatting
+library(kableExtra)
+library(ggpubr)
+
+# for analysis
+library(sf)
+library(here)
+library(tidyverse)
+library(magrittr)
+library(ggmap)
+library(nngeo)
+library(janitor)
+library(data.table)
+
+theme_set(theme_pubr(x.text.angle = 45,
+                     base_size = 8))
+
+```
+
+```{r load-data}
+
+out_path = 'S:/main/data/qrf/gitrepo_data/output/'
+
+# load .rda created from the "extrap_comparison_data_prep.R" script
+load(paste0(out_path,'gpkg/extrap_compare/US_qrf_extraps_comp.rda'))
+
+# Project area polygons and 200m layer (with habitat attributes) within project area
+load(paste0(out_path,'gpkg/extrap_compare/US_spatial.rda'))
+
+# the spatial domain for the species and life stages of the old extrapolations were modified from Morgon Bond's 
+# designation to include local knowledge from biologists. To keep things consistent, we will use the same spatial domain
+# for the new extrapolations. 
+
+# redds
+US_redds_sf_new_extrap = US_redds_sf_new_extrap %>%
+  select(-chnk, -sthd) %>%
+  st_join(US_redds_sf_old_extrap %>%
+            select(chnk, sthd),
+          join = st_covered_by,
+          left = F)
+
+# summer juv
+US_sum_sf_new_extrap = US_sum_sf_new_extrap %>%
+  select(-chnk, -sthd) %>%
+  st_join(US_sum_sf_old_extrap %>%
+            select(chnk, sthd),
+          join = st_covered_by,
+          left = F)
+
+# winter juv
+US_win_sf_new_extrap = US_win_sf_new_extrap %>%
+  select(-chnk, -sthd) %>%
+  st_join(US_win_sf_old_extrap %>%
+            select(chnk, sthd),
+          join = st_covered_by,
+          left = F)
+
+# convert old sf objects to tibbles
+US_sum_df_old_extrap = US_sum_sf_old_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+US_win_df_old_extrap = US_win_sf_old_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+US_redds_df_old_extrap = US_redds_sf_old_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+# convert new sf objects to tibbles
+US_sum_df_new_extrap = US_sum_sf_new_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+US_win_df_new_extrap = US_win_sf_new_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+US_redds_df_new_extrap = US_redds_sf_new_extrap %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+# create comparison tibbles for mapping
+
+US_sum_sf_comp_extrap = bind_cols(setorder(US_sum_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_sum_df_new_extrap, UniqueID)[,c(19:30)] - setorder(US_sum_df_old_extrap, UniqueID)[,c(21:32)])
+
+US_win_sf_comp_extrap = bind_cols(setorder(US_win_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_win_df_new_extrap, UniqueID)[,c(19:30)] - setorder(US_win_df_old_extrap, UniqueID)[,c(21:32)])
+
+US_redds_sf_comp_extrap = bind_cols(setorder(US_redds_sf_old_extrap[,-c(21:32)], UniqueID), setorder(US_redds_df_new_extrap, UniqueID)[,c(19:30)] - setorder(US_redds_df_old_extrap, UniqueID)[,c(21:32)])
+
+
+```
+
+# Background
+
+Quantile random forest (QRF) models have become popular for quantifying freshwater habitat carrying capacity due to their flexible framework that avoids common pitfalls associated with noisy data, correlated variables, and non-linear relationships. Recently, three QRF models were fit with fish-habitat data from fish observation studies and the Columbia Habitat Monitoring Program (CHaMP) and used to estimate habitat carrying capacity for ESA-listed populations of Chinook salmon and steelhead during three critical life-stages (juvenile summer parr, juvenile winter presmolt, and adult redds) for wadable streams within the Columbia River Basin. Model covariates were selected from \>100 habitat metrics and chosen for their high predictive power (Appendix B of Idaho OSC Team, 2019; See et al. 2021). Since then, additional emphasis has been placed on the utility of the QRF capacity models to inform restoration project design and monitoring and increase the spatial extent of fish-habitat data using streamlined protocols (DASH - Carmichael et al. 2019). Therefore, we conducted a revised covariate selection process for the QRF models that prioritized 1) predictive power, 2) compatability with future DASH data collection, 3) informing restoration project development and monitoring, 4) minimal imputation for missing CHaMP data, and 5) low covariate correlation. Additionally, we evaluated the assumption made during initial QRF model development that a single model was appropriate for both Chinook salmon and steelhead during each of the three life stages.
+
+Similarly, a random forest (RF) extrapolation model was used to predict habitat capacity across larger spatial scales where CHaMP and/or DASH data weren't available (Appendix B of Idaho OSC Team). We revisited the globally available attributes (GAAs) included in the original RF extrapolation model and made minor modifications to the model that maintained covariates with high predictive power and included metrics that better aligned with the revised QRF model. To evaluate the differences between the original and revised QRF/RF models, we compared watershed carrying capacity estimates produced by the both sets of models for eight watersheds located within the Upper Salmon River basin.
+
+This process resulted in revised QRF and RF extrapolation models that were more informative for restoration design and monitoring, included covariates that could be calculated using newly developed stream habitat protocols, and maintained a similar level of predictive power as the original models.
+
+# Revised QRF Habitat Capacity Model
+
+## Covariate selection process
+
+Habitat covariates for the QRF habitat capacity models were generated from the CHaMP dataset or obtained from other publicly available sources (e.g. NorWest stream temperature data). In total, 129 habitat metrics were examined in the selection process. Covariates were aggregated into eleven metric categories and 1-4 covariates were chosen from each category based on following criteria:
+
+1.  What was the strength between the covariate and the response variable (based on MIC score)?
+
+2.  Could the covariate be calculated using DASH data?
+
+3.  Was the covariate informative for restoration efforts?
+
+4.  How much data were missing and/or the amount of "0"s for the covariate in the fish-habitat dataset?
+
+5.  How correlated was the covariate with other covariates within the same metric category, particularly covariates with higher MIC scores?
+
+Below is a simplified, theoretical example of how a covariate might be selected for a model.
+
+--
+
+*In the original QRF model, discharge was included as a covariate because it had a high MIC score and it made biological sense (i.e. discharge is a significant factor impacting fish habitat use and, presumably, habitat carrying capacity). Unfortunately, discharge isn't that informative for restoration efforts because most restoration actions can't create water. Discharge, like many habitat metrics, is highly correlated with other potential covariates which may have been left out of the original QRF model for any number of reasons (highly correlated with other model covariates, excluded to avoid overfitting, etc.). Using the revised model selection criteria, we observed that average thalweg depth has a MIC score nearly as high as discharge, is informative for restoration efforts, can be calculated from DASH, and is highly highly correlated with discharge. Based on all the information above, mean thalweg depth would be substituted for discharge in the model.*
+
+--
+
+The covariate selection process was conducted independently for both species for all three life stages to test the assumption made during the original QRF model development that it was appropriate to apply the same life stage models to both species.
+
+## Covariate selection results
+
+There were 12-14 covariates selected for each of the six QRF habitat capacity models. While the relative importance of the final covariates in the three life stage models differed between species, the final covariates themselves were nearly identical. (Figure \@ref(fig:qrf-relimp-summer) , Figure \@ref(fig:qrf-relimp-winter), and Figure \@ref(fig:qrf-relimp-redds) ). This confirmed that one model for both species per life stage was appropriate. Therefore, we consolidated the species-specific models into a single winter juvenile, summer juvenile, and redd models. (Table \@ref(tab:cov-tab)). Examination of covariate partial dependence plots from the revised QRF habitat capacity models indicated effects that were generally biologically intuitive and can be found in Section \@ref(revised-qrf-habitat-capacity-model---partial-dependence-plots)
+
+```{r qrf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the revised juvenile summer QRF models"}
+
+load(here('output/figures/juv_summer_No_elev_figs.rda'))
+rel_imp_p
+
+```
+
+```{r qrf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter QRF models"}
+
+load(here('output/figures/juv_winter_No_elev_figs.rda'))
+rel_imp_p
+
+```
+
+```{r qrf-relimp-redds, fig.cap = "Relative importance plots for covariates included in the revised QRF redds models"}
+
+load(here('output/figures/redds_No_elev_figs.rda'))
+rel_imp_p
+
+```
+
+```{r cov-tab}
+load(here("data/QRF_new_hab_cov_tbl.rda"))
+
+QRF_new_hab_cov_tbl %>%
+  select(-Covariate) %>%
+  kable(booktabs = T,
+        align = "ccccccccl",
+        caption = "Habitat covariates and their descriptions for three revised life stage QRF capacity models. Numbers indicate where each metric ranked in relative importance for each species. Dashes indicate the metric was not used for a given model.") %>%
+  kable_styling(position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+# Revised RF Extrapolation Model
+
+The spatial extent of QRF capacity predictions is limited to reaches with high-resolution habitat data (i.e. CHaMP or DASH data). To estimate capacity outside of the QRF habitat capacity spatial extent, an extrapolation model fit to "globally available attributes" (GAAs) obtained from a continuous, linear stream network created by Morgan Bond and Tyler Nodine (<https://www.fisheries.noaa.gov/resource/data/columbia-basin-historical-ecology-project-data>) was used for the entire Columbia River Basin. A random forest model was fit using the GAAs from the linear stream network and used to estimate habitat capacity for the entire Columbia River Basin at a 200 meter reach scale. Consistent with the QRF habitat capacity models, the RF extrapolation model makes no assumptions about the direction and distribution of effects of predictors, and constrains capacity estimates within the range of predictions produced by the QRF habitat capacity model. However, random forest methods do not account for variable strata weights across the CHaMP dataset, a source of potential bias that could be alleviated through the collection of additional paired fish and habitat data.
+
+RF extrapolation model covariates were selected from the list of GAAs and evaluated for inclusion by examining relative importance plots (Figure \@ref(fig:rf-relimp-summer), Figure \@ref(fig:rf-relimp-winter), and Figure \@ref(fig:rf-relimp-redds) ), partial dependence plots (Section \@ref(revised-rf-extrapolation-model---partial-dependence-plots) ), and correlations between covariates. We used the previous extrapolation model as a starting point for covariate selection. CONTINUE DISCUSSION
+
+```{r rf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the revised juvenile summer RF extrapolation models"}
+
+load(here('output/figures/RF_extrap_juv_summer_No_elev.rda'))
+ggarrange(chk_ri,
+          stl_ri,
+          common.legend = TRUE)
+
+```
+
+```{r rf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter RF extrapolation models"}
+
+load(here('output/figures/RF_extrap_juv_winter_No_elev.rda'))
+ggarrange(chk_ri,
+          stl_ri,
+          common.legend = TRUE)
+```
+
+```{r rf-relimp-redds, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter RF extrapolation models"}
+
+load(here('output/figures/RF_extrap_redds_No_elev.rda'))
+ggarrange(chk_ri,
+          stl_ri,
+          common.legend = TRUE)
+```
+
+```{r gaa-tbl}
+load(here("data/gaa_hab_dict.rda"))
+
+gaa_hab_dict %>% 
+  select(Metric = Name,
+         Decription = DescriptiveText) %>%
+  kable(booktabs = T,
+        align = "cl",
+        caption = "Globally available attritibutes (GAAs) and their descriptions used in the random forest extrapolation model.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r capacity-funs}
+source(here("R/calc_watershed_cap.R"))
+
+cap_by_ws = function(x, speciescode){
+  ws_list = unique(x$wtrshd)
+  
+  out = filter(
+    bind_rows(
+    calc_watershed_cap(US_huc_sf,
+                       filter(x, wtrshd == ws_list[1]),
+                       capacity_name = paste0(speciescode,"_per_m"),
+                       capacity_se_name = paste0(speciescode,"_per_m_se"),
+                       by_stream = T) %>%
+      mutate(Watershed = ws_list[1]),
+  
+  calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[2]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[2]),
+  
+  calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[3]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[3]),
+  
+  calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[4]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[4]),
+  
+    calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[5]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[5]),
+  
+    calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[6]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[6]),
+  
+    calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[7]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[7]),
+  
+    calc_watershed_cap(US_huc_sf,
+                     filter(x, wtrshd == ws_list[8]),
+                     capacity_name = paste0(speciescode,"_per_m"),
+                     capacity_se_name = paste0(speciescode,"_per_m_se"),
+                     by_stream = T) %>%
+      mutate(Watershed = ws_list[8])),
+    StreamName != "Total"|is.na(StreamName)) %>%
+    group_by(Watershed) %>%
+    summarise(across(c(n_rchs,tot_length,tot_cap,tot_cap_se),
+              sum,
+              na.rm = T),
+              .groups = "drop")
+
+  return(out)
+}
+
+```
+
+```{r calc-chnk-capacity}
+
+# Chinook salmon, summer parr
+chnk_sum_cap_new = cap_by_ws(US_sum_sf_new_extrap, "chnk") %>%
+  mutate(modelname = "juv_summer")
+
+# Chinook salmon, winter presmolt
+chnk_win_cap_new = cap_by_ws(US_win_sf_new_extrap, "chnk") %>%
+  mutate(modelname = "juv_winter")
+
+# Chinook salmon, redds
+chnk_redd_cap_new = cap_by_ws(US_redds_sf_new_extrap, "chnk") %>%
+  mutate(modelname = "redds")
+
+# Old extraps for comparison ####
+# Chinook salmon, summer parr
+chnk_sum_cap_old = cap_by_ws(US_sum_sf_old_extrap, "chnk")
+
+# Chinook salmon, winter presmolt
+chnk_win_cap_old = cap_by_ws(US_win_sf_old_extrap, "chnk")
+
+# Chinook salmon, redds
+chnk_redd_cap_old = cap_by_ws(US_redds_sf_old_extrap, "chnk")
+
+```
+
+```{r calc-sthd-capacity}
+
+# steelhead salmon, summer parr
+sthd_sum_cap_new = cap_by_ws(US_sum_sf_new_extrap, "sthd") %>%
+  mutate(modelname = "juv_summer")
+
+# steelhead salmon, winter presmolt
+sthd_win_cap_new = cap_by_ws(US_win_sf_new_extrap, "sthd") %>%
+  mutate(modelname = "juv_winter")
+
+# steelhead salmon, redds
+sthd_redd_cap_new = cap_by_ws(US_redds_sf_new_extrap, "sthd") %>%
+  mutate(modelname = "redds")
+
+# Old extraps for comparison ####
+# steelhead salmon, summer parr
+sthd_sum_cap_old = cap_by_ws(US_sum_sf_old_extrap, "sthd")
+
+# steelhead salmon, winter presmolt
+sthd_win_cap_old = cap_by_ws(US_win_sf_old_extrap, "sthd")
+
+# steelhead salmon, redds
+sthd_redd_cap_old = cap_by_ws(US_redds_sf_old_extrap, "sthd")
+```
+
+```{r create-chnk-maps}
+# pick a background river color
+river_color = "lightskyblue1"
+
+#New extrap maps####
+# chinook summer parr
+chnk_sum_map = US_sum_sf_new_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_sum_sf_new_extrap %>%
+            filter(chnk),
+          aes(color = chnk_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Summer Juveniles",
+       color = expression(`Summer Juv` / m^2))
+
+# chinook winter presmolts
+chnk_win_map = US_win_sf_new_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_win_sf_new_extrap %>%
+            filter(chnk),
+          aes(color = chnk_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Winter Juveniles",
+       color = expression(`Winter Juv` / m^2))
+
+# chinook redds
+chnk_redd_map = US_redds_sf_new_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_redds_sf_new_extrap %>%
+            filter(chnk) %>%
+            mutate(chnk_per_km = chnk_per_m * 1000),
+          aes(color = chnk_per_km),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Redds",
+       color = expression(Redds / km))
+
+#Comparison maps####
+# chinook summer parr
+chnk_sum_comp_map = US_sum_sf_comp_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_sum_sf_comp_extrap %>%
+            filter(chnk),
+          aes(color = chnk_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Summer Juveniles",
+       color = expression(`Summer Juv` / m^2))
+
+# chinook winter presmolts
+chnk_win_comp_map = US_win_sf_comp_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_win_sf_comp_extrap %>%
+            filter(chnk),
+          aes(color = chnk_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Winter Juveniles",
+       color = expression(`Winter Juv` / m^2))
+
+# chinook redds
+chnk_redd_comp_map = US_redds_sf_comp_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_redds_sf_comp_extrap %>%
+            filter(chnk) %>%
+            mutate(chnk_per_km = chnk_per_m * 1000),
+          aes(color = chnk_per_km),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Redds",
+       color = expression(Redds / km))
+    
+
+```
+
+```{r create-sthd-maps}
+# steelhead summer juveniles
+sthd_sum_map = US_sum_sf_new_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_sum_sf_new_extrap %>%
+            filter(sthd),
+          aes(color = sthd_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Summer Juveniles",
+       color = expression(`Summer Juv` / m^2))
+
+# steelhead winter juveniles
+sthd_win_map = US_win_sf_new_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_win_sf_new_extrap %>%
+            filter(sthd),
+          aes(color = sthd_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Winter Juveniles",
+       color = expression(`Winter Juv` / m^2))
+
+# steelhead redds
+sthd_redd_map = US_redds_sf_new_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_redds_sf_new_extrap %>%
+            filter(sthd) %>%
+            mutate(sthd_per_km = sthd_per_m * 1000),
+          aes(color = sthd_per_km),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Redds",
+       color = expression(Redds / km))
+
+# Comparison maps ####
+# steelhead summer juveniles
+sthd_sum_comp_map = US_sum_sf_comp_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_sum_sf_comp_extrap %>%
+            filter(sthd),
+          aes(color = sthd_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Summer Juveniles",
+       color = expression(`Summer Juv` / m^2))
+
+# steelhead winter juveniles
+sthd_win_comp_map = US_win_sf_comp_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_win_sf_comp_extrap %>%
+            filter(sthd),
+          aes(color = sthd_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Winter Juveniles",
+       color = expression(`Winter Juv` / m^2))
+
+# steelhead redds
+sthd_redd_comp_map = US_redds_sf_comp_extrap %>%
+  ggplot() +
+  geom_sf(data = US_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = US_redds_sf_comp_extrap %>%
+            filter(sthd) %>%
+            mutate(sthd_per_km = sthd_per_m * 1000),
+          aes(color = sthd_per_km),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Redds",
+       color = expression(Redds / km))
+
+```
+
+# Habitat capacity estimates
+
+Habitat carrying capacity was estimated with the revised QRF and RF extrapolation models for Chinook salmon and steelhead during juvenile summer, juvenile winter, and redd life stages for eight watersheds in the Upper Salmon River Basin. Spatial domains for species were originally defined by Streamnet (<https://www.streamnet.org/home/data-maps/gis-data-sets/>) and spatial extents were revised based on expert knowledge from regional biologists.
+
+## Chinook
+
+```{r chnk-maps, fig.cap = "Extrapolations of habitat capacity for Chinook salmon, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the revised models."}
+ggarrange(chnk_sum_map,
+          chnk_win_map,
+          chnk_redd_map)
+
+```
+
+```{r chnk-cap-summarytbl}
+bind_rows(chnk_sum_cap_new,
+          chnk_win_cap_new,
+          chnk_redd_cap_new) %>%
+  select(Watershed, modelname, tot_cap, tot_cap_se) %>%
+  pivot_wider(names_from = modelname, values_from = c(tot_cap, tot_cap_se)) %>%
+  select(Watershed, tot_cap_juv_summer, tot_cap_se_juv_summer,
+         tot_cap_juv_winter, tot_cap_se_juv_winter,
+         tot_cap_redds, tot_cap_se_redds) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,1,0,1),
+        align = "lccccccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Watershed", "Juv summer capacity", "Summer SE", "Juv winter capacity", "Winter SE", "Redd capacity", "Redd SE" ),
+        caption = "Predicted Chinook salmon habitat capacity by life-stage and watershed using the revised models.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+bind_rows(chnk_sum_cap_new,
+          chnk_win_cap_new,
+          chnk_redd_cap_new) %>%
+  select(Watershed, modelname, tot_cap, tot_cap_se, tot_length) %>%
+  mutate(cap_km = tot_cap/(tot_length/1000),
+         cap_km_se = tot_cap_se/(tot_length/1000)) %>%
+  select(Watershed, modelname, cap_km,cap_km_se) %>%
+  pivot_wider(names_from = modelname, values_from = c(cap_km, cap_km_se)) %>%
+  select(Watershed, cap_km_juv_summer, cap_km_se_juv_summer,
+         cap_km_juv_winter, cap_km_se_juv_winter,
+         cap_km_redds, cap_km_se_redds) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,1,0,1),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Watershed", "Juv summer capacity/km", "Summer SE/km", "Juv winter capacity/km", "Winter SE/km", "Redd capacity/km", "Redd SE/km" ),
+        caption = "Predicted Chinook salmon habitat capacity per kilometer by life-stage and watershed using the revised models.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+
+```
+
+## Steelhead
+
+```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the revised models."}
+ggarrange(sthd_sum_map,
+          sthd_win_map,
+          sthd_redd_map)
+
+```
+
+```{r sthd-cap-summarytbl}
+bind_rows(sthd_sum_cap_new,
+          sthd_win_cap_new,
+          sthd_redd_cap_new) %>%
+  select(Watershed, modelname, tot_cap, tot_cap_se) %>%
+  pivot_wider(names_from = modelname, values_from = c(tot_cap, tot_cap_se)) %>%
+  select(Watershed, tot_cap_juv_summer, tot_cap_se_juv_summer,
+         tot_cap_juv_winter, tot_cap_se_juv_winter,
+         tot_cap_redds, tot_cap_se_redds) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Watershed", "Juv summer capacity", "Summer SE", "Juv winter capacity", "Winter SE", "Redd capacity", "Redd SE" ),
+        caption = "Predicted steelhead habitat capacity by life-stage and watershed using the revised models.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+
+bind_rows(sthd_sum_cap_new,
+          sthd_win_cap_new,
+          sthd_redd_cap_new) %>%
+  select(Watershed, modelname, tot_cap, tot_cap_se, tot_length) %>%
+  mutate(cap_km = tot_cap/(tot_length/1000),
+         cap_km_se = tot_cap_se/(tot_length/1000)) %>%
+  select(Watershed, modelname, cap_km,cap_km_se) %>%
+  pivot_wider(names_from = modelname, values_from = c(cap_km, cap_km_se)) %>%
+  select(Watershed, cap_km_juv_summer, cap_km_se_juv_summer,
+         cap_km_juv_winter, cap_km_se_juv_winter,
+         cap_km_redds, cap_km_se_redds) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,1,0,1),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Watershed", "Juv summer capacity/km", "Summer SE/km", "Juv winter capacity/km", "Winter SE/km", "Redd capacity/km", "Redd SE/km" ),
+        caption = "Predicted steelhead habitat capacity per kilometer by life-stage and watershed using the revised models.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+```
+
+# Habitat capacity estimates compared with previous QRF and extrapolation
+
+Comparisons of watershed capacity estimates between the previous and revised QRF and RF extrapolation models reveal modest differences in most cases, with the exception of Chinook parr summer capacities in several watersheds. More discussion here...
+
+## Chinook
+
+```{r chnk-maps-comp, fig.cap = "Change in predicted Chinook salmon habitat capacity estimates from the original model and extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
+ggarrange(chnk_sum_comp_map,
+          chnk_win_comp_map,
+          chnk_redd_comp_map)
+
+```
+
+```{r chnk-comp-summary-tbls}
+
+capcompare = function(cap_new,cap_old,modelname){
+  out = cap_new[,c(1,3,4,5)] %>%
+  left_join(cap_old[,c(1,4,5)], by = "Watershed", suffix = c("_new","_old")) %>%
+  mutate(Model = modelname,
+         cap_change_percent = (tot_cap_new/tot_cap_old-1) * 100,
+         cap_km = tot_cap_new/(tot_length/1000)) %>%
+    select(Model, 
+           Watershed,
+           cap_km,
+           tot_cap_new, 
+           cap_change_percent, 
+           tot_cap_se_new)
+  
+}
+
+bind_rows(
+  capcompare(chnk_sum_cap_new, chnk_sum_cap_old, "Juv summer"),
+  capcompare(chnk_win_cap_new, chnk_win_cap_old, "Juv winter"),
+  capcompare(chnk_redd_cap_new, chnk_redd_cap_old, "Redds")) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0,0,0),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Model", "Watershed", "Capacity per km", "Total capacity", "Capacity % change", "Capacity SE"),
+        caption = "Estimated Chinook salmon capacities and comparison with previous  random forest extrapolations for eight watersheds") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed")) %>%
+  collapse_rows(columns = 1:2) #collapse rows is currently broken, hopefully will be fixed soon
+
+
+
+```
+
+## Steelhead
+
+```{r sthd-maps-comp, fig.cap = "Change in steelhead habitat capacity estimates from the original model and extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
+ggarrange(sthd_sum_comp_map,
+          sthd_win_comp_map,
+          sthd_redd_comp_map)
+
+```
+
+```{r sthd-comp-summary-tbls}
+
+sthd_summary = bind_rows(
+  capcompare(sthd_sum_cap_new, sthd_sum_cap_old, "Juv summer"),
+  capcompare(sthd_win_cap_new, sthd_win_cap_old, "Juv winter"),
+  capcompare(sthd_redd_cap_new, sthd_redd_cap_old, "Redds"))
+
+sthd_summary %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0,0,0),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Model", "Watershed", "Capacity per km", "Total capacity", "Capacity % change", "Capacity SE" ),
+        caption = "Estimated steelhead capacities and comparison with previous  random forest extrapolations for eight watersheds") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed")) %>%
+    collapse_rows(columns = 1:2) #collapse rows is currently broken, hopefully will be fixed soon
+
+
+```
+
+# Supplemental Figures and Tables
+
+## Partial dependence plots
+
+To support the covariate selection process for the QRF capacity and RF extrapolation models, we generated partial dependence plots that illustrate the predicted effect of covariates on fish density and capacity. These function similarly to traditional covariate effects plots where predictions on the response are made by altering the value of the covariate of interest while all others are fixed at mean values. Because random forest models do not place any constraints on the possible mathematical relationships between predictor and response variables, effects curves have been visualized using smoothing methods (LOESS) and may not reflect actual model behavior across the range of covariate values.
+
+### Revised QRF habitat capacity model
+
+```{r qrf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer QRF models"}
+
+load(here('output/figures/juv_summer_No_elev_figs.rda'))
+chnk_pdp
+sthd_pdp
+
+```
+
+```{r qrf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the revised juvenile winter QRF models"}
+
+load(here('output/figures/juv_winter_No_elev_figs.rda'))
+chnk_pdp
+sthd_pdp
+
+```
+
+```{r qrf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the revised QRF redds models"}
+
+load(here('output/figures/redds_No_elev_figs.rda'))
+chnk_pdp
+sthd_pdp
+
+```
+
+### Revised RF extrapolation model
+
+```{r rf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer RF extrapolation models"}
+
+load(here('output/figures/RF_extrap_juv_summer_No_elev.rda'))
+chk_m
+#chk_m2
+stl_m
+#stl_m2
+```
+
+```{r rf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the revised juvenile winter RF extrapolation models"}
+
+load(here('output/figures/RF_extrap_juv_winter_No_elev.rda'))
+chk_m
+#chk_m2
+stl_m
+#stl_m2
+```
+
+```{r rf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the revised redds RF extrapolation models"}
+
+load(here('output/figures/RF_extrap_redds_No_elev.rda'))
+chk_m
+#chk_m2
+stl_m
+#stl_m2
+```
+
+<!-- ## Capacity by stream --REQUIRES NEW WRAPPER FUNCTION TO WORK, RIGHT NOW SUMS CAPACITY FOR ALL STREAMS WITH THE SAME NAME ACROSS WATERSHEDS  -->
+
+<!-- ### Chinook -->
+
+```{r chnk-sum-tbl, eval = F}
+chnk_sum_cap_new %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available habitat for **juvenile summer rearing** Chinook salmon in the eight salmon watershedss.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r chnk-win-tbl, eval = F}
+chnk_win_cap_new %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available habitat for **juvenile winter rearing** Chinook salmon in the eight salmon watersheds.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r chnk-redd-tbl, eval = F}
+chnk_redd_cap_new %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available **spawning (redds)** habitat for Chinook salmon in the eight salmon watersheds.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+<!-- ### Steelhead -->
+
+```{r sthd-sum-tbl, eval = F}
+sthd_sum_cap_new %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available habitat for **juvenile summer rearing** steelhead in the eight salmon watersheds.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r sthd-win-tbl, eval = F}
+sthd_win_cap_new %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available habitat for **juvenile winter rearing** steelhead in the eight salmon watersheds.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r sthd-redd-tbl, eval = F}
+sthd_redd_cap_new %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available **spawning (redds)** habitat for steelhead in the eight salmon watersheds.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
