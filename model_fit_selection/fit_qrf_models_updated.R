@@ -241,14 +241,11 @@ save(sel_hab_mets,
 #-----------------------------------------------------------------
 # create a few figures
 #-----------------------------------------------------------------
-#mod_choice = c('juv_summer',
-#               'juv_summer_dash',
-#               'redds',
-#               'juv_winter')[1]
+mod_choice = c('juv_summer',
+               'redds',
+               'juv_winter')[1]
 
-#species_choice = c('Chinook',
-#                   'Steelhead')[1]
-
+cov_choice = c("Reduced", "CovLW", "Dash", "No_elev")[4]
 #cov_choice = c('QRF2',
 #               'QRF2_trimmed')[2]
 
