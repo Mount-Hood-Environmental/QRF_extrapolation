@@ -126,16 +126,18 @@ new_preds = hab_rds %>%
   
   impute_covars = c("Sin", "end_elev", "region", "slope", "channel_unit_type")
   
-  new_preds = hab_rds %>%
+  cu_preds = hab_rds %>%
     st_join(temps,
             left = T, join = st_nearest_feature) %>%
     st_drop_geometry() %>%
     mutate(region = as.factor(region)) %>%
     impute_missing_data(covars = c("DpthThlwgExit","DpthResid", "Q"),
                         impute_vars = impute_covars,
-                        method = 'missForest') %>%
-    #select(site_name, year, CU_Freq:id, avg_aug_temp, cu_length_m) %>%
-    mutate(WetBraid = ifelse(WetBraid > 2, 2, WetBraid)) %>%
+                        method = 'missForest') 
+  cu_preds = cu_preds %>%
+    select(site_name, year, hab_rch, CU_Freq:id, SubEstCandBldr, channel_unit_type, cu_length_m) %>%
+    mutate(Q = ifelse(Q < 0, 1, Q),# 1 is roughly the median Q of the dataset.
+           WetBraid = ifelse(WetBraid > 2, 2, WetBraid)) %>%
     mutate(chnk_per_m = predict(qrf_mods[['Chinook']],
                                 newdata = select(., one_of(unique(sel_hab_mets$Metric))),
                                 what = pred_quant),
@@ -146,16 +148,28 @@ new_preds = hab_rds %>%
            sthd_per_m = exp(sthd_per_m) - dens_offset) %>%
     mutate(chnk_cap = chnk_per_m * cu_length_m,
            sthd_cap = sthd_per_m * cu_length_m)
-  new_preds = new_preds %>%
+  
+  
+  cu_preds = cu_preds %>%
     left_join(hab_rds %>% select(id, geometry)) %>%
     st_as_sf()
+  
 }
-
 
 #-----------------------------------------------------------------
 # Summaries
 #-----------------------------------------------------------------
-pred_caps = new_preds %>%
+
+new_preds = cu_preds %>%
+  group_by(site_name, hab_rch, year) %>%
+  summarize(length_m = sum(cu_length_m),
+            chnk_sitecap = sum(chnk_cap),
+            chnk_density_m = weighted.mean(chnk_per_m, cu_length_m),
+            sthd_sitecap = sum(sthd_cap),
+            sthd_density_m = weighted.mean(sthd_per_m, cu_length_m)) %>%
+  ungroup()
+
+pred_caps = cu_preds %>%
   group_by(site_name, year) %>%
   summarize(length_m = sum(cu_length_m),
             chnk_sitecap = sum(chnk_cap),
@@ -172,7 +186,8 @@ if(mod_choice != "juv_winter"){
 }else{
   save(new_preds,
        pred_caps,
-       file = paste0('S:/main/data/qrf/DASH_estimates/', mod_choice,'_',cov_choice,'_CU', '.rda'))
+       cu_preds,
+       file = paste0('S:/main/data/qrf/DASH_estimates/', mod_choice,'_',cov_choice, '.rda'))
 }
 
 

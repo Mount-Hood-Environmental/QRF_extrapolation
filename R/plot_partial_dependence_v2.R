@@ -192,7 +192,7 @@ plot_partial_dependence_v2 = function(rf_mod,
     #      x = 'Covariate Value',
     #      color = 'Watershed') +
     facet_wrap(~ covar_label,
-               scales = scales)
+               scales = scales, ncol = 3)
   
   
   
