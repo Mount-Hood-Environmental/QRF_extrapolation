@@ -243,7 +243,7 @@ save(sel_hab_mets,
 #-----------------------------------------------------------------
 mod_choice = c('juv_summer',
                'redds',
-               'juv_winter')[1]
+               'juv_winter')[3]
 
 cov_choice = c("Reduced", "CovLW", "Dash", "No_elev")[4]
 #cov_choice = c('QRF2',
@@ -279,32 +279,81 @@ rel_imp_p = tibble(Species = names(qrf_mods),
   scale_fill_brewer(palette = "Set1") +
   coord_flip() +
   labs(x = 'Metric',
-       y = 'Relative Importance')
+       y = 'Relative importance')
 
-# partial dependence plots
-#Summer, winter
-# for Chinook
-if(mod_choice != 'redds'){
-chnk_pdp = plot_partial_dependence(qrf_mods[['Chinook']],
+# # partial dependence plots
+# #Summer, winter
+# # for Chinook
+# if(mod_choice != 'redds'){
+# chnk_pdp = plot_partial_dependence(qrf_mods[['Chinook']],
+#                                      qrf_mod_df %>%
+#                                        filter(Species == 'Chinook'),
+#                                      data_dict = hab_dict,
+#                                      # log_transform = F,
+#                                      log_offset = dens_offset,
+#                                      scales = "free_x") +
+#                                      #scales = 'free') +
+#     labs(title = 'Chinook', y = "Prediction per m")
+# 
+# # for steelhead
+# sthd_pdp = plot_partial_dependence(qrf_mods[['Steelhead']],
+#                                      qrf_mod_df %>%
+#                                        filter(Species == 'Steelhead'),
+#                                      data_dict = hab_dict,
+#                                      # log_transform = F,
+#                                      log_offset = dens_offset,
+#                                      scales = "free_x") +
+#                                      #scales = 'free') +
+#     labs(title = 'Steelhead', y = "Prediction per m")
+# }
+# 
+# 
+
+if(mod_choice == 'juv_summer'){
+  chnk_pdp = plot_partial_dependence(qrf_mods[['Chinook']],
                                      qrf_mod_df %>%
                                        filter(Species == 'Chinook'),
                                      data_dict = hab_dict,
                                      # log_transform = F,
                                      log_offset = dens_offset,
-                                     scales = "free_x") +
-                                     #scales = 'free') +
-    labs(title = 'Chinook')
+                                     scales = "free_x",
+                                     km = F) +
+    labs(title = 'Chinook, juvenile summer', y = "Prediction (per m)")
 
-# for steelhead
-sthd_pdp = plot_partial_dependence(qrf_mods[['Steelhead']],
+  # for steelhead
+  sthd_pdp = plot_partial_dependence(qrf_mods[['Steelhead']],
                                      qrf_mod_df %>%
                                        filter(Species == 'Steelhead'),
                                      data_dict = hab_dict,
                                      # log_transform = F,
                                      log_offset = dens_offset,
-                                     scales = "free_x") +
-                                     #scales = 'free') +
-    labs(title = 'Steelhead')
+                                     scales = "free_x",
+                                     km = F) +
+    labs(title = 'Steelhead, juvenile summer', y = "Prediction (per m)")
+}
+
+
+if(mod_choice == 'juv_winter'){
+  chnk_pdp = plot_partial_dependence(qrf_mods[['Chinook']],
+                                     qrf_mod_df %>%
+                                       filter(Species == 'Chinook'),
+                                     data_dict = hab_dict,
+                                     # log_transform = F,
+                                     log_offset = dens_offset,
+                                     scales = "free_x",
+                                     km = F) +
+    labs(title = 'Chinook, juvenile winter', y = "Prediction (per m)")
+  
+  # for steelhead
+  sthd_pdp = plot_partial_dependence(qrf_mods[['Steelhead']],
+                                     qrf_mod_df %>%
+                                       filter(Species == 'Steelhead'),
+                                     data_dict = hab_dict,
+                                     # log_transform = F,
+                                     log_offset = dens_offset,
+                                     scales = "free_x",
+                                     km = F) +
+    labs(title = 'Steelhead, juvenile winter', y = "Prediction (per m)")
 }
 
 if(mod_choice == 'redds'){
@@ -316,7 +365,7 @@ if(mod_choice == 'redds'){
                                      log_offset = dens_offset,
                                      scales = "free_x",
                                      km = T) +
-    labs(title = 'Chinook')
+    labs(title = 'Chinook, redds', y = "Prediction (per km)")
   
   # for steelhead
   sthd_pdp = plot_partial_dependence(qrf_mods[['Steelhead']],
@@ -327,11 +376,9 @@ if(mod_choice == 'redds'){
                                      log_offset = dens_offset,
                                      scales = "free_x",
                                      km = T) +
-    labs(title = 'Steelhead')
-  
-  
-  
+    labs(title = 'Steelhead, redds', y = "Prediction (per km)")
 }
+
 
 pdf(paste0("output/figures/", mod_choice,'_', cov_choice,".pdf"), width = 10, height = 8)
 rel_imp_p

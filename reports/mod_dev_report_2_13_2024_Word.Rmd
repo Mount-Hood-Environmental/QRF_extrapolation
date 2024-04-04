@@ -266,20 +266,20 @@ The covariate selection process was conducted independently for both species for
 
 There were 12-14 covariates selected for each of the six QRF habitat capacity models. While the relative importance of the final covariates in the three life stage models differed between species, the final covariates themselves were nearly identical. (Figure \@ref(fig:qrf-relimp-summer) , Figure \@ref(fig:qrf-relimp-winter), and Figure \@ref(fig:qrf-relimp-redds) ). This confirmed that one model for both species per life stage was appropriate. Therefore, we consolidated the species-specific models into a single winter juvenile, summer juvenile, and redd models. (Table \@ref(tab:cov-tab)). Examination of covariate partial dependence plots from the revised QRF habitat capacity models indicated effects that were generally biologically intuitive and can be found in Section \@ref(revised-qrf-habitat-capacity-model---partial-dependence-plots)
 
-```{r qrf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the revised juvenile summer QRF models"}
+```{r qrf-relimp-summer, fig.cap = "Relative importance plots for covariates included in the revised juvenile summer QRF models", fig.width=5, fig.height=5}
 
 load(here('output/figures/juv_summer_No_elev_figs.rda'))
 rel_imp_p
 ```
 
-```{r qrf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter QRF models"}
+```{r qrf-relimp-winter, fig.cap = "Relative importance plots for covariates included in the revised juvenile winter QRF models", fig.width=5, fig.height=5}
 
 load(here('output/figures/juv_winter_No_elev_figs.rda'))
 rel_imp_p
 
 ```
 
-```{r qrf-relimp-redds, fig.cap = "Relative importance plots for covariates included in the revised QRF redds models"}
+```{r qrf-relimp-redds, fig.cap = "Relative importance plots for covariates included in the revised QRF redds models", fig.width=5, fig.height=5}
 
 load(here('output/figures/redds_No_elev_figs.rda'))
 rel_imp_p
@@ -291,11 +291,23 @@ load(here("data/QRF_new_hab_cov_tbl.rda"))
 
 QRF_new_hab_cov_tbl %>%
   select(-Covariate) %>%
+  mutate(Name = ifelse(Name == "Thalweg Exit Depth Avg", "Thalweg Exit Depth", Name))%>%
   kable(booktabs = T,
         align = "ccccccccl",
         caption = "Habitat covariates and their descriptions for three revised life stage QRF capacity models. Numbers indicate where each metric ranked in relative importance for each species. Dashes indicate the metric was not used for a given model.") %>%
   kable_styling(position = "center",
                 bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r cov-tab-2}
+load(here("data/QRF_new_hab_cov_tbl.rda"))
+
+QRF_new_hab_cov_tbl %>%
+  select(-Covariate) %>%
+  mutate(Name = ifelse(Name == "Thalweg Exit Depth Avg", "Thalweg Exit Depth", Name)) %>%
+  kable(align = "ccccccccl", caption = "Habitat covariates and their descriptions for three revised life stage QRF capacity models. Numbers indicate where each metric ranked in relative importance for each species. Dashes indicate the metric was not used for a given model.") %>%
+  kable_styling(position = "center")
 
 ```
 
@@ -491,12 +503,12 @@ chnk_sum_map = US_sum_sf_new_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Chinook, Summer Juveniles",
-       color = expression(`Summer Juv` / m^2))
+  theme(legend.position = "right")+#,
+        #axis.text.x = element_blank(),
+        #axis.text.y = element_blank(),
+        #axis.ticks = element_blank()) +
+  labs(title = "Chinook, summer juveniles",
+       color = expression(`Capacity ` (fish/m^2)))
 
 # chinook winter presmolts
 chnk_win_map = US_win_sf_new_extrap %>%
@@ -513,12 +525,12 @@ chnk_win_map = US_win_sf_new_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Chinook, Winter Juveniles",
-       color = expression(`Winter Juv` / m^2))
+  theme(legend.position = "right")+#,
+      #  axis.text.x = element_blank(),
+      #  axis.text.y = element_blank(),
+      #  axis.ticks = element_blank()) +
+  labs(title = "Chinook, winter juveniles",
+       color = expression(`Capacity ` (fish/m^2)))
 
 # chinook redds
 chnk_redd_map = US_redds_sf_new_extrap %>%
@@ -536,12 +548,12 @@ chnk_redd_map = US_redds_sf_new_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Chinook, Redds",
-       color = expression(Redds / km))
+  theme(legend.position = "right") +#,
+      #  axis.text.x = element_blank(),
+      #  axis.text.y = element_blank(),
+      #  axis.ticks = element_blank()) +
+  labs(title = "Chinook, redds",
+       color = expression(`Capacity (redds/km)`))
 
 #Comparison maps####
 # chinook summer parr
@@ -559,12 +571,12 @@ chnk_sum_comp_map = US_sum_sf_comp_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Chinook, Summer Juveniles",
-       color = expression(`Summer Juv` / m^2))
+  theme(legend.position = "right")+#,
+      #  axis.text.x = element_blank(),
+       # axis.text.y = element_blank(),
+       # axis.ticks = element_blank()) +
+  labs(title = "Chinook, summer juveniles",
+       color = expression(Delta * ` Capacity ` (fish/m^2)))
 
 # chinook winter presmolts
 chnk_win_comp_map = US_win_sf_comp_extrap %>%
@@ -581,12 +593,12 @@ chnk_win_comp_map = US_win_sf_comp_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Chinook, Winter Juveniles",
-       color = expression(`Winter Juv` / m^2))
+  theme(legend.position = "right")+#,
+       # axis.text.x = element_blank(),
+       # axis.text.y = element_blank(),
+       # axis.ticks = element_blank()) +
+  labs(title = "Chinook, winter juveniles",
+       color = expression(Delta * ` Capacity ` (fish/m^2)))
 
 # chinook redds
 chnk_redd_comp_map = US_redds_sf_comp_extrap %>%
@@ -604,12 +616,12 @@ chnk_redd_comp_map = US_redds_sf_comp_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Chinook, Redds",
-       color = expression(Redds / km))
+  theme(legend.position = "right")+#,
+       # axis.text.x = element_blank(),
+       # axis.text.y = element_blank(),
+       # axis.ticks = element_blank()) +
+  labs(title = "Chinook, redds",
+       color = expression(Delta * ` Capacity (redds/km)`))
     
 
 ```
@@ -630,12 +642,12 @@ sthd_sum_map = US_sum_sf_new_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Steelhead, Summer Juveniles",
-       color = expression(`Summer Juv` / m^2))
+  theme(legend.position = "right")+#,
+       # axis.text.x = element_blank(),
+       # axis.text.y = element_blank(),
+        #axis.ticks = element_blank()) +
+  labs(title = "Steelhead, summer juveniles",
+       color = expression(`Capacity ` (fish/m^2)))
 
 # steelhead winter juveniles
 sthd_win_map = US_win_sf_new_extrap %>%
@@ -652,12 +664,12 @@ sthd_win_map = US_win_sf_new_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Steelhead, Winter Juveniles",
-       color = expression(`Winter Juv` / m^2))
+  theme(legend.position = "right")+#,
+       # axis.text.x = element_blank(),
+       # axis.text.y = element_blank(),
+       # axis.ticks = element_blank()) +
+  labs(title = "Steelhead, winter juveniles",
+       color = expression(`Capacity ` (fish/m^2)))
 
 # steelhead redds
 sthd_redd_map = US_redds_sf_new_extrap %>%
@@ -675,12 +687,12 @@ sthd_redd_map = US_redds_sf_new_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Steelhead, Redds",
-       color = expression(Redds / km))
+  theme(legend.position = "right")+#,
+      # axis.text.x = element_blank(),
+       # axis.text.y = element_blank(),
+       # axis.ticks = element_blank()) +
+  labs(title = "Steelhead, redds",
+       color = expression(`Capacity (redds/km)`))
 
 # Comparison maps ####
 # steelhead summer juveniles
@@ -698,12 +710,12 @@ sthd_sum_comp_map = US_sum_sf_comp_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Steelhead, Summer Juveniles",
-       color = expression(`Summer Juv` / m^2))
+  theme(legend.position = "right")+#,
+       # axis.text.x = element_blank(),
+       # axis.text.y = element_blank(),
+       # axis.ticks = element_blank()) +
+  labs(title = "Steelhead, summer juveniles",
+       color = expression(Delta * ` Capacity ` (fish/m^2)))
 
 # steelhead winter juveniles
 sthd_win_comp_map = US_win_sf_comp_extrap %>%
@@ -720,12 +732,12 @@ sthd_win_comp_map = US_win_sf_comp_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Steelhead, Winter Juveniles",
-       color = expression(`Winter Juv` / m^2))
+  theme(legend.position = "right")+#,
+       # axis.text.x = element_blank(),
+       # axis.text.y = element_blank(),
+       # axis.ticks = element_blank()) +
+  labs(title = "Steelhead, winter juveniles",
+       color = expression(Delta * ` Capacity ` (fish/m^2)))
 
 # steelhead redds
 sthd_redd_comp_map = US_redds_sf_comp_extrap %>%
@@ -743,12 +755,12 @@ sthd_redd_comp_map = US_redds_sf_comp_extrap %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Steelhead, Redds",
-       color = expression(Redds / km))
+  theme(legend.position = "right")+#,
+      #  axis.text.x = element_blank(),
+      #  axis.text.y = element_blank(),
+      #  axis.ticks = element_blank()) +
+  labs(title = "Steelhead, redds",
+       color = expression(Delta * ` Capacity ` (fish/m^2)))
 
 ```
 
@@ -758,10 +770,27 @@ Habitat carrying capacity was estimated with the revised QRF and RF extrapolatio
 
 ## Chinook
 
-```{r chnk-maps, fig.cap = "Extrapolations of habitat capacity for Chinook salmon, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the revised models."}
+```{r chnk-maps-combined, fig.cap = "Extrapolations of habitat capacity for Chinook salmon, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the revised models.", fig.width=7, fig.height=9, eval = F}
 ggarrange(chnk_sum_map,
           chnk_win_map,
-          chnk_redd_map)
+          chnk_redd_map,
+          ncol = 1,
+          legend = "right")
+
+```
+
+```{r chnk-maps-sum1, fig.cap = "Extrapolations of habitat capacity for Chinook salmon juvenile summer rearing for the eight watersheds within the Upper Salmon River Basin using the revised models.", fig.width=5, fig.height=5,}
+chnk_sum_map
+
+```
+
+
+```{r chnk-maps-win1, fig.cap = "Extrapolations of habitat capacity for Chinook salmon juvenile winter rearing for the eight watersheds within the Upper Salmon River Basin using the revised models.", fig.width=5, fig.height=5}
+chnk_win_map
+
+```
+```{r chnk-maps-redd1, fig.cap = "Extrapolations of habitat capacity for Chinook salmon spawning (redds) for the eight watersheds within the Upper Salmon River Basin using the revised models.", fig.width=5, fig.height=5}
+chnk_redd_map
 
 ```
 
@@ -810,10 +839,27 @@ bind_rows(chnk_sum_cap_new,
 
 ## Steelhead
 
-```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the revised models."}
+```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, for the eight watersheds within the Upper Salmon River Basin using the revised models.", fig.width=7, fig.height=9, eval = F}
 ggarrange(sthd_sum_map,
           sthd_win_map,
-          sthd_redd_map)
+          sthd_redd_map,
+          ncol = 1,
+          legend = "right")
+
+```
+
+```{r sthd-maps-sum1, fig.cap = "Extrapolations of habitat capacity for steelhead juvenile summer rearing for the eight watersheds within the Upper Salmon River Basin using the revised models.", fig.width=5, fig.height=5}
+sthd_sum_map
+
+```
+
+```{r sthd-maps-win1, fig.cap = "Extrapolations of habitat capacity for steelhead juvenile winter rearing for the eight watersheds within the Upper Salmon River Basin using the revised models.", fig.width=5, fig.height=5}
+sthd_win_map
+
+```
+
+```{r sthd-maps-redd1, fig.cap = "Extrapolations of habitat capacity for steelhead spawning (redds) for the eight watersheds within the Upper Salmon River Basin using the revised models.", fig.width=5, fig.height=5}
+sthd_redd_map
 
 ```
 
@@ -865,10 +911,27 @@ Comparisons of watershed capacity estimates between the previous and revised QRF
 
 ## Chinook
 
-```{r chnk-maps-comp, fig.cap = "Change in predicted Chinook salmon habitat capacity estimates from the original model and extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
+```{r chnk-maps-comp, fig.cap = "Change in predicted Chinook salmon habitat capacity estimates from the original model and extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin.", fig.width=7, fig.height=9, eval = F}
 ggarrange(chnk_sum_comp_map,
           chnk_win_comp_map,
-          chnk_redd_comp_map)
+          chnk_redd_comp_map,
+          ncol = 1,
+          legend = "right")
+
+```
+
+```{r chnk-maps-comp-sum1, fig.cap = "Change in predicted juvenile Chinook salmon summer rearing habitat capacity estimates from the original model and extrapolation for  the eight watersheds within the Upper Salmon River Basin.", fig.width=5, fig.height=5}
+chnk_sum_comp_map
+
+```
+
+```{r chnk-maps-comp-win1, fig.cap = "Change in predicted juvenile Chinook salmon winter rearing habitat capacity estimates from the original model and extrapolation for the eight watersheds within the Upper Salmon River Basin.", fig.width=5, fig.height=5}
+chnk_win_comp_map
+
+```
+
+```{r chnk-maps-comp-redd1, fig.cap = "Change in predicted Chinook salmon spawning (redd) habitat capacity estimates from the original model and extrapolation for the eight watersheds within the Upper Salmon River Basin.", fig.width=5, fig.height=5}
+chnk_redd_comp_map
 
 ```
 
@@ -910,12 +973,30 @@ bind_rows(
 
 ## Steelhead
 
-```{r sthd-maps-comp, fig.cap = "Change in steelhead habitat capacity estimates from the original model and extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin."}
+```{r sthd-maps-comp, fig.cap = "Change in steelhead habitat capacity estimates from the original model and extrapolation, by life-stage, for the eight watersheds within the Upper Salmon River Basin.", fig.width=7, fig.height=9, eval = F}
 ggarrange(sthd_sum_comp_map,
           sthd_win_comp_map,
-          sthd_redd_comp_map)
+          sthd_redd_comp_map,
+          ncol = 1,
+          legend = "right")
 
 ```
+
+```{r sthd-maps-comp-sum1, fig.cap = "Change in predicted juvenile steelhead summer rearing habitat capacity estimates from the original model and extrapolation for the eight watersheds within the Upper Salmon River Basin.", fig.width=5, fig.height=5}
+sthd_sum_comp_map
+
+```
+
+```{r sthd-maps-comp-win1, fig.cap = "Change in predicted juvenile steelhead winter rearing habitat capacity estimates from the original model and extrapolation for the eight watersheds within the Upper Salmon River Basin.", fig.width=5, fig.height=5}
+sthd_win_comp_map
+
+```
+
+```{r sthd-maps-comp-redd1, fig.cap = "Change in predicted steelhead spawning (redd) habitat capacity estimates from the original model and extrapolation for the eight watersheds within the Upper Salmon River Basin.", fig.width=5, fig.height=5}
+sthd_redd_comp_map
+
+```
+
 
 ```{r sthd-comp-summary-tbls}
 
@@ -947,7 +1028,7 @@ To support the covariate selection process for the QRF capacity and RF extrapola
 
 ### Revised QRF habitat capacity model
 
-```{r qrf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer QRF models",fig.width=8, fig.height=10}
+```{r qrf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer QRF models",fig.width=7, fig.height=8}
 
 load(here('output/figures/juv_summer_No_elev_figs.rda'))
 chnk_pdp
@@ -955,7 +1036,7 @@ sthd_pdp
 
 ```
 
-```{r qrf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the revised juvenile winter QRF models"}
+```{r qrf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the revised juvenile winter QRF models", fig.width=7, fig.height=8}
 
 load(here('output/figures/juv_winter_No_elev_figs.rda'))
 chnk_pdp
@@ -963,7 +1044,7 @@ sthd_pdp
 
 ```
 
-```{r qrf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the revised QRF redds models"}
+```{r qrf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the revised QRF redds models", fig.width=7, fig.height=8}
 
 load(here('output/figures/redds_No_elev_figs.rda'))
 chnk_pdp
@@ -973,7 +1054,7 @@ sthd_pdp
 
 ### Revised RF extrapolation model
 
-```{r rf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer RF extrapolation models"}
+```{r rf-pdp-summer, fig.cap = "Partial dependence plots for covariates included in the revised juvenile summer RF extrapolation models", fig.width=7, fig.height=8}
 
 load(here('output/figures/RF_extrap_juv_summer_No_elev.rda'))
 chk_m
@@ -982,7 +1063,7 @@ stl_m
 #stl_m2
 ```
 
-```{r rf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the revised juvenile winter RF extrapolation models"}
+```{r rf-pdp-winter, fig.cap = "Partial dependence plots for covariates included in the revised juvenile winter RF extrapolation models", fig.width=7, fig.height=8}
 
 load(here('output/figures/RF_extrap_juv_winter_No_elev.rda'))
 chk_m
@@ -991,7 +1072,7 @@ stl_m
 #stl_m2
 ```
 
-```{r rf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the revised redds RF extrapolation models"}
+```{r rf-pdp-redds, fig.cap = "Partial dependence plots for covariates included in the revised redds RF extrapolation models", fig.width=7, fig.height=8}
 
 load(here('output/figures/RF_extrap_redds_No_elev.rda'))
 chk_m

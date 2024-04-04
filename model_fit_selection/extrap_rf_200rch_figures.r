@@ -45,11 +45,12 @@ chk_ri = tibble(Response = model_rf_df$response[1:2],
              y = relImp,
              fill = Response)) +
   geom_col(position = "dodge") +
-  scale_fill_brewer(palette = "Set1") +
+  scale_fill_brewer(palette = "Set1",
+                    labels = c(bquote(Capacity/m), bquote(Capacity/m^2))) +
   coord_flip() +
   labs(title = 'Chinook',
        x = 'Metric',
-       y = 'Relative Importance')
+       y = 'Relative importance')
 
 stl_ri = tibble(Response = model_rf_df$response[3:4],
                 qrf_mod = model_rf_df$mod_no_champ[3:4]) %>%
@@ -75,21 +76,22 @@ stl_ri = tibble(Response = model_rf_df$response[3:4],
              y = relImp,
              fill = Response)) +
   geom_col(position = "dodge") +
-  scale_fill_brewer(palette = "Set1") +
+  scale_fill_brewer(palette = "Set1",
+                    labels = c(bquote(Capacity/m), bquote(Capacity/m^2))) +
   coord_flip() +
   labs(title = 'Steelhead',
        x = 'Metric',
-       y = 'Relative Importance')
+       y = 'Relative importance')
 
-#PDPS for summer, winter ####
-if(mod_choice != 'redds'){
+# PDPS for summer, winter ####
+if(mod_choice == 'juv_summer'){
 chk_m = plot_partial_dependence(model_rf_df$mod_no_champ[[1]],
                                 model_rf_df$data[[1]],
                                 data_dict = gaa_hab_dict,
                                 log_transform = F,
                                 log_offset = 0,
                                 scales = 'free_x')+
-  labs(title = "Chinook", y = "Prediction per meter")
+  labs(title = "Chinook, juvenile summer", y = "Prediction (per meter)")
 
 chk_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[2]],
                                  model_rf_df$data[[2]],
@@ -97,7 +99,7 @@ chk_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[2]],
                                  log_transform = F,
                                  log_offset = 0,
                                  scales = 'free_x')+
-  labs(title = "Chinook", y = bquote('Prediction per meter'^2))
+  labs(title = "Chinook, juvenile summer", y = bquote('Prediction per meter'^2))
   
 stl_m = plot_partial_dependence(model_rf_df$mod_no_champ[[3]],
                                 model_rf_df$data[[3]],
@@ -105,7 +107,7 @@ stl_m = plot_partial_dependence(model_rf_df$mod_no_champ[[3]],
                                 log_transform = F,
                                 log_offset = 0,
                                 scales = 'free_x')+
-  labs(title = "Steelhead", y = "Prediction per meter")
+  labs(title = "Steelhead, juvenile summer", y = "Prediction (per meter)")
   
 stl_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[4]],
                                  model_rf_df$data[[4]],
@@ -113,8 +115,44 @@ stl_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[4]],
                                  log_transform = F,
                                  log_offset = 0,
                                  scales = 'free_x')+
-  labs(title = "Steelhead", y = bquote('Prediction per meter'^2))
+  labs(title = "Steelhead, juvenile summer", y = bquote('Prediction per meter'^2))
 }
+
+# PDPS for summer, winter ####
+if(mod_choice == 'juv_winter'){
+  chk_m = plot_partial_dependence(model_rf_df$mod_no_champ[[1]],
+                                  model_rf_df$data[[1]],
+                                  data_dict = gaa_hab_dict,
+                                  log_transform = F,
+                                  log_offset = 0,
+                                  scales = 'free_x')+
+    labs(title = "Chinook, juvenile winter", y = "Prediction (per meter)")
+  
+  chk_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[2]],
+                                   model_rf_df$data[[2]],
+                                   data_dict = gaa_hab_dict,
+                                   log_transform = F,
+                                   log_offset = 0,
+                                   scales = 'free_x')+
+    labs(title = "Chinook, juvenile winter", y = bquote('Prediction per meter'^2))
+  
+  stl_m = plot_partial_dependence(model_rf_df$mod_no_champ[[3]],
+                                  model_rf_df$data[[3]],
+                                  data_dict = gaa_hab_dict,
+                                  log_transform = F,
+                                  log_offset = 0,
+                                  scales = 'free_x')+
+    labs(title = "Steelhead, juvenile winter", y = "Prediction (per meter)")
+  
+  stl_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[4]],
+                                   model_rf_df$data[[4]],
+                                   data_dict = gaa_hab_dict,
+                                   log_transform = F,
+                                   log_offset = 0,
+                                   scales = 'free_x')+
+    labs(title = "Steelhead, juvenile winter", y = bquote('Prediction per meter'^2))
+}
+
 
 #PDPs for redds (in kms) ####
 if(mod_choice == 'redds'){
@@ -125,7 +163,7 @@ chk_m = plot_partial_dependence(model_rf_df$mod_no_champ[[1]],
                                 log_offset = 0,
                                 scales = 'free_x',
                                 km = T)+
-  labs(title = "Chinook", y = "Prediction per km")
+  labs(title = "Chinook, redds", y = "Prediction (per km)")
 
 chk_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[2]],
                                  model_rf_df$data[[2]],
@@ -134,7 +172,7 @@ chk_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[2]],
                                  log_offset = 0,
                                  scales = 'free_x',
                                  km = T)+
-  labs(title = "Chinook", y = bquote('Prediction per km'^2))
+  labs(title = "Chinook, redds", y = bquote('Prediction per km'^2))
 
 stl_m = plot_partial_dependence(model_rf_df$mod_no_champ[[3]],
                                 model_rf_df$data[[3]],
@@ -143,7 +181,7 @@ stl_m = plot_partial_dependence(model_rf_df$mod_no_champ[[3]],
                                 log_offset = 0,
                                 scales = 'free_x',
                                 km = T)+
-  labs(title = "Steelhead", y = "Prediction per km")
+  labs(title = "Steelhead, redds", y = "Prediction (per km)")
 
 stl_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[4]],
                                  model_rf_df$data[[4]],
@@ -152,7 +190,7 @@ stl_m2 = plot_partial_dependence(model_rf_df$mod_no_champ[[4]],
                                  log_offset = 0,
                                  scales = 'free_x',
                                  km = T)+
-  labs(title = "Steelhead", y = bquote('Prediction per km'^2))
+  labs(title = "Steelhead, redds", y = bquote('Prediction per km'^2))
 
 }
 

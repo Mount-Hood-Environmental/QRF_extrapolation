@@ -169,12 +169,12 @@ plot_partial_dependence = function(rf_mod,
                filter(Metric %in% plot_covars), 
              aes(x = value,
                  y = NULL,
-                 color = Watershed)) +
+                 color = "darkgrey")) +
     scale_color_brewer(palette = 'Set3') +
     theme_bw() +
-    theme(legend.position = 'bottom') +
+    theme(legend.position = "none") +
     labs(y = 'Prediction (per m)',
-         x = 'Covariate Value',
+         x = 'Covariate value',
          color = 'Watershed') +
     facet_wrap(~ covar_label,
                scales = scales,
