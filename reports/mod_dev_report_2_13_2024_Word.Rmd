@@ -760,7 +760,7 @@ sthd_redd_comp_map = US_redds_sf_comp_extrap %>%
       #  axis.text.y = element_blank(),
       #  axis.ticks = element_blank()) +
   labs(title = "Steelhead, redds",
-       color = expression(Delta * ` Capacity ` (fish/m^2)))
+       color = expression(Delta * ` Capacity (redds/km)`))
 
 ```
 
